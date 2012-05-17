@@ -1,0 +1,24 @@
+GDuplicateFinder - A Groovy way to find duplicates among your computer and network shares!
+
+								-----------------------------
+
+Current features
+----------------
+
+*Manage network drives(add, edit, remove)
+*Stop, save, load and resume a search for duplicates
+*Open duplicate files with system's default editor
+
+Network Shares currently supported
+----------------------------------
+*SMB (Samba)
+*SFTP (Connection via Ssh)
+*FTP
+
+Features yet to come
+--------------------
+
+*Save/load duplicates results session
+*Turn on/off network drives
+*Internationalization
+
