@@ -1,0 +1,252 @@
+package com.sleepcamel.fileduplicatefinder.ui.dialogs;
+
+
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.beans.BeansObservables;
+import org.eclipse.core.databinding.observable.Realm;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.viewers.ArrayContentProvider
+import org.eclipse.jface.viewers.ComboViewer
+import org.eclipse.jface.viewers.SelectionChangedEvent
+import org.eclipse.jface.viewers.StructuredSelection
+import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.wb.swt.SWTResourceManager;
+import org.eclipse.swt.layout.RowLayout;
+
+import com.sleepcamel.fileduplicatefinder.core.domain.vfs.NetworkAuth
+import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
+import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
+import com.sleepcamel.fileduplicatefinder.ui.model.Protocol;
+
+public class NetworkDriveDialog extends Dialog {
+
+	protected Object result;
+	protected Shell shell;
+
+	private Button btnCheckButton;
+
+	private ComboViewer cmbProtocol;
+	private Text txtPort;
+	private Text txtAddress;
+	private Text txtUsername;
+	private Text txtPassword;
+	private Text txtPathToFolderShare;
+
+	Label lblError
+	NetworkAuth model = new NetworkAuth()
+
+	/**
+	 * Create the dialog.
+	 * @param parent
+	 * @param style
+	 */
+	public NetworkDriveDialog(Shell parent, int style) {
+		super(parent, style);
+		setText("Network drive configuration");
+	}
+
+	/**
+	 * Open the dialog.
+	 * @return the result
+	 */
+	public Object open() {
+		Display display = getParent().getDisplay();
+		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
+			public void run() {
+				createContents()
+			}
+		});
+		shell.open();
+		shell.layout();
+		while (!shell.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep();
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Create contents of the dialog.
+	 */
+	def createContents() {
+		shell = new Shell(getParent(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		shell.setSize(450, 280);
+		shell.setText(getText());
+		shell.setLayout(new GridLayout(1, false));
+		
+		Composite composite = new Composite(shell, SWT.NONE);
+		GridData gd_composite = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_composite.widthHint = 434;
+		composite.setLayoutData(gd_composite);
+		composite.setLayout(new GridLayout(2, false));
+		
+		Label lblProtocol = new Label(composite, SWT.NONE);
+		lblProtocol.setSize(42, 15);
+		lblProtocol.setText("Protocol");
+		
+		cmbProtocol = new ComboViewer(composite, SWT.BORDER | SWT.READ_ONLY);
+		cmbProtocol.getCombo().setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		cmbProtocol.setContentProvider(ArrayContentProvider.getInstance());
+		cmbProtocol.setInput(Protocol.values());
+		cmbProtocol.addSelectionChangedListener(new ClosureSelectionAdapter(c: updatePort))
+		
+		Label lblPort = new Label(composite, SWT.NONE);
+		lblPort.setSize(42, 15);
+		lblPort.setText("Port");
+		
+		txtPort = new Text(composite, SWT.BORDER);
+		txtPort.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtPort.setSize(50, 21);
+		txtPort.setMessage("22");
+		
+		Label lblAddress = new Label(composite, SWT.NONE);
+		lblAddress.setSize(42, 15);
+		lblAddress.setText("Host name");
+		
+		txtAddress = new Text(composite, SWT.BORDER);
+		txtAddress.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		txtAddress.setSize(364, 21);
+		txtAddress.setMessage("192.168.1.100");
+		
+		btnCheckButton = new Button(composite, SWT.CHECK);
+		btnCheckButton.setText("Guest Login");
+		btnCheckButton.setSelection(false);
+		new Label(composite, SWT.NONE);
+		
+		Label lblUsername = new Label(composite, SWT.NONE);
+		lblUsername.setText("Username");
+		
+		txtUsername = new Text(composite, SWT.BORDER);
+		txtUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		txtUsername.setMessage("johndoe");
+		
+		Label lblPassword = new Label(composite, SWT.NONE);
+		lblPassword.setText("Password");
+		
+		txtPassword = new Text(composite, SWT.BORDER | SWT.PASSWORD);
+		txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		txtPassword.setMessage("almightypassword");
+		
+		Label lblFolderShare = new Label(composite, SWT.NONE);
+		lblFolderShare.setText("Folder Share");
+		
+		txtPathToFolderShare = new Text(composite, SWT.BORDER);
+		txtPathToFolderShare.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		txtPathToFolderShare.setMessage("/path/to/folder/share");
+		
+		Composite composite_1 = new Composite(shell, SWT.NONE);
+		composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		composite_1.setLayout(new GridLayout(1, false));
+		
+		lblError = new Label(composite_1, SWT.NONE);
+		lblError.setFont(SWTResourceManager.getFont("Verdana", 10, SWT.NORMAL));
+		lblError.setAlignment(SWT.CENTER);
+		lblError.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		lblError.setText("");
+
+		Composite btnComposite = new Composite(composite_1, SWT.NONE);
+		btnComposite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, true, 1, 1));
+		RowLayout rl_btnComposite = new RowLayout(SWT.HORIZONTAL);
+		rl_btnComposite.spacing = 30;
+		btnComposite.setLayout(rl_btnComposite);
+		
+		Button btnSave = new Button(btnComposite, SWT.NONE);
+		btnSave.setText("Save");
+		btnSave.setLayoutData(new RowData(120, SWT.DEFAULT));
+		btnSave.addSelectionListener(new ClosureSelectionAdapter(c: save));
+		
+		Button btnConnectivity = new Button(btnComposite, SWT.NONE);
+		btnConnectivity.setText("Check connectivity");
+		btnConnectivity.setLayoutData(new RowData(120, SWT.DEFAULT));
+		btnConnectivity.addSelectionListener(new ClosureSelectionAdapter(c: checkConnectivity));
+		
+		Button btnCancel = new Button(btnComposite, SWT.NONE);
+		btnCancel.setText("Cancel");
+		btnCancel.setLayoutData(new RowData(120, SWT.DEFAULT));
+		btnCancel.addSelectionListener(new ClosureSelectionAdapter(c: {
+			shell.dispose()
+		}));
+	
+		cmbProtocol.setSelection(new StructuredSelection(Protocol.SFTP));
+		createBindings();
+	}
+	
+	def createBindings(){
+		def bindingContext = new DataBindingContext();
+		
+		IObservableValue modelAddressValue = BeansObservables.observeValue(model, 'hostname');
+		IObservableValue widgetAddressValue = WidgetProperties.text(SWT.Modify).observe(txtAddress);
+		bindingContext.bindValue(widgetAddressValue, modelAddressValue);
+		
+		IObservableValue modelUsernameValue = BeansObservables.observeValue(model, 'username');
+		IObservableValue widgetUsernameValue = WidgetProperties.text(SWT.Modify).observe(txtUsername);
+		bindingContext.bindValue(widgetUsernameValue, modelUsernameValue);
+		
+		IObservableValue modelPasswordValue = BeansObservables.observeValue(model, 'password');
+		IObservableValue widgetPasswordValue = WidgetProperties.text(SWT.Modify).observe(txtPassword);
+		bindingContext.bindValue(widgetPasswordValue, modelPasswordValue);
+		
+		IObservableValue modelFolderValue = BeansObservables.observeValue(model, 'folder');
+		IObservableValue widgetFolderValue = WidgetProperties.text(SWT.Modify).observe(txtPathToFolderShare);
+		bindingContext.bindValue(widgetFolderValue, modelFolderValue);
+		
+		IObservableValue modelPortValue = BeansObservables.observeValue(model, 'port');
+		IObservableValue widgetPortValue = WidgetProperties.text(SWT.Modify).observe(txtPort);
+		bindingContext.bindValue(widgetPortValue, modelPortValue);
+		
+		IObservableValue modelProtocolValue = BeansObservables.observeValue(model, 'protocol');
+		IObservableValue widgetProtocolValue = WidgetProperties.selection().observe(cmbProtocol.getCombo());
+		bindingContext.bindValue(widgetProtocolValue, modelProtocolValue);
+
+		UpdateValueStrategy strategy = new NegativeUpdateValueStrategy()
+
+		IObservableValue btnCheckButtonObserveSelectionObserveWidget = SWTObservables.observeSelection(btnCheckButton);
+		bindingContext.bindValue(SWTObservables.observeEnabled(txtUsername), btnCheckButtonObserveSelectionObserveWidget, strategy, strategy);
+		bindingContext.bindValue(SWTObservables.observeEnabled(txtPassword), btnCheckButtonObserveSelectionObserveWidget, strategy, strategy);
+	}
+	
+	def updatePort = { SelectionChangedEvent selectionEvent ->
+		txtPort.text = selectionEvent.selection.getFirstElement().defaultPort
+	}
+
+	def checkConnectivity = {
+		updateModel()
+
+		lblError.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
+		lblError.text = "Connecting..."
+		try{
+			model.checkPathExists()
+			lblError.text = "Connected"
+		}catch(Exception e){
+			lblError.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_RED));
+			lblError.text = e.message
+		}
+	}
+	
+	def updateModel = {
+		if ( btnCheckButton.getSelection() ){
+			model.username = 'GUEST'
+			model.password = ''
+		}
+	}
+	
+	def save = {
+		updateModel()
+		result = model
+		shell.dispose()
+	}
+}

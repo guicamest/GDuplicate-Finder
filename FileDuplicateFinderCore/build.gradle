@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+
+version = '1.0'
+
+dependencies {
+	
+	compile "org.apache.commons:commons-lang3:$commonsLang3Version"
+	compile "org.apache.commons:commons-compress:$commonsCompressVersion"
+	
+	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+	compile "commons-logging:commons-logging:$commonsLoggingVersion"
+	compile "commons-codec:commons-codec:$commonsCodecVersion"
+	compile "commons-net:commons-net:$commonsNetVersion"
+	compile "commons-httpclient:commons-httpclient:$commonsHttpclientVersion"
+	compile "commons-collections:commons-collections:$commonsCollectionsVersion"
+	
+	compile "org.codehaus.gpars:gpars:$gparsVersion"
+	testCompile "junit:junit:$junitVersion"
+	testCompile group: 'org.spockframework', name: 'spock-core', version: spockVersion {
+        exclude module: 'groovy-all'
+    }
+	
+	compile fileTree(dir: "lib", include: '*.jar')
+}
+
+task "create-dirs" << {
+   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
+   sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
+}
