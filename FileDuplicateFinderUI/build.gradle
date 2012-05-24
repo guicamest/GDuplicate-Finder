@@ -30,12 +30,13 @@ dependencies {
 	groovy group: 'org.codehaus.groovy', name: 'groovy', version: groovyVersion
 	compile "commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"
 	compile "commons-io:commons-io:$commonsIoVersion"
+	compile fileTree(dir: "${config.allLibs}", include: '*.jar')
 	compile fileTree(dir: "${config.swtLibs}", include: '*.jar')
 	compile fileTree(dir: "${config.swtOsJars}", include: '*.jar')
 }
 
 task "create-dirs" << {
-   sourceSets.all*.java.srcDirs*.each { it.mkdirs() }
+   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
    sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
 }
 
@@ -49,7 +50,7 @@ def loadConfiguration() {
 	
 	def configFile = file("config.groovy")
 	def config = new ConfigSlurper(environment).parse(configFile.toURL())
-	
+
 	setProperty "config", config	
 }
 
