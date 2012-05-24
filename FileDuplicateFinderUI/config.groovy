@@ -18,14 +18,16 @@ environments  {
 	
 	linux64 {
 		swtLibs = 'libs'
-		swtOsJars = "${swtLibs}/win_x86_64"
+		swtOsJars = "${swtLibs}/linux_x86_64"
 	}
 	
+	// Oldest one
 	mac-carbon {
 		swtLibs = 'libs'
 		swtOsJars = "${swtLibs}/mac_carbon"
 	}
 	
+	// Newest one
 	mac-cocoa {
 		swtLibs = 'libs'
 		swtOsJars = "${swtLibs}/mac_cocoa"	

@@ -54,7 +54,7 @@ def loadConfiguration() {
 }
 
 def autodetectOS(){
-	def defaultOS = 'mac-carbon'
+	def defaultOS = 'mac-cocoa'
 	def osName = System.getProperty('os.name').toLowerCase()
 	def os = defaultOS
 
