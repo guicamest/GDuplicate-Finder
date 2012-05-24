@@ -1,4 +1,7 @@
 .gradle/
+FileDuplicateFinderCore/.classpath
+FileDuplicateFinderCore/.project
+FileDuplicateFinderCore/.settings/
 FileDuplicateFinderCore/build/
 FileDuplicateFinderUI/.classpath
 FileDuplicateFinderUI/.project
