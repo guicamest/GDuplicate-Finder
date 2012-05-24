@@ -1,7 +1,7 @@
 // File: config.groovy
 environments  {
 	
-	windows {		
+	windows32 {
 		swtLibs = 'libs'
 		swtOsJars = "${swtLibs}/win_x86"
 	}

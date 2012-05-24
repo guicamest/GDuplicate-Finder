@@ -43,7 +43,7 @@ task "create-dirs" << {
 // We can pass a value for the env property to the build with the -P or --project-prop argument when we run Gradle
 // for i.e -Pos=linux or -Pos=mac if the os property is not available we assume the default is windows os
 def loadConfiguration() {
-	def environment  = hasProperty("os") ? os : "windows"
+	def environment  = hasProperty("os") ? os : autodetectOS()
 	setProperty "environment ", environment 
 	println "os is set to ${environment}"
 	
@@ -53,6 +53,24 @@ def loadConfiguration() {
 	setProperty "config", config	
 }
 
+def autodetectOS(){
+	def defaultOS = 'mac-carbon'
+	def osName = System.getProperty('os.name').toLowerCase()
+	def os = defaultOS
+
+	if ( osName.contains('windows') ){
+		os = 'windows'
+	}
+	if ( osName.contains('linux') ){
+		os = 'linux'
+	}
+	
+	if ( defaultOS != os ){
+		def arch = System.getProperty('os.arch').contains('64') ? '64' : '32'
+		defaultOS = "${os}${arch}"
+	}
+	defaultOS
+}
 
 task oneJar(type: OneJar) {
 	mainClass = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
