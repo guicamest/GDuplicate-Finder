@@ -5,7 +5,8 @@ import org.apache.commons.beanutils.BeanUtils;
 @Singleton
 class Settings implements Serializable {
 
-	static final long serialVersionUID = -6618469841127325812L;
+	static final long serialVersionUID = -6618469841127325812L
+	static final String SETTINGS_FILENAME = 'settings.dat'
 	
 	def lastNetworkAuthModels
 	
@@ -18,7 +19,7 @@ class Settings implements Serializable {
 	}
 	
 	def load(){
-		def file = new File("settings.dat")
+		def file = new File(SETTINGS_FILENAME)
 		if ( file.exists() ){
 			FileInputStream fis = new FileInputStream(file)
 			fis.withObjectInputStream { ois ->
@@ -29,7 +30,7 @@ class Settings implements Serializable {
 	}
 	
 	def save(){
-		FileOutputStream fos = new FileOutputStream(new File("settings.dat"))
+		FileOutputStream fos = new FileOutputStream(new File(SETTINGS_FILENAME))
 		fos.withObjectOutputStream { oos ->
 			oos.writeObject(this);
 			oos.close()

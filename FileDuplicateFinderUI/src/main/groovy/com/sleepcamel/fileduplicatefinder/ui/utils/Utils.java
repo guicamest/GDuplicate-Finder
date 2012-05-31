@@ -19,13 +19,11 @@ public class Utils {
 		return percentFormatter.format(percent);
 	}
 	
-	private static final String[] Q = new String[]{"Bytes", "Kbs", "Mbs", "Gbs", "Tbs", "Pbs", "Ebs"};
 	public static String formatBytes(long bytes){
-	    for (int i = 6; i > 0; i--)
-	    {
-	        double step = Math.pow(1024, i);
-	        if (bytes > step) return String.format("%3.2f %s", bytes / step, Q[i]);
-	    }
+		for(FileSize size:FileSize.reversedValues()){
+			double step = size.getSizeInBytes();
+	        if (bytes > step) return String.format("%3.2f %s", bytes / step, size.getFriendlyName());
+		}
 	    return Long.toString(bytes);
 	}
 

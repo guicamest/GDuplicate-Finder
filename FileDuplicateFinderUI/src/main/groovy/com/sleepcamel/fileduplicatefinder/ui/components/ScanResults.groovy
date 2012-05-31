@@ -8,18 +8,18 @@ import org.apache.commons.io.FileUtils
 import org.eclipse.core.databinding.beans.BeansObservables
 import org.eclipse.core.databinding.observable.Observables
 import org.eclipse.core.databinding.observable.list.IObservableList
-import org.eclipse.core.databinding.observable.list.WritableList;
+import org.eclipse.core.databinding.observable.list.WritableList
 import org.eclipse.core.databinding.observable.map.IObservableMap
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider
 import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.viewers.CheckboxTableViewer
 import org.eclipse.jface.viewers.ColumnWeightData
-import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.ListViewer
 import org.eclipse.jface.viewers.TableLayout
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerFilter
 import org.eclipse.swt.SWT
-import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.layout.RowLayout
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
@@ -40,6 +40,7 @@ import com.sleepcamel.fileduplicatefinder.ui.adapters.TableCheckStateProvider
 import com.sleepcamel.fileduplicatefinder.ui.adapters.TableLabelProvider
 import com.sleepcamel.fileduplicatefinder.ui.filters.PathTableFilter
 import com.sleepcamel.fileduplicatefinder.ui.listeners.MenuKeyDetectListener
+import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.PreviewFilesCache
 
 public class ScanResults extends Composite {
@@ -59,6 +60,8 @@ public class ScanResults extends Composite {
 	IObservableList observableFileList
 	
 	Closure filesDeleted
+	
+	FDFUIResources i18n = FDFUIResources.instance
 
 	public ScanResults(Composite parent, int style) {
 		super(parent,  SWT.FILL)
@@ -73,14 +76,15 @@ public class ScanResults extends Composite {
 		btnComposite.setLayout(rl_btnComposite)
 		
 		Button btnDeleteDuplicates = new Button(btnComposite, SWT.NONE)
-		btnDeleteDuplicates.setText("Delete duplicates")
+		btnDeleteDuplicates.setText(i18n.msg('FDFUI.scanResultsDeleteBtn'))
 		btnDeleteDuplicates.addSelectionListener(new ClosureSelectionAdapter(c:deleteDuplicates))
 		
 		Button btnSaveSession = new Button(btnComposite, SWT.NONE)
-		btnSaveSession.setText("Save session")
+		btnSaveSession.setText(i18n.msg('FDFUI.scanResultsSaveSessionBtn'))
+		btnSaveSession.setVisible(false)
 
 		btnSearchAgain = new Button(btnComposite, SWT.NONE)
-		btnSearchAgain.setText("Search again")
+		btnSearchAgain.setText(i18n.msg('FDFUI.scanResultsSearchAgainBtn'))
 		
 		SashForm sashForm = new SashForm(this, SWT.NONE)
 		sashForm.setLayoutData(BorderLayout.CENTER)
@@ -96,7 +100,7 @@ public class ScanResults extends Composite {
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider()
 		checkboxTableViewer.setContentProvider(contentProvider)
 
-		def modelProperties = ["name", "friendlyPath", "size", "md5"]
+		def modelProperties = ['name', 'friendlyPath', 'size', 'md5']
 		observableFileList = new WritableList(fileList, FileWrapper.class)
 		IObservableMap[] attributes = BeansObservables.observeMaps(contentProvider.getKnownElements(), FileWrapper.class, modelProperties as String[])
 		checkboxTableViewer.setLabelProvider(new TableLabelProvider(attributes, observableFileList))
@@ -126,21 +130,21 @@ public class ScanResults extends Composite {
 //		table.setMenu(tableContextMenu)
 
 		MenuItem mntmSelectAll = new MenuItem(tableContextMenu, SWT.NONE)
-		mntmSelectAll.setText("Select all")
+		mntmSelectAll.setText(i18n.msg('FDFUI.scanResultsMenuSelectAll'))
 		mntmSelectAll.addSelectionListener(new ClosureSelectionAdapter(c: selectAll))
 		
 		MenuItem mntmDeselectAll = new MenuItem(tableContextMenu, SWT.NONE)
-		mntmDeselectAll.setText("Deselect all")
+		mntmDeselectAll.setText(i18n.msg('FDFUI.scanResultsMenuDeselectAll'))
 		mntmDeselectAll.addSelectionListener(new ClosureSelectionAdapter(c: deselectAll))
 		
 		new MenuItem(tableContextMenu, SWT.SEPARATOR)
 
 		MenuItem mntmSelectAllFromFolder = new MenuItem(tableContextMenu, SWT.NONE)
-		mntmSelectAllFromFolder.setText("Select all files from this folder")
+		mntmSelectAllFromFolder.setText(i18n.msg('FDFUI.scanResultsMenuSelectAllFromFolder'))
 		mntmSelectAllFromFolder.addSelectionListener(new ClosureSelectionAdapter(c: selectAllFromFolder))
 		
 		MenuItem mntmDeselectAllFromFolder = new MenuItem(tableContextMenu, SWT.NONE)
-		mntmDeselectAllFromFolder.setText("Deselect all files from this folder")
+		mntmDeselectAllFromFolder.setText(i18n.msg('FDFUI.scanResultsMenuDeselectAllFromFolder'))
 		mntmDeselectAllFromFolder.addSelectionListener(new ClosureSelectionAdapter(c: deselectAllFromFolder))
 		
 		TableLayout layout = new TableLayout()
@@ -150,12 +154,12 @@ public class ScanResults extends Composite {
 	    layout.addColumnData(new ColumnWeightData(25, 220, true))
 	    table.setLayout(layout)
 
-		createColumn(checkboxTableViewer, "Name")
-		createColumn(checkboxTableViewer, "Path")
-		createColumn(checkboxTableViewer, "Size")
-		createColumn(checkboxTableViewer, "Hash")
+		createColumn(checkboxTableViewer, 'Name')
+		createColumn(checkboxTableViewer, 'Path')
+		createColumn(checkboxTableViewer, 'Size')
+		createColumn(checkboxTableViewer, 'Hash')
 		
-		sashForm.setWeights([2, 5] as int[]);
+		sashForm.setWeights([2, 5] as int[])
 		checkboxTableViewer.refresh()
 	}
 	
@@ -231,20 +235,22 @@ public class ScanResults extends Composite {
 	
 	def deleteDuplicates = {
 		if ( groupIsAllSelected() ){
-			if ( !MessageDialog.openConfirm(null, "Warning", "You've selected a file and all of it's duplicates to be deleted.\nNo copies of these files will be left.\nAre you sure want to do this?") )
+			if ( !MessageDialog.openConfirm(null, i18n.msg('FDFUI.scanResultsAllInGroupDialogTitle'), i18n.msg('FDFUI.scanResultsAllInGroupDialogText')) )
 				return
 		}
 		def asList = checkboxTableViewer.getCheckedElements() as List
 		if ( asList.isEmpty() ){
-			MessageDialog.openInformation(null, "Information", "No file was selected")
+			MessageDialog.openInformation(null, i18n.msg('FDFUI.scanResultsNoFileDialogTitle'), i18n.msg('FDFUI.scanResultsNoFileDialogText'))
 			return
 		}
 		def selectedFiles = asList.groupBy {it.getMd5()}
-		println "Deleting files... $selectedFiles"
+
+//		println "Deleting files... $selectedFiles"
+
 		entries.each { entry ->
 			if ( entry.hash in selectedFiles.keySet()){
 				selectedFiles[entry.hash].each { fileToDelete ->
-					println "Removing file $fileToDelete with hash ${entry.hash}"
+//					println "Removing file $fileToDelete with hash ${entry.hash}"
 					if ( fileToDelete.delete() ){
 						entry.files.remove(fileToDelete)
 					}
@@ -282,8 +288,8 @@ public class ScanResults extends Composite {
 					break
 				default:
 					file = PreviewFilesCache.instance.get(selectedFile.md5())
-					if( !file && MessageDialog.openQuestion(null, "Question", "This is a network file. In order to preview, it should be downloaded\nIt might take a few minutes\nDo you want to continue?") ){
-						file = File.createTempFile("dff", selectedFile.name)
+					if( !file && MessageDialog.openQuestion(null, i18n.msg('FDFUI.scanResultsPreviewFileTitle'), i18n.msg('FDFUI.scanResultsPreviewFileText')) ){
+						file = File.createTempFile('dff', selectedFile.name)
 						FileUtils.copyInputStreamToFile(selectedFile.file.getInputStream(), file)
 						PreviewFilesCache.instance.put(selectedFile.md5(), file)
 					}

@@ -8,6 +8,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper;
 public class PathTableFilter extends ViewerFilter {
 
 	String lastPath;
+	private static String ALL_FILTER = "All";
 	
 	PathTableFilter(String initialPath){
 		this.lastPath = initialPath;
@@ -23,7 +24,7 @@ public class PathTableFilter extends ViewerFilter {
 	
 	@Override
 	public boolean select(Viewer paramViewer, Object parent, Object element) {
-		if ( lastPath.equals("All") )
+		if ( ALL_FILTER.equals(lastPath) )
 			return true;
 
 		return ((FileWrapper) element).getParentWrapper().getFriendlyPath().equals(lastPath);

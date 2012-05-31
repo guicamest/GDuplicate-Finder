@@ -28,6 +28,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.DuplicateFinderProgress
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.AndWrapperFilter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
+import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources;
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 
 @Bindable
@@ -45,6 +46,8 @@ public class ScanProgress extends Composite {
 	Closure cancelFindingDuplicates
 	
 	boolean suspended = false
+	
+	FDFUIResources i18n = FDFUIResources.instance
 	
 	def duplicateFinder
 	DuplicateFinderProgress currentProgress
@@ -71,19 +74,19 @@ public class ScanProgress extends Composite {
 		btnComposite.setLayout(rl_btnComposite)
 		
 		btnSuspend = new Button(btnComposite, SWT.NONE)
-		btnSuspend.setText("Suspend search")
+		btnSuspend.setText(i18n.msg('FDFUI.scanProgressSuspendBtn'))
 		btnSuspend.addSelectionListener(new ClosureSelectionAdapter(c: suspend))
 		
 		btnResume = new Button(btnComposite, SWT.NONE)
-		btnResume.setText("Resume search")
+		btnResume.setText(i18n.msg('FDFUI.scanProgressResumeBtn'))
 		btnResume.addSelectionListener(new ClosureSelectionAdapter(c: resume))
 		
 		btnSaveProgress = new Button(btnComposite, SWT.NONE)
-		btnSaveProgress.setText("Save progress")
+		btnSaveProgress.setText(i18n.msg('FDFUI.scanProgressSaveProgressBtn'))
 		btnSaveProgress.addSelectionListener(new ClosureSelectionAdapter(c: save))
 		
 		Button btnCancel = new Button(btnComposite, SWT.NONE)
-		btnCancel.setText("Cancel search")
+		btnCancel.setText(i18n.msg('FDFUI.scanProgressCancelBtn'))
 		btnCancel.addSelectionListener(new ClosureSelectionAdapter(c: cancel))
 		
 		label = new Label(actionComposite, SWT.CENTER | SWT.FILL)
@@ -91,7 +94,7 @@ public class ScanProgress extends Composite {
 		gridData.heightHint = 200
 		gridData.widthHint = 400
 		label.setLayoutData(gridData)
-		label.setText("Progress")
+		label.setText(i18n.msg('FDFUI.scanProgressProgressLbl'))
 		
 		createBindings()
 	}
@@ -129,7 +132,7 @@ public class ScanProgress extends Composite {
 				double currentFiles = progress.totalFiles
 				def filesPerSec = currentFiles / (elapsedTime / 1000.0)
 				Display.getDefault().syncExec(new Runnable() { public void run() {
-					label.text = "Scanning...\nFiles found: ${currentFiles} - Size: ${Utils.formatBytes(progress.totalFileSize)} - Elapsed time: ${Utils.formatInterval(elapsedTime)} - Files Per Sec: $filesPerSec"
+					label.text = i18n.msg('FDFUI.scanProgressScanningLbl', currentFiles, Utils.formatBytes(progress.totalFileSize), Utils.formatInterval(elapsedTime), filesPerSec)
 				}})
 				Thread.sleep(1000L)
 			}
@@ -188,10 +191,9 @@ public class ScanProgress extends Composite {
 
 				Display.getDefault().syncExec(new Runnable() { public void run() {
 					progressBar.setSelection(intPercentDone)
-					label.text = "Finding duplicates...\nProgress ${Utils.percentString(percentDone)}\n"+
-											"Processed ${findProgress.processedFilesQty} of ${findProgress.totalFiles} files\n"+
-											"Processed ${Utils.formatBytes(findProgress.processedFileSize)} of ${Utils.formatBytes(findProgress.totalFileSize)}\n"+
-											"Elapsed time: ${Utils.formatInterval(elapsedTime)} - Remaining time: ${Utils.formatInterval(timeLeft)}"
+					label.text = i18n.msg('FDFUI.scanProgressFindingLbl', Utils.percentString(percentDone), findProgress.processedFilesQty, findProgress.totalFiles,
+																		Utils.formatBytes(findProgress.processedFileSize), Utils.formatBytes(findProgress.totalFileSize),
+																		Utils.formatInterval(elapsedTime), Utils.formatInterval(timeLeft))
 				}})
 			}
 			
@@ -212,8 +214,8 @@ public class ScanProgress extends Composite {
 	
 	def save = {
 		FileDialog dlg = new FileDialog(shell, SWT.SAVE);
-		dlg.setFilterNames(['Search progress session (*.sps)'] as String []);
-		dlg.setFilterExtensions(['*.sps'] as String []);
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSessionDialogFilterNames')] as String []);
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSessionDialogFilterExtensions')] as String []);
 		String fn = dlg.open();
 		if (fn != null) {
 			synchronized (currentProgress) {

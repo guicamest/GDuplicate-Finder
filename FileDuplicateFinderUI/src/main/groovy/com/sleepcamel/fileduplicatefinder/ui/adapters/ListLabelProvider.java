@@ -2,20 +2,18 @@ package com.sleepcamel.fileduplicatefinder.ui.adapters;
 
 import java.util.Map;
 
-import org.eclipse.jface.viewers.BaseLabelProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.jface.viewers.LabelProvider;
 
-public class ListLabelProvider extends BaseLabelProvider implements ILabelProvider{
+public class ListLabelProvider extends LabelProvider {
 
-	public Image getImage(Object paramObject) {
-		return null;
-	}
-
+	private static String FOLDER_DUPLICATE_COUNT_FORMAT = "%s ( %d )";
+	private static String FOLDER_NAME_PROPERTY = "filePath";
+	private static String FOLDER_DUPLICATE_COUNT_PROPERTY = "count";
+	
 	@SuppressWarnings("rawtypes")
 	public String getText(Object paramObject) {
 		Map map = (Map) paramObject;
-		return map.get("filePath") + " ( " + map.get("count") + " )";
+		return String.format(FOLDER_DUPLICATE_COUNT_FORMAT, map.get(FOLDER_NAME_PROPERTY), map.get(FOLDER_DUPLICATE_COUNT_PROPERTY));
 	}
 	
 }

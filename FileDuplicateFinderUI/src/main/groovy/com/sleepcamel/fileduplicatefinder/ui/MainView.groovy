@@ -31,7 +31,6 @@ import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.ExtensionFilte
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.NameFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.OrWrapperFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.SizeFilter
-import com.sleepcamel.fileduplicatefinder.core.domain.vfs.NetworkAuth;
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.FileWrapperTreeLabelProvider
 import com.sleepcamel.fileduplicatefinder.ui.components.ScanProgress
@@ -40,7 +39,8 @@ import com.sleepcamel.fileduplicatefinder.ui.components.SizeOption
 import com.sleepcamel.fileduplicatefinder.ui.components.TextFieldOption
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.AboutDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
-import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper;
+import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
+import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
@@ -64,6 +64,8 @@ public class MainView {
 	
 	MenuItem mntmLoadSearchSession
 	
+	FDFUIResources i18n = FDFUIResources.instance
+	
 	def treeInput
 
 	/**
@@ -84,6 +86,7 @@ public class MainView {
 	 */
 	public void open() {
 		Settings.instance.load()
+		i18n.init()
 		treeInput = new RootFileWrapper(name:'')
 
 		Display display = Display.getDefault()
@@ -115,7 +118,7 @@ public class MainView {
 	protected void createContents() {
 		shlFileDuplicateFinder = new Shell()
 		shlFileDuplicateFinder.setSize(800, 500)
-		shlFileDuplicateFinder.setText("File Duplicate Finder")
+		shlFileDuplicateFinder.setText(i18n.msg('FDFUI.appTitle'))
 		stackLayout = new StackLayout()
 		shlFileDuplicateFinder.setLayout(stackLayout)
 		
@@ -123,33 +126,33 @@ public class MainView {
 		shlFileDuplicateFinder.setMenuBar(menu)
 		
 		MenuItem mntmNewSubmenu = new MenuItem(menu, SWT.CASCADE)
-		mntmNewSubmenu.setText("File")
+		mntmNewSubmenu.setText(i18n.msg('FDFUI.fileMenu'))
 		
 		Menu menu_1 = new Menu(mntmNewSubmenu)
 		mntmNewSubmenu.setMenu(menu_1)
 		
 		mntmLoadSearchSession = new MenuItem(menu_1, SWT.NONE)
-		mntmLoadSearchSession.setText("Load search session")
+		mntmLoadSearchSession.setText(i18n.msg('FDFUI.fileLoadSearchSession'))
 		mntmLoadSearchSession.addSelectionListener(new ClosureSelectionAdapter(c: loadSearchSession))
 		
 		new MenuItem(menu_1, SWT.SEPARATOR);
 		
 		MenuItem mntmNewItem_2 = new MenuItem(menu_1, SWT.NONE)
-		mntmNewItem_2.setText("Close")
+		mntmNewItem_2.setText(i18n.msg('FDFUI.fileClose'))
 		mntmNewItem_2.addSelectionListener(new ClosureSelectionAdapter(c: close))
 		
 		MenuItem mntmDrives = new MenuItem(menu, SWT.CASCADE)
-		mntmDrives.setText("Drives")
+		mntmDrives.setText(i18n.msg('FDFUI.drivesMenu'))
 		
 		Menu menu_2 = new Menu(mntmDrives)
 		mntmDrives.setMenu(menu_2)
 		
 		MenuItem mntmMapNetworkDrive = new MenuItem(menu_2, SWT.NONE)
-		mntmMapNetworkDrive.setText("Manage network drives")
+		mntmMapNetworkDrive.setText(i18n.msg('FDFUI.drivesManage'))
 		mntmMapNetworkDrive.addSelectionListener(new ClosureSelectionAdapter(c: openDrivesMapper))
 		
 		MenuItem mntmNewItem = new MenuItem(menu, SWT.NONE)
-		mntmNewItem.setText("About")
+		mntmNewItem.setText(i18n.msg('FDFUI.aboutMenu'))
 		mntmNewItem.addSelectionListener(new ClosureSelectionAdapter(c: openAboutDialog))
 		
 		sashForm = new SashForm(shlFileDuplicateFinder, SWT.NONE)
@@ -157,13 +160,13 @@ public class MainView {
 		checkboxTreeViewer = new CheckboxTreeViewer(sashForm, SWT.BORDER)
 		checkboxTreeViewer.setUseHashlookup(true)
 		
-		def propertyDescriptor = BeanPropertyHelper.getPropertyDescriptor(FileWrapper.class, "dirs")
+		def propertyDescriptor = BeanPropertyHelper.getPropertyDescriptor(FileWrapper.class, 'dirs')
 		def property = new FileWrapperBeanListProperty(propertyDescriptor, FileWrapper.class)
 		def decorator = new BeanListPropertyDecorator(property, propertyDescriptor)
 		
 		def showMsg = !syncDrivesWithTree(true)
 
-		ViewerSupport.bind(checkboxTreeViewer, treeInput, decorator, BeanProperties.value(FileWrapper.class, "name"))
+		ViewerSupport.bind(checkboxTreeViewer, treeInput, decorator, BeanProperties.value(FileWrapper.class, 'name'))
 		
 		checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
 		
@@ -174,18 +177,18 @@ public class MainView {
 		Composite composite = new Composite(scrolledComposite_1, SWT.NONE)
 		composite.setLayout(new GridLayout(1, false))
 		
-		minSizeOption = new SizeOption(composite, SWT.NONE, "Min Size")
+		minSizeOption = new SizeOption(composite, SWT.NONE, i18n.msg('FDFUI.minSizeFilter'))
 		
-		maxSizeOption = new SizeOption(composite, SWT.NONE, "Max Size")
+		maxSizeOption = new SizeOption(composite, SWT.NONE, i18n.msg('FDFUI.maxSizeFilter'))
 		
-		nameOption = new TextFieldOption(composite, SWT.NONE, "File name containing")
-		nameOption.setToolTipText("Multiple names should be comma separated")
+		nameOption = new TextFieldOption(composite, SWT.NONE, i18n.msg('FDFUI.fileNameFilter'))
+		nameOption.setToolTipText(i18n.msg('FDFUI.fileNameFilterTooltip'))
 		
-		extensionsOption = new TextFieldOption(composite, SWT.NONE, "File extensions")
-		extensionsOption.setToolTipText("Multiple extensions should be comma separated")
+		extensionsOption = new TextFieldOption(composite, SWT.NONE, i18n.msg('FDFUI.extensionFilter'))
+		extensionsOption.setToolTipText(i18n.msg('FDFUI.extensionFilterTooltip'))
 		
 		Button btnDuplicateSearch = new Button(composite, SWT.NONE)
-		btnDuplicateSearch.setText("Search for duplicates!")
+		btnDuplicateSearch.setText(i18n.msg('FDFUI.searchBtn'))
 		btnDuplicateSearch.addSelectionListener(new ClosureSelectionAdapter(c: searchForDuplicates))
 
 		scrolledComposite_1.setContent(composite)
@@ -203,7 +206,7 @@ public class MainView {
 		stackLayout.topControl = sashForm
 		
 		if ( showMsg ){
-			MessageDialog.openInformation(shlFileDuplicateFinder, "Information", "Some drives were disconnected because no connection could be established")
+			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
 		}
 	}
 	
@@ -218,7 +221,7 @@ public class MainView {
 	def searchForDuplicates = {
 		def directories = checkboxTreeViewer.getCheckedElements()
 		if ( directories.length == 0 ){
-			MessageDialog.openError(shlFileDuplicateFinder, "Error", "Please select a directory to search duplicates")
+			MessageDialog.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.noFolderSelectedDialogTitle'), i18n.msg('FDFUI.noFolderSelectedDialogText'))
 			return
 		}
 		
@@ -247,8 +250,8 @@ public class MainView {
 	
 	def loadSearchSession = {
 		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN);
-		dlg.setFilterNames(['Search progress session (*.sps)'] as String []);
-		dlg.setFilterExtensions(['*.sps'] as String []);
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSessionDialogFilterNames')] as String []);
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSessionDialogFilterExtensions')] as String []);
 		String fn = dlg.open();
 		if (fn != null) {
 			def progress
