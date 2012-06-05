@@ -14,10 +14,16 @@ Network Shares currently supported
 *SMB (Samba)
 *SFTP (Connection via Ssh)
 *FTP
+*Save/load duplicates results session
 
 Features yet to come
 --------------------
 
-*Save/load duplicates results session
 *Internationalization
+
+
+How to build
+------------
+
+Use gradle >= 1.0-rc-1
 

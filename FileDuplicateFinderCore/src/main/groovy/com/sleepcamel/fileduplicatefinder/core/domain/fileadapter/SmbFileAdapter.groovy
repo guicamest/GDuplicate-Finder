@@ -21,6 +21,10 @@ class SmbFileAdapter implements FileAdapter<SmbFile> {
 		getAbsolutePath(file)
 	}
 
+	boolean exists(SmbFile file){
+		file.exists()
+	}
+
 	boolean delete(SmbFile file) {
 		try{
 			file.delete()
@@ -55,11 +59,11 @@ class SmbFileAdapter implements FileAdapter<SmbFile> {
 	}
 
 	void write(SmbFile file, ObjectOutputStream oos) {
-		throw new RuntimeException("Not implemented yet")
+		throw new RuntimeException('Not implemented yet')
 	}
 
 	def read(ObjectInputStream ois) {
-		throw new RuntimeException("Not implemented yet")
+		throw new RuntimeException('Not implemented yet')
 	}
 
 }

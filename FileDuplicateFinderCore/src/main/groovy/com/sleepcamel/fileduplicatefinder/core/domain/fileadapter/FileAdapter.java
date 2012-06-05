@@ -13,6 +13,8 @@ public interface FileAdapter<E> extends Serializable {
 	
 	String getFriendlyPath(E file);
 	
+	boolean exists(E file);
+
 	boolean delete(E file);
 	
 	boolean isDir(E file);

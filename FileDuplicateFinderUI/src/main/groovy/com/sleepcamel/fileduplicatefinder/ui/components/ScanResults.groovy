@@ -5,6 +5,7 @@ import java.util.ArrayList
 import java.util.List
 
 import org.apache.commons.io.FileUtils
+import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import org.eclipse.core.databinding.beans.BeansObservables
 import org.eclipse.core.databinding.observable.Observables
 import org.eclipse.core.databinding.observable.list.IObservableList
@@ -23,6 +24,7 @@ import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.layout.RowLayout
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.FileDialog
 import org.eclipse.swt.widgets.Menu
 import org.eclipse.swt.widgets.MenuItem
 import org.eclipse.swt.widgets.Table
@@ -81,7 +83,7 @@ public class ScanResults extends Composite {
 		
 		Button btnSaveSession = new Button(btnComposite, SWT.NONE)
 		btnSaveSession.setText(i18n.msg('FDFUI.scanResultsSaveSessionBtn'))
-		btnSaveSession.setVisible(false)
+		btnSaveSession.addSelectionListener(new ClosureSelectionAdapter(c:saveDuplicateSession))
 
 		btnSearchAgain = new Button(btnComposite, SWT.NONE)
 		btnSearchAgain.setText(i18n.msg('FDFUI.scanResultsSearchAgainBtn'))
@@ -230,6 +232,19 @@ public class ScanResults extends Composite {
 		}else{
 			items = ( toSelected ? items : [] ) as Object[]
 			checkboxTableViewer.setCheckedElements(items)
+		}
+	}
+	
+	def saveDuplicateSession = {
+		FileDialog dlg = new FileDialog(shell, SWT.SAVE)
+		dlg.setFilterNames([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')] as String [])
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String [])
+		String fn = dlg.open()
+		if (fn != null) {
+			new File(fn).withObjectOutputStream { oos ->
+				oos.writeObject(entries)
+				DefaultGroovyMethodsSupport.closeQuietly(oos)
+			}
 		}
 	}
 	

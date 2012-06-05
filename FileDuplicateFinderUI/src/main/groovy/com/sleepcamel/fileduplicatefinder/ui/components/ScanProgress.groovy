@@ -28,7 +28,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.DuplicateFinderProgress
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.AndWrapperFilter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
-import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources;
+import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 
 @Bindable
@@ -198,7 +198,7 @@ public class ScanProgress extends Composite {
 			}
 			
 			Display.getDefault().asyncExec(new Runnable() {	public void run() {
-				finishedFindingDuplicates.call(duplicateFinder.duplicatedEntries)
+				finishedFindingDuplicates.call(findProgress.duplicatedEntries)
 			}})
 			}catch(Exception e){}
 		}
@@ -213,10 +213,10 @@ public class ScanProgress extends Composite {
 	}
 	
 	def save = {
-		FileDialog dlg = new FileDialog(shell, SWT.SAVE);
-		dlg.setFilterNames([i18n.msg('FDFUI.loadSessionDialogFilterNames')] as String []);
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSessionDialogFilterExtensions')] as String []);
-		String fn = dlg.open();
+		FileDialog dlg = new FileDialog(shell, SWT.SAVE)
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')] as String [])
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String [])
+		String fn = dlg.open()
 		if (fn != null) {
 			synchronized (currentProgress) {
 				new File(fn).withObjectOutputStream { oos ->

@@ -25,6 +25,9 @@ class DuplicateFinderProgress implements Serializable {
 	
 	def filesMap = [:] as ConcurrentHashMap
 	
+	def duplicatedEntries = []
+	def duplicatedFiles = []
+	
 	DuplicateFinderProgress(){
 		startScan()
 		startFindingDuplicates()
@@ -87,6 +90,20 @@ class DuplicateFinderProgress implements Serializable {
 	}
 	
 	def finishedFindingDuplicates(){
+		updateEntries()
 		finishedFindingDuplicates = true
+	}
+	
+	def updateEntries(){
+		duplicatedFiles.clear()
+		duplicatedEntries.clear()
+		filesMap.each {
+			def duplicateEntry = it.value
+			boolean hasDuplicates = duplicateEntry.hasDuplicates()
+			if ( hasDuplicates ){
+				duplicatedEntries << duplicateEntry
+			}
+		}
+		duplicatedFiles.addAll(duplicatedEntries.collect { it.files }.flatten())
 	}
 }

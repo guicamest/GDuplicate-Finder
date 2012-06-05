@@ -39,8 +39,8 @@ class FileObjectAdapter implements FileAdapter<FileObject>{
 
 	static FileObject resolveFileObject(String fileUri){
 //		try{
-			if (fileUri.startsWith("sftp://")){
-				SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
+			if (fileUri.startsWith('sftp://')){
+				SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, 'no');
 			}
 			return getFileSystemManager().resolveFile(fileUri, opts);
 //		}catch (FileSystemException ex)	{
@@ -60,6 +60,10 @@ class FileObjectAdapter implements FileAdapter<FileObject>{
 		def m = friendlyNamePattern.matcher(file.getURL().toString())
 		m.find()
 		m.group(1)
+	}
+	
+	boolean exists(FileObject file){
+		file.exists()
 	}
 
 	public boolean delete(FileObject file) {

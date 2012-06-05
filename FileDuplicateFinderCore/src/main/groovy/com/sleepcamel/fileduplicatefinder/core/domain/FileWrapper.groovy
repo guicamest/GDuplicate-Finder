@@ -146,6 +146,10 @@ class FileWrapper implements Serializable {
 		depth
 	}
 	
+	boolean exists(){
+		adapterToUse.exists(file)
+	}
+	
 	List filterFiles(FileWrapperFilter fileWrapperFilter){
 		loadFiles(false)
 		withExistingPool(filterFilesPool){

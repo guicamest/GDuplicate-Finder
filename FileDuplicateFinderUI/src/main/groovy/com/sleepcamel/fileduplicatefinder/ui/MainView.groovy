@@ -38,6 +38,7 @@ import com.sleepcamel.fileduplicatefinder.ui.components.ScanResults
 import com.sleepcamel.fileduplicatefinder.ui.components.SizeOption
 import com.sleepcamel.fileduplicatefinder.ui.components.TextFieldOption
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.AboutDialog
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.FilesNotFoundDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
@@ -63,6 +64,7 @@ public class MainView {
 	private CheckboxTreeViewer checkboxTreeViewer
 	
 	MenuItem mntmLoadSearchSession
+	MenuItem mntmLoadDuplicateResultsSession
 	
 	FDFUIResources i18n = FDFUIResources.instance
 	
@@ -74,8 +76,7 @@ public class MainView {
 	 */
 	public static void main(String[] args) {
 		try {
-			MainView window = new MainView()
-			window.open()
+			new MainView().open()
 		} catch (Exception e) {
 			e.printStackTrace()
 		}
@@ -86,7 +87,6 @@ public class MainView {
 	 */
 	public void open() {
 		Settings.instance.load()
-		i18n.init()
 		treeInput = new RootFileWrapper(name:'')
 
 		Display display = Display.getDefault()
@@ -134,6 +134,10 @@ public class MainView {
 		mntmLoadSearchSession = new MenuItem(menu_1, SWT.NONE)
 		mntmLoadSearchSession.setText(i18n.msg('FDFUI.fileLoadSearchSession'))
 		mntmLoadSearchSession.addSelectionListener(new ClosureSelectionAdapter(c: loadSearchSession))
+		
+		mntmLoadDuplicateResultsSession = new MenuItem(menu_1, SWT.NONE)
+		mntmLoadDuplicateResultsSession.setText(i18n.msg('FDFUI.fileLoadDuplicateResultsSession'))
+		mntmLoadDuplicateResultsSession.addSelectionListener(new ClosureSelectionAdapter(c: loadDuplicateResultsSession))
 		
 		new MenuItem(menu_1, SWT.SEPARATOR);
 		
@@ -250,8 +254,8 @@ public class MainView {
 	
 	def loadSearchSession = {
 		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN);
-		dlg.setFilterNames([i18n.msg('FDFUI.loadSessionDialogFilterNames')] as String []);
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSessionDialogFilterExtensions')] as String []);
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')] as String []);
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String []);
 		String fn = dlg.open();
 		if (fn != null) {
 			def progress
@@ -263,7 +267,37 @@ public class MainView {
 			scanProgress.resumeSearch(progress)
 		}
 	}
-
+	
+	def loadDuplicateResultsSession = {
+		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN);
+		dlg.setFilterNames([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')] as String []);
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String []);
+		String fn = dlg.open();
+		if (fn != null) {
+			def entries
+			new File(fn).withObjectInputStream { ios ->
+				entries = ios.readObject()
+				DefaultGroovyMethodsSupport.closeQuietly(ios)
+			}
+			def sanitized = sanitizeEntries(entries)
+			if ( !sanitized.nonExistingFiles.isEmpty() ){
+				def dialog = new FilesNotFoundDialog(shlFileDuplicateFinder, , SWT.DIALOG_TRIM)
+				dialog.files = sanitized.nonExistingFiles
+				dialog.open()
+			}
+			showDuplicates(sanitized.entries)
+		}
+	}
+	
+	def sanitizeEntries = { entries ->
+		def sanitized = [ nonExistingFiles : [] ]
+		sanitized.entries = entries.findAll{entry ->
+			sanitized.nonExistingFiles.addAll(entry.removeNonExistingFiles())
+			entry.hasDuplicates()
+		}
+		sanitized
+	}
+	
 	def showDuplicates = { entries ->
 		scanResults.updateEntries(entries)
 		stackLayout.topControl = scanResults
@@ -275,12 +309,14 @@ public class MainView {
 		stackLayout.topControl = scanProgress
 		shlFileDuplicateFinder.layout()
 		mntmLoadSearchSession.setEnabled(false)
+		mntmLoadDuplicateResultsSession.setEnabled(false)
 	}
 	
 	def searchAgain = {
 		stackLayout.topControl = sashForm
 		shlFileDuplicateFinder.layout()
 		mntmLoadSearchSession.setEnabled(true)
+		mntmLoadDuplicateResultsSession.setEnabled(true)
 	}
 
 	def openDrivesMapper = {

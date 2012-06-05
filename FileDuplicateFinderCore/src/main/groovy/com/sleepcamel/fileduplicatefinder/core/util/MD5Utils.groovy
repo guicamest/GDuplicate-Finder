@@ -7,7 +7,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 class MD5Utils {
 
 	static def oldGenerateMD5(final file) {
-		MessageDigest digest = MessageDigest.getInstance("MD5")
+		MessageDigest digest = MessageDigest.getInstance('MD5')
 		InputStream is = new BufferedInputStream(new FileInputStream(file), 16384);
 		byte[] buffer = new byte[16384];
 		int read = 0
@@ -18,7 +18,7 @@ class MD5Utils {
 	}
 
 	static def generateMD5(InputStream is) {
-		MessageDigest digest = MessageDigest.getInstance("MD5")
+		MessageDigest digest = MessageDigest.getInstance('MD5')
 		byte[] buffer = new byte[8192]
 		int read = 0
 		while( (read = is.read(buffer)) > 0) {

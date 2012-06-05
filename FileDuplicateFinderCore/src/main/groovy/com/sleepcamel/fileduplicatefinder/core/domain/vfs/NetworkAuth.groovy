@@ -22,8 +22,9 @@ class NetworkAuth implements Serializable {
 		StringBuilder sb = new StringBuilder()
 		def folderStr = folder
 
-		sb.append("${protocol.toLowerCase()}://")
-		if (!protocol.toLowerCase().equals('file')) {
+		def lowerProtocol = protocol.toLowerCase()
+		sb.append("${lowerProtocol}://")
+		if (!lowerProtocol.equals('file')) {
 			if (!(''.equals(username.trim()))) {
 				sb.append(username)
 				if (password.size() != 0) {

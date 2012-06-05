@@ -18,6 +18,10 @@ class LocalFileAdapter implements FileAdapter<File> {
 	String getFriendlyPath(File file) {
 		getAbsolutePath(file)
 	}
+	
+	boolean exists(File file){
+		file.exists()
+	}
 
 	boolean delete(File file) {
 		file.delete();

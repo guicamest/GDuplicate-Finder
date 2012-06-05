@@ -20,12 +20,12 @@ class FDFUIResources {
 		new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/images/${imgFile}"));
 	}
 	
-	public init(){
+	private FDFUIResources() {
 		try{
 			loadResources()
 			log.info('Loaded i18n resources')
 		}catch (Exception ex){
-			log.severe('Unable to load i18n resources', ex)
+			log.error('Unable to load i18n resources', ex)
 		}
 	}
 	
@@ -55,7 +55,7 @@ class FDFUIResources {
 		            msg = resourceBundle.getString(messageKey)
 		        } catch (MissingResourceException ex){
 		            msg = messageKey + ' Untranslated'
-		            log.severe('Unable to retrieve i18n key', ex)
+		            log.error('Unable to retrieve i18n key', ex)
 		        }
 		    }
         }

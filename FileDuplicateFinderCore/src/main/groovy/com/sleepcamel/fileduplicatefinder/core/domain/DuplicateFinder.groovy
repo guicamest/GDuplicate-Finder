@@ -23,9 +23,6 @@ class DuplicateFinder {
 	
 	def findProgress = new DuplicateFinderProgress()
 
-	def duplicatedEntries = []
-	def duplicatedFiles = []
-
 	AtomicBoolean suspending = new AtomicBoolean(false);
 	
 	def scan(){
@@ -65,7 +62,7 @@ class DuplicateFinder {
 		currentPool.shutdownNow()
 		currentPool.workers*.interrupt()
 		currentPool.workers*.stop()
-		log.info("Shutting down pool")
+		log.info('Shutting down pool')
 		suspending.compareAndSet(false, true)
 		synchronized(suspending){
 			suspending.wait()
@@ -84,44 +81,26 @@ class DuplicateFinder {
 					if( suspending.get() ){
 						Thread.currentThread().interrupt()
 					}
-					addToHash(it)
+					findProgress.fileProcessed(it)
 				}
 				}catch(Exception e){
 					finished = false
-					log.info("Suspended search")
+					log.info('Suspended search', e)
 				}
 				while( !pool.isQuiescent() );
 				if( suspending.get() ){
 					synchronized(suspending){
 						suspending.notify()
 					}
-					log.info("Pool has been successfully shut down")
+					log.info('Pool has been successfully shut down')
 					suspending.compareAndSet(true, false)
 				}
 				
 				if ( finished ){
-					updateEntries()
 					findProgress.finishedFindingDuplicates()
 				}
 			}
 		}
-	}
-	
-	def addToHash(file){
-		findProgress.fileProcessed(file)
-	}
-	
-	def updateEntries(){
-		duplicatedFiles.clear()
-		duplicatedEntries.clear()
-		findProgress.filesMap.each {
-			def duplicateEntry = it.value
-			boolean hasDuplicates = duplicateEntry.hasDuplicates()
-			if ( hasDuplicates ){
-				duplicatedEntries << it.value
-			}
-		}
-		duplicatedFiles.addAll(duplicatedEntries.collect { it.files }.flatten())
 	}
 	
 }
