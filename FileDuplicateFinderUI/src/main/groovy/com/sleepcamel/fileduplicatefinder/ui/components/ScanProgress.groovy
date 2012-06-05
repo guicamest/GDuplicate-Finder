@@ -61,7 +61,7 @@ public class ScanProgress extends Composite {
 		gridData.widthHint = 400
 		progressBar.setLayoutData(gridData)
 		
-		Composite actionComposite = new Composite(this, SWT.CENTER)
+		Composite actionComposite = new Composite(this, SWT.NONE)
 		actionComposite.setLayout(new GridLayout(1, false))
 		gridData = new GridData(SWT.FILL, SWT.TOP, true, false)
 		actionComposite.setLayoutData(gridData)

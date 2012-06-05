@@ -128,36 +128,42 @@ public class MainView {
 		MenuItem mntmNewSubmenu = new MenuItem(menu, SWT.CASCADE)
 		mntmNewSubmenu.setText(i18n.msg('FDFUI.fileMenu'))
 		
-		Menu menu_1 = new Menu(mntmNewSubmenu)
-		mntmNewSubmenu.setMenu(menu_1)
+		Menu menuFile = new Menu(mntmNewSubmenu)
+		mntmNewSubmenu.setMenu(menuFile)
 		
-		mntmLoadSearchSession = new MenuItem(menu_1, SWT.NONE)
+		mntmLoadSearchSession = new MenuItem(menuFile, SWT.NONE)
 		mntmLoadSearchSession.setText(i18n.msg('FDFUI.fileLoadSearchSession'))
 		mntmLoadSearchSession.addSelectionListener(new ClosureSelectionAdapter(c: loadSearchSession))
 		
-		mntmLoadDuplicateResultsSession = new MenuItem(menu_1, SWT.NONE)
+		mntmLoadDuplicateResultsSession = new MenuItem(menuFile, SWT.NONE)
 		mntmLoadDuplicateResultsSession.setText(i18n.msg('FDFUI.fileLoadDuplicateResultsSession'))
 		mntmLoadDuplicateResultsSession.addSelectionListener(new ClosureSelectionAdapter(c: loadDuplicateResultsSession))
 		
-		new MenuItem(menu_1, SWT.SEPARATOR);
+		new MenuItem(menuFile, SWT.SEPARATOR);
 		
-		MenuItem mntmNewItem_2 = new MenuItem(menu_1, SWT.NONE)
+		MenuItem mntmNewItem_2 = new MenuItem(menuFile, SWT.NONE)
 		mntmNewItem_2.setText(i18n.msg('FDFUI.fileClose'))
 		mntmNewItem_2.addSelectionListener(new ClosureSelectionAdapter(c: close))
 		
 		MenuItem mntmDrives = new MenuItem(menu, SWT.CASCADE)
 		mntmDrives.setText(i18n.msg('FDFUI.drivesMenu'))
 		
-		Menu menu_2 = new Menu(mntmDrives)
-		mntmDrives.setMenu(menu_2)
+		Menu menuDrives = new Menu(mntmDrives)
+		mntmDrives.setMenu(menuDrives)
 		
-		MenuItem mntmMapNetworkDrive = new MenuItem(menu_2, SWT.NONE)
+		MenuItem mntmMapNetworkDrive = new MenuItem(menuDrives, SWT.NONE)
 		mntmMapNetworkDrive.setText(i18n.msg('FDFUI.drivesManage'))
 		mntmMapNetworkDrive.addSelectionListener(new ClosureSelectionAdapter(c: openDrivesMapper))
 		
-		MenuItem mntmNewItem = new MenuItem(menu, SWT.NONE)
-		mntmNewItem.setText(i18n.msg('FDFUI.aboutMenu'))
-		mntmNewItem.addSelectionListener(new ClosureSelectionAdapter(c: openAboutDialog))
+		MenuItem mntmHelp = new MenuItem(menu, SWT.CASCADE)
+		mntmHelp.setText(i18n.msg('FDFUI.helpMenu'))
+		
+		Menu menuHelp = new Menu(mntmHelp)
+		mntmHelp.setMenu(menuHelp)
+		
+		MenuItem mntmAbout = new MenuItem(menuHelp, SWT.NONE)
+		mntmAbout.setText(i18n.msg('FDFUI.helpAbout'))
+		mntmAbout.addSelectionListener(new ClosureSelectionAdapter(c: openAboutDialog))
 		
 		sashForm = new SashForm(shlFileDuplicateFinder, SWT.NONE)
 		
