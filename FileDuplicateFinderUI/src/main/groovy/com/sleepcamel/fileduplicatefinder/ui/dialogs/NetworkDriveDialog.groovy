@@ -157,17 +157,14 @@ public class NetworkDriveDialog extends Dialog {
 		
 		Button btnSave = new Button(btnComposite, SWT.NONE)
 		btnSave.setText(i18n.msg('FDFUI.networkDriveDialogSaveBtn'))
-		btnSave.setLayoutData(new RowData(120, SWT.DEFAULT))
 		btnSave.addSelectionListener(new ClosureSelectionAdapter(c: save))
 		
 		Button btnConnectivity = new Button(btnComposite, SWT.NONE)
 		btnConnectivity.setText(i18n.msg('FDFUI.networkDriveDialogCheckBtn'))
-		btnConnectivity.setLayoutData(new RowData(120, SWT.DEFAULT))
 		btnConnectivity.addSelectionListener(new ClosureSelectionAdapter(c: checkConnectivity))
 		
 		Button btnCancel = new Button(btnComposite, SWT.NONE)
 		btnCancel.setText(i18n.msg('FDFUI.networkDriveDialogCancelBtn'))
-		btnCancel.setLayoutData(new RowData(120, SWT.DEFAULT))
 		btnCancel.addSelectionListener(new ClosureSelectionAdapter(c: {
 			shell.dispose()
 		}))

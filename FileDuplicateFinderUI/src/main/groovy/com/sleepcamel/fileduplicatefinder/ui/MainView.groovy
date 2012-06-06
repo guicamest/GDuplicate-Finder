@@ -17,6 +17,7 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.custom.ScrolledComposite
 import org.eclipse.swt.custom.StackLayout
+import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
@@ -185,16 +186,22 @@ public class MainView {
 		scrolledComposite_1.setExpandVertical(true)
 		
 		Composite composite = new Composite(scrolledComposite_1, SWT.NONE)
-		composite.setLayout(new GridLayout(1, false))
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true))
 		
+		def gridLayout = new GridLayout(1, false)
+		gridLayout.verticalSpacing = 13
+		composite.setLayout(gridLayout)
+
 		minSizeOption = new SizeOption(composite, SWT.NONE, i18n.msg('FDFUI.minSizeFilter'))
 		
 		maxSizeOption = new SizeOption(composite, SWT.NONE, i18n.msg('FDFUI.maxSizeFilter'))
 		
 		nameOption = new TextFieldOption(composite, SWT.NONE, i18n.msg('FDFUI.fileNameFilter'))
+		nameOption.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		nameOption.setToolTipText(i18n.msg('FDFUI.fileNameFilterTooltip'))
 		
 		extensionsOption = new TextFieldOption(composite, SWT.NONE, i18n.msg('FDFUI.extensionFilter'))
+		extensionsOption.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		extensionsOption.setToolTipText(i18n.msg('FDFUI.extensionFilterTooltip'))
 		
 		Button btnDuplicateSearch = new Button(composite, SWT.NONE)
