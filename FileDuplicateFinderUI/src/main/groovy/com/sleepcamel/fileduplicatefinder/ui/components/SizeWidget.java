@@ -38,7 +38,6 @@ public class SizeWidget extends Composite {
 			}
 		});
 		combo.setInput(FileSize.values());
-		combo.getCombo().setLayoutData(new RowData(28, SWT.DEFAULT));
 		combo.getCombo().select(0);
 	}
 

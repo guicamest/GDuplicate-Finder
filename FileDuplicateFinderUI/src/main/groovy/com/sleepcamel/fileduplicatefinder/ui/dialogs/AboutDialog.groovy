@@ -7,6 +7,8 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
 import org.eclipse.swt.graphics.Rectangle
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Display
@@ -21,6 +23,8 @@ class AboutDialog extends Dialog {
 
 	Shell shlAbout
 	FDFUIResources i18n = FDFUIResources.instance
+	static final Integer DIALOG_WIDTH = 383
+	static final Integer DIALOG_HEIGHT = 137
 
 	public AboutDialog(Shell parent, int style) {
 		super(parent, style)
@@ -41,19 +45,20 @@ class AboutDialog extends Dialog {
 	private void createContents() {
 		shlAbout = new Shell(getParent(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL)
 		Rectangle parentBounds = getParent().getBounds()
-		int x = ( parentBounds.x + parentBounds.width - 383 ) / 2
-		int y = ( parentBounds.y + parentBounds.height - 137 ) / 2
-		shlAbout.setBounds(x, y, 383, 137)
+		int x = ( parentBounds.x + parentBounds.width - DIALOG_WIDTH ) / 2
+		int y = ( parentBounds.y + parentBounds.height - DIALOG_HEIGHT ) / 2
+		shlAbout.setBounds(x, y, DIALOG_WIDTH, DIALOG_HEIGHT)
 		shlAbout.setText(i18n.msg('FDFUI.aboutDialogTitle'))
+		shlAbout.setLayout(new GridLayout(1, false))
 		
 		Label lblFileDuplicateFinder = new Label(shlAbout, SWT.NONE)
 		lblFileDuplicateFinder.setFont(SWTResourceManager.getFont('Verdana', 14, SWT.NORMAL))
 		lblFileDuplicateFinder.setAlignment(SWT.CENTER)
-		lblFileDuplicateFinder.setBounds(62, 10, 265, 29)
+		lblFileDuplicateFinder.setLayoutData(new GridData(SWT.CENTER, SWT.NONE, true, false, 1, 6))
 		lblFileDuplicateFinder.setText(i18n.msg('FDFUI.aboutDialogAppTitle'))
 		
 		Link link = new Link(shlAbout, SWT.NONE)
-		link.setBounds(110, 45, 165, 15)
+		link.setLayoutData(new GridData(SWT.CENTER, SWT.NONE, true, false, 1, 8))
 		
 		def mailto = "mailto:guillermocampelo@gmail.com?subject=${i18n.msg('FDFUI.aboutDialogMailSubject')}"
 		link.setText("<a href=\"$mailto\">${i18n.msg('FDFUI.aboutDialogLinkText')}</a>")
@@ -74,7 +79,7 @@ class AboutDialog extends Dialog {
 				shlAbout.dispose()
 			}
 		})
-		btnClose.setBounds(147, 74, 75, 25)
+		btnClose.setLayoutData(new GridData(SWT.CENTER, SWT.NONE, true, false))
 		btnClose.setText(i18n.msg('FDFUI.aboutDialogCloseBtn'))
 
 	}
