@@ -75,7 +75,7 @@ public class NetworkDriveDialog extends Dialog {
 
 	def createContents() {
 		shell = new Shell(getParent(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL)
-		shell.setSize(450, 280)
+		shell.setSize(450, SWT.DEFAULT)
 		shell.setText(getText())
 		shell.setLayout(new GridLayout(1, false))
 		
@@ -174,6 +174,7 @@ public class NetworkDriveDialog extends Dialog {
 	
 		cmbProtocol.setSelection(new StructuredSelection(Protocol.SFTP))
 		createBindings()
+		shell.pack()
 	}
 	
 	def createBindings(){

@@ -12,7 +12,10 @@ import org.eclipse.jface.viewers.CheckboxTableViewer
 import org.eclipse.jface.viewers.StructuredSelection
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.Rectangle
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
@@ -69,6 +72,10 @@ public class NetworkDrivesManagerDialog extends Dialog {
 		shlDriveManager.setBounds(x, y, 530, 360)
 		shlDriveManager.setText(i18n.msg('FDFUI.networkDriveManagerDialogTitle'))
 		
+		def layout = new GridLayout(2, false)
+		layout.marginLeft = layout.marginRight = layout.marginTop = layout.marginBottom = layout.horizontalSpacing = 10
+		shlDriveManager.setLayout(layout)
+		
 		listViewer = new CheckboxTableViewer(shlDriveManager, SWT.BORDER | SWT.V_SCROLL)
 		listViewer.setContentProvider(new ObservableListContentProvider())
 
@@ -76,26 +83,32 @@ public class NetworkDrivesManagerDialog extends Dialog {
 		listViewer.setInput(input)
 
 		def table = listViewer.getTable()
-		table.setBounds(10, 10, 403, 312)
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false))
 		
-		Button btnAddDrive = new Button(shlDriveManager, SWT.NONE)
-		btnAddDrive.setBounds(430, 95, 84, 25)
+		def composite = new Composite(shlDriveManager, SWT.NONE)
+		composite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, true))
+		layout = new GridLayout(1, false)
+		layout.verticalSpacing = 25
+		composite.setLayout(layout)
+		
+		Button btnAddDrive = new Button(composite, SWT.NONE)
+		btnAddDrive.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		btnAddDrive.setText(i18n.msg('FDFUI.networkDriveManagerDialogAddBtn'))
 		btnAddDrive.addSelectionListener(new ClosureSelectionAdapter(c: openAddDialog))
 		
-		Button btnModify = new Button(shlDriveManager, SWT.NONE)
+		Button btnModify = new Button(composite, SWT.NONE)
 		btnModify.setText(i18n.msg('FDFUI.networkDriveManagerDialogModifyBtn'))
-		btnModify.setBounds(430, 142, 84, 25)
+		btnModify.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		btnModify.addSelectionListener(new ClosureSelectionAdapter(c: openEditDialog))
 		
-		Button btnRemoveDrive = new Button(shlDriveManager, SWT.NONE)
+		Button btnRemoveDrive = new Button(composite, SWT.NONE)
 		btnRemoveDrive.setText(i18n.msg('FDFUI.networkDriveManagerDialogRemoveBtn'))
-		btnRemoveDrive.setBounds(430, 192, 84, 25)
+		btnRemoveDrive.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		btnRemoveDrive.addSelectionListener(new ClosureSelectionAdapter(c: removeNetworkDrive))
 		
-		Button btnDone = new Button(shlDriveManager, SWT.NONE)
+		Button btnDone = new Button(composite, SWT.NONE)
 		btnDone.setText(i18n.msg('FDFUI.networkDriveManagerDialogSaveBtn'))
-		btnDone.setBounds(430, 300, 84, 25)
+		btnDone.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		btnDone.addSelectionListener(new ClosureSelectionAdapter(c: checkConnectivityOnSelected))
 		
 		drives.each {
