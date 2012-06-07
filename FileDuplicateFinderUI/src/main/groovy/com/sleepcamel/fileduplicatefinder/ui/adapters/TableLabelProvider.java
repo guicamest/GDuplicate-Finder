@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper;
+import com.sleepcamel.fileduplicatefinder.ui.utils.Utils;
 
 public class TableLabelProvider extends ObservableMapLabelProvider implements ITableColorProvider{
 
@@ -24,6 +25,14 @@ public class TableLabelProvider extends ObservableMapLabelProvider implements IT
 	@Override
 	public Color getForeground(Object paramObject, int paramInt) {
 		return null;
+	}
+
+	public String getColumnText(Object element, int columnIndex) {
+		String columnText = super.getColumnText(element, columnIndex);
+		if ( columnIndex == 2 ){
+			columnText = Utils.formatBytes(Long.parseLong(columnText));
+		}
+		return columnText;
 	}
 
 	@Override

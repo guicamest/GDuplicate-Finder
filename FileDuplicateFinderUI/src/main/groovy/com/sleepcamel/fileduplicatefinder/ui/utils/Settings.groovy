@@ -9,21 +9,26 @@ class Settings implements Serializable {
 	static final String SETTINGS_FILENAME = 'settings.dat'
 	
 	def lastNetworkAuthModels
+	def lastLocale = Locale.getDefault()
 	
 	def getLastNetworkDrivesAuthModels(){
 		lastNetworkAuthModels?:[]
+	}
+	
+	def getLastLocale(){
+		lastLocale
 	}
 	
 	def getMountedNetworkDrivesAuthModels(){
 		getLastNetworkDrivesAuthModels().findAll { it.isMounted }.collect { it.auth }
 	}
 	
-	def load(){
+	private Settings(){
 		def file = new File(SETTINGS_FILENAME)
 		if ( file.exists() ){
 			FileInputStream fis = new FileInputStream(file)
 			fis.withObjectInputStream { ois ->
-				BeanUtils.copyProperties(instance, ois.readObject());
+				BeanUtils.copyProperties(this, ois.readObject());
 				ois.close()
 			}
 		}

@@ -40,6 +40,7 @@ import com.sleepcamel.fileduplicatefinder.ui.components.SizeOption
 import com.sleepcamel.fileduplicatefinder.ui.components.TextFieldOption
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.AboutDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.FilesNotFoundDialog
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.LanguagesDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
@@ -64,8 +65,10 @@ public class MainView {
 
 	private CheckboxTreeViewer checkboxTreeViewer
 	
+	MenuItem mntmNewSearch
 	MenuItem mntmLoadSearchSession
 	MenuItem mntmLoadDuplicateResultsSession
+	MenuItem mntmPreferences
 	
 	FDFUIResources i18n = FDFUIResources.instance
 	
@@ -87,7 +90,6 @@ public class MainView {
 	 * Open the window.
 	 */
 	public void open() {
-		Settings.instance.load()
 		treeInput = new RootFileWrapper(name:'')
 
 		Display display = Display.getDefault()
@@ -132,6 +134,10 @@ public class MainView {
 		Menu menuFile = new Menu(mntmNewSubmenu)
 		mntmNewSubmenu.setMenu(menuFile)
 		
+		mntmNewSearch = new MenuItem(menuFile, SWT.NONE)
+		mntmNewSearch.setText(i18n.msg('FDFUI.fileNewSearch'))
+		mntmNewSearch.addSelectionListener(new ClosureSelectionAdapter(c: searchAgain))
+		
 		mntmLoadSearchSession = new MenuItem(menuFile, SWT.NONE)
 		mntmLoadSearchSession.setText(i18n.msg('FDFUI.fileLoadSearchSession'))
 		mntmLoadSearchSession.addSelectionListener(new ClosureSelectionAdapter(c: loadSearchSession))
@@ -139,6 +145,12 @@ public class MainView {
 		mntmLoadDuplicateResultsSession = new MenuItem(menuFile, SWT.NONE)
 		mntmLoadDuplicateResultsSession.setText(i18n.msg('FDFUI.fileLoadDuplicateResultsSession'))
 		mntmLoadDuplicateResultsSession.addSelectionListener(new ClosureSelectionAdapter(c: loadDuplicateResultsSession))
+		
+		new MenuItem(menuFile, SWT.SEPARATOR);
+		
+		mntmPreferences = new MenuItem(menuFile, SWT.NONE)
+		mntmPreferences.setText(i18n.msg('FDFUI.filePreferences'))
+		mntmPreferences.addSelectionListener(new ClosureSelectionAdapter(c: openPreferences))
 		
 		new MenuItem(menuFile, SWT.SEPARATOR);
 		
@@ -315,21 +327,37 @@ public class MainView {
 		scanResults.updateEntries(entries)
 		stackLayout.topControl = scanResults
 		shlFileDuplicateFinder.layout()
-		mntmLoadSearchSession.setEnabled(true)
+		enableFileMenu()
+	}
+	
+	def enableFileMenu(){
+		setFileMenuStatus(true)
+	}
+	
+	def disableFileMenu(){
+		setFileMenuStatus(true)
+	}
+	
+	def setFileMenuStatus = { state ->
+		mntmNewSearch.setEnabled(state)
+		mntmLoadSearchSession.setEnabled(state)
+		mntmLoadDuplicateResultsSession.setEnabled(state)
 	}
 	
 	def showScanProgress(){
 		stackLayout.topControl = scanProgress
 		shlFileDuplicateFinder.layout()
-		mntmLoadSearchSession.setEnabled(false)
-		mntmLoadDuplicateResultsSession.setEnabled(false)
+		disableFileMenu()
 	}
 	
 	def searchAgain = {
 		stackLayout.topControl = sashForm
 		shlFileDuplicateFinder.layout()
-		mntmLoadSearchSession.setEnabled(true)
-		mntmLoadDuplicateResultsSession.setEnabled(true)
+		enableFileMenu()
+	}
+	
+	def openPreferences = {
+		new LanguagesDialog(shlFileDuplicateFinder, , SWT.DIALOG_TRIM).open()
 	}
 
 	def openDrivesMapper = {

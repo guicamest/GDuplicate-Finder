@@ -151,15 +151,15 @@ public class ScanResults extends Composite {
 		
 		TableLayout layout = new TableLayout()
 	    layout.addColumnData(new ColumnWeightData(25, 180, true))
-	    layout.addColumnData(new ColumnWeightData(25, 220, true))
-	    layout.addColumnData(new ColumnWeightData(1, 50, true))
+	    layout.addColumnData(new ColumnWeightData(25, 190, true))
+	    layout.addColumnData(new ColumnWeightData(1, 80, true))
 	    layout.addColumnData(new ColumnWeightData(25, 220, true))
 	    table.setLayout(layout)
 
-		createColumn(checkboxTableViewer, 'Name')
-		createColumn(checkboxTableViewer, 'Path')
-		createColumn(checkboxTableViewer, 'Size')
-		createColumn(checkboxTableViewer, 'Hash')
+		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderName'))
+		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderPath'))
+		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderSize'))
+		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderHash'))
 		
 		sashForm.setWeights([2, 5] as int[])
 		checkboxTableViewer.refresh()
