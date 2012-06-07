@@ -9,6 +9,8 @@ import java.text.MessageFormat;
 import java.util.MissingResourceException
 import java.util.ResourceBundle
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.swt.graphics.Image
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
@@ -19,7 +21,7 @@ class FDFUIResources {
     private final String BUNDLE_BASENAME = "${BUNDLE_PATH}resources"
     private ResourceBundle resourceBundle
 	
-	def availableLocales
+	def availableLocales = []
 
 	def getImageFile(imgFile){
 		new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/images/${imgFile}"));
@@ -34,16 +36,14 @@ class FDFUIResources {
 		}
 	}
 	
-    // load the default message translations
     private def loadResources() throws MissingResourceException{
-		def resourcesFolderPath = "/${BUNDLE_BASENAME.replaceAll(/\./,/\\//)[0..-11]}"
-		def resourcesFolder = new File(FDFUIResources.class.getResource(resourcesFolderPath).toURI())
-		def langs = resourcesFolder.list(new FilenameFilter(){
-			boolean accept(File parent, String filename){
-				filename.contains('_')
-			}
-		}) as List
-		availableLocales = langs.collect {new Locale(it.substring(it.indexOf('_')+1,it.indexOf('.')))}
+		def langsFileName = "/${BUNDLE_PATH.replaceAll(/\./,/\\//)}langs.txt"
+		def resource = FDFUIResources.class.getResource(langsFileName)
+		
+		File langsFile = File.createTempFile('ddf', 'langs')
+		FileUtils.copyURLToFile(resource, langsFile)
+
+		availableLocales = langsFile.readLines().collect {new Locale(it)}
 
         resourceBundle = ResourceBundle.getBundle(BUNDLE_BASENAME, Settings.instance.getLastLocale())
     }
