@@ -1,6 +1,7 @@
 loadConfiguration()
 apply plugin: 'groovy'
-apply plugin: 'oneJar'
+apply plugin: 'application'
+mainClassName = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
 
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
@@ -13,11 +14,8 @@ buildscript {
 				name = 'GitHub'
 				addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
 			}
-		
-		mavenCentral()
 
-		//add repositories for optional dependencies
-		mavenRepo urls: ['http://repository.jboss.org/maven2/']
+		mavenCentral name: 'jboss', artifactUrls: ['http://repository.jboss.org/maven2/']
 	}
 	
 	dependencies {
@@ -30,9 +28,9 @@ dependencies {
 	groovy group: 'org.codehaus.groovy', name: 'groovy', version: groovyVersion
 	compile "commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"
 	compile "commons-io:commons-io:$commonsIoVersion"
-	compile fileTree(dir: "${config.allLibs}", include: '*.jar')
-	compile fileTree(dir: "${config.swtLibs}", include: '*.jar')
-	compile fileTree(dir: "${config.swtOsJars}", include: '*.jar')
+	compile fileTree(dir: "${project.ext.config.allLibs}", include: '*.jar')
+	compile fileTree(dir: "${project.ext.config.swtLibs}", include: '*.jar')
+	compile fileTree(dir: "${project.ext.config.swtOsJars}", include: '*.jar')
 }
 
 task "create-dirs" << {
@@ -44,14 +42,14 @@ task "create-dirs" << {
 // We can pass a value for the env property to the build with the -P or --project-prop argument when we run Gradle
 // for i.e -Pos=linux or -Pos=mac if the os property is not available we assume the default is windows os
 def loadConfiguration() {
-	def environment  = hasProperty("os") ? os : autodetectOS()
-	setProperty "environment ", environment 
+	def environment  = hasProperty('os') ? os : autodetectOS()
+	project.ext.environment = environment
 	println "os is set to ${environment}"
 	
-	def configFile = file("config.groovy")
+	def configFile = file('config.groovy')
 	def config = new ConfigSlurper(environment).parse(configFile.toURL())
 
-	setProperty "config", config	
+	project.ext.config = config	
 }
 
 def autodetectOS(){
@@ -73,12 +71,6 @@ def autodetectOS(){
 	defaultOS
 }
 
-task oneJar(type: OneJar) {
-	mainClass = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
+distZip {
+	destinationDir = new File(destinationDir, project.ext.environment)
 }
-oneJar.dependsOn jar
-
-artifacts {
-	archives oneJar
-}
-

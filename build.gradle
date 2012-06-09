@@ -2,8 +2,7 @@ subprojects {
 	apply plugin: 'eclipse'
 	
 	repositories {
-		mavenCentral()
-		mavenRepo name: "seasar", urls: "http://maven.seasar.org/maven2/"
-		mavenRepo name: "spock", urls: "http://m2repo.spockframework.org/snapshots"
+		mavenCentral name: 'seasar', artifactUrls: ['http://maven.seasar.org/maven2/']
+		mavenCentral name: 'spock', artifactUrls: ['http://m2repo.spockframework.org/snapshots']
 	}	
 }	

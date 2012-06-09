@@ -8,22 +8,30 @@ Current features
 *Stop, save, load and resume a search for duplicates
 *Open duplicate files with system's default editor
 *Turn on/off network drives
+*Save/load duplicates results session
+*Internationalization
 
 Network Shares currently supported
 ----------------------------------
 *SMB (Samba)
 *SFTP (Connection via Ssh)
 *FTP
-*Save/load duplicates results session
 
 Features yet to come
 --------------------
-
-*Internationalization
 
 
 How to build
 ------------
 
-Use gradle >= 1.0-rc-1
+Required gradle version >= 1.0-rc-1
+
+On root folder (GDuplicateFinder) run gradle distZip
+TBC
+
+
+How to run
+----------
+TBD
+
 
