@@ -10,6 +10,7 @@ import org.eclipse.jface.databinding.swt.SWTObservables
 import org.eclipse.jface.databinding.swt.WidgetProperties
 import org.eclipse.jface.viewers.ArrayContentProvider
 import org.eclipse.jface.viewers.ComboViewer
+import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.SelectionChangedEvent
 import org.eclipse.jface.viewers.StructuredSelection
 import org.eclipse.swt.widgets.Dialog
@@ -31,6 +32,7 @@ import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
 import com.sleepcamel.fileduplicatefinder.ui.model.Protocol
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
+import com.sleepcamel.fileduplicatefinder.ui.utils.FileSize
 
 public class NetworkDriveDialog extends Dialog {
 
@@ -92,6 +94,12 @@ public class NetworkDriveDialog extends Dialog {
 		cmbProtocol = new ComboViewer(composite, SWT.BORDER | SWT.READ_ONLY)
 		cmbProtocol.getCombo().setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1))
 		cmbProtocol.setContentProvider(ArrayContentProvider.getInstance())
+		cmbProtocol.setLabelProvider(new LabelProvider() {
+			public String getText(Object element) {
+				Protocol f = (Protocol) element
+				return ((element == null) ? '' : f.getFriendlyName())
+			}
+		})
 		cmbProtocol.setInput(Protocol.values())
 		cmbProtocol.addSelectionChangedListener(new ClosureSelectionAdapter(c: updatePort))
 		

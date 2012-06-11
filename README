@@ -35,3 +35,11 @@ How to run
 TBD
 
 
+Linux
+-----
+
+If you are getting 'Unable to locate theme engine in module_path: "pixmap" '
+you should install gtk2-engines-pixbuf package.
+On an Ubuntu distribution just run "sudo apt-get install gtk2-engines-pixbuf"
+
+
