@@ -5,9 +5,11 @@ Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,
 Duplicate Cleaner, DupFiles and others, GDuplicateFinder is a FREE cross-platform
 application, with the ability to search among not just local files, but files on
 the network, such as a Windows or a Linux share using VFS library.
+
 Taking advantage of Groovy facilities and GPars power to process in parallel,
 GDuplicateFinder will help you get rid of those duplicates you always
 wanted to dispose in an easy and friendly way.
+
 If you feel like contributing, you can always fork this repo. Gradle will help
 you configure the Eclipse project for you. You can also suggest improvements.
 
