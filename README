@@ -1,24 +1,28 @@
-GDuplicateFinder - A Groovy way to find duplicates among your computer and network shares!
+GDuplicateFinder - A FREE Groovy way to find duplicates among your computer and network shares!
 
+Unlike other duplicate finders such as Easy Duplicate File Finder,
+Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,
+Duplicate Cleaner, DupFiles and others, GDuplicateFinder is a FREE cross-platform application,
+wuth the ability to search among not just local files, but files on the network,
+such as a Windows or a Linux share using *VFS*.
+Taking advantage of Groovy facilities and GPars power to process in parallel,
+GDuplicateFinder will help you get rid of those duplicates you always
+wanted to dispose in an easy and friendly way. 
 
-Current features
-----------------
+Current features :
 
-*Manage network drives(add, edit, remove)
-*Stop, save, load and resume a search for duplicates
-*Open duplicate files with system's default editor
-*Turn on/off network drives
-*Save/load duplicates results session
-*Internationalization
+	*Manage network drives(add, edit, remove)
+	*Stop, save, load and resume a search for duplicates
+	*Open duplicate files with system's default editor
+	*Turn on/off network drives
+	*Save/load duplicates results session
+	*Internationalization
 
-Network Shares currently supported
-----------------------------------
-*SMB (Samba)
-*SFTP (Connection via Ssh)
-*FTP
+Network Shares supported :
 
-Features yet to come
---------------------
+	SMB (Samba)
+	SFTP / SCP (Connection via Ssh)
+	FTP
 
 
 How to build
