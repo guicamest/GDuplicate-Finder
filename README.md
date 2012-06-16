@@ -31,20 +31,27 @@ you configure the Eclipse project for you. You can also suggest improvements.
 
 How to build
 ------------
-
 Required gradle version >= 1.0-rc-1
+Requires Java >= 1.6
 
-On root folder (GDuplicateFinder) run gradle distZip
-TBC
-
+On root folder (GDuplicateFinder) run gradle distZip.
+Script will automatically detect your system's os.
+If you want to change it's value with -Pos=$osname
+where $osname can be one of the following:
+windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 
 How to run
 ----------
-TBD
+Requires Java >= 1.6
 
+Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ .
+Unzip FileDuplicateFinderUI-1.0.zip.
+If you are on windows, run FileDuplicateFinderUI.bat on the bin directory.
+If you are not on windows, run FileDuplicateFinderUI on the bin directory.
 
-Linux
------
+##Troubleshooting
+
+#### Linux
 
 If you are getting 'Unable to locate theme engine in module_path: "pixmap" '
 you should install gtk2-engines-pixbuf package.
