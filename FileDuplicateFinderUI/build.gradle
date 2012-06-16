@@ -68,3 +68,18 @@ def autodetectOS(){
 distZip {
 	destinationDir = new File(destinationDir, project.ext.environment)
 }
+
+startScripts { 
+	def jvmOpts = '-Xmx768m'
+	if ( project.ext.environment.contains('mac') ){
+		jvmOpts = "$jvmOpts -XstartOnFirstThread"
+	}
+	inputs.property('jvmOpts', { jvmOpts }) // for incremental build to work properly
+	doLast { 
+		def optsEnvVar = 'DEFAULT_JVM_OPTS'
+		unixScript.text = unixScript.text.replace("$optsEnvVar=${'""'}", "$optsEnvVar=${'"'}$jvmOpts${'"'}") 
+		windowsScript.text = windowsScript.text.replace("set $optsEnvVar=", "set $optsEnvVar=$jvmOpts") 
+	}
+}
+
+
