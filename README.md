@@ -13,7 +13,7 @@ wanted to dispose in an easy and friendly way.
 If you feel like contributing, you can always fork this repo. Gradle will help
 you configure the Eclipse project for you. You can also suggest improvements.
 
-Current features :
+## Current features
 
 	*Manage network drives(add, edit, remove)
 	*Stop, save, load and resume a search for duplicates
@@ -22,7 +22,7 @@ Current features :
 	*Save/load duplicates results session
 	*Internationalization
 
-Network Shares supported :
+## Network Shares supported
 
 	SMB (Samba)
 	SFTP / SCP (Connection via Ssh)
