@@ -21,13 +21,16 @@ environments  {
 		swtOsJars = "${swtLibs}/linux_x86_64"
 	}
 	
-	// Oldest one
+	// Unsupported
 	mac-carbon {
 		swtOsJars = "${swtLibs}/mac_carbon"
 	}
 	
-	// Newest one
-	mac-cocoa {
-		swtOsJars = "${swtLibs}/mac_cocoa"	
+	maccocoa32 {
+		swtOsJars = "${swtLibs}/mac_cocoa"
+	}
+	
+	maccocoa64 {
+		swtOsJars = "${swtLibs}/mac_cocoa_x86_64"
 	}
 }

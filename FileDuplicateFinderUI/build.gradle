@@ -18,9 +18,6 @@ buildscript {
 		mavenCentral name: 'jboss', artifactUrls: ['http://repository.jboss.org/maven2/']
 	}
 	
-	dependencies {
-		classpath "curious-attempt-bunny:gradle-onejar:$oneJarVersion"
-	}
 }
  
 dependencies {
@@ -48,12 +45,12 @@ def loadConfiguration() {
 	
 	def configFile = file('config.groovy')
 	def config = new ConfigSlurper(environment).parse(configFile.toURL())
-
+	
 	project.ext.config = config	
 }
 
 def autodetectOS(){
-	def defaultOS = 'mac-cocoa'
+	def defaultOS = 'maccocoa'
 	def osName = System.getProperty('os.name').toLowerCase()
 	def os = defaultOS
 
@@ -64,11 +61,8 @@ def autodetectOS(){
 		os = 'linux'
 	}
 	
-	if ( defaultOS != os ){
-		def arch = System.getProperty('os.arch').contains('64') ? '64' : '32'
-		defaultOS = "${os}${arch}"
-	}
-	defaultOS
+	def arch = System.getProperty('os.arch').contains('64') ? '64' : '32'
+	defaultOS = "${os}${arch}"
 }
 
 distZip {

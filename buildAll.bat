@@ -2,4 +2,4 @@
 
 REM Script for building each environment distribution zips
 
-FOR %%O IN (windows32 windows64 linux32 linux64) DO gradle distZip -Pos=%%O
+FOR %%O IN (windows32 windows64 linux32 linux64 maccocoa32 maccocoa64) DO gradle distZip -Pos=%%O

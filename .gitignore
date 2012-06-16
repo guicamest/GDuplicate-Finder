@@ -10,4 +10,5 @@ FileDuplicateFinderUI/.settings/
 FileDuplicateFinderUI/build/
 FileDuplicateFinderUI/bin/
 FileDuplicateFinderUI/settings.dat
+pushToSourceForge.sh
 
