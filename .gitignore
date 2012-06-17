@@ -10,5 +10,7 @@ FileDuplicateFinderUI/.settings/
 FileDuplicateFinderUI/build/
 FileDuplicateFinderUI/bin/
 FileDuplicateFinderUI/settings.dat
+forWiki
+readme.html
 pushToSourceForge.sh
 

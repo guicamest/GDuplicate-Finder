@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.FileDialog
 import org.eclipse.swt.widgets.Menu
 import org.eclipse.swt.widgets.MenuItem
 import org.eclipse.swt.widgets.Shell
+import org.eclipse.swt.graphics.Image
 
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.ExtensionFilter
@@ -98,6 +99,11 @@ public class MainView {
                	createContents()
             }
 		})
+
+		def iconsFiles = [16, 24, 32, 48, 64, 128, 256, 512].collect { "logo_${it}x${it}.png" }
+		def iconsImages = FDFUIResources.instance.getIcons(iconsFiles) as Image[]
+		shlFileDuplicateFinder.setImages(iconsImages)
+
 		shlFileDuplicateFinder.open()
 		shlFileDuplicateFinder.layout()
 		while (!shlFileDuplicateFinder.isDisposed()) {

@@ -4,13 +4,13 @@ import groovy.lang.Singleton
 import groovy.transform.Synchronized
 import groovy.util.logging.Commons
 
-import java.io.File;
-import java.text.MessageFormat;
+import java.io.File
+import java.text.MessageFormat
 import java.util.MissingResourceException
 import java.util.ResourceBundle
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import org.eclipse.swt.graphics.Image
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
@@ -24,7 +24,11 @@ class FDFUIResources {
 	def availableLocales = []
 
 	def getImageFile(imgFile){
-		new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/images/${imgFile}"));
+		new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/images/${imgFile}"))
+	}
+	
+	def getIcons(icons){
+		icons.collect{ new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/icons/$it")) }
 	}
 	
 	private FDFUIResources() {
@@ -58,7 +62,7 @@ class FDFUIResources {
     }
 
 	def msg(String messageKey, Object... arr){
-		MessageFormat.format(msg(messageKey), arr);
+		MessageFormat.format(msg(messageKey), arr)
 	}
 	
     def msg(String messageKey){
