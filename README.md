@@ -1,6 +1,4 @@
-GDuplicateFinder - A FREE Groovy way to find file duplicates!
-
-#GDuplicateFinder
+#GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
 
 Unlike other duplicate finders such as Easy Duplicate File Finder,
 Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,
@@ -12,7 +10,7 @@ Taking advantage of Groovy facilities and GPars power to process in parallel,
 GDuplicateFinder will help you get rid of those duplicates you always
 wanted to dispose in an easy and friendly way.
 
-If you feel like contributing, you can always fork this repo. Gradle will help
+If you feel like contributing, you can always fork this [repo](https://github.com/guicamest/GDuplicate-Finder). Gradle will help
 you configure the Eclipse project for you. You can also suggest improvements.
 
 ## Current features
