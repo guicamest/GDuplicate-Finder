@@ -7,12 +7,12 @@ public enum Protocol {
 	SFTP('Sftp', 22),
 	FTP('Ftp', 21)
 
-	private String friendlyName
+	private String name
 	private Integer defaultPort
 	private static FDFUIResources i18n = FDFUIResources.instance
 
 	private Protocol(String name, int defaultPort) {
-		this.friendlyName = name
+		this.name = name
 		this.defaultPort = defaultPort
 	}
 
@@ -21,6 +21,6 @@ public enum Protocol {
 	}
 
 	def getFriendlyName(){
-		i18n.msg("FDFUI.protocol$friendlyName")
+		i18n.msg("FDFUI.protocol$name")
 	}
 }
