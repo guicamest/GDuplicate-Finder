@@ -75,10 +75,6 @@ public class MainView {
 	
 	def treeInput
 
-	/**
-	 * Launch the application.
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		try {
 			new MainView().open()
@@ -87,9 +83,6 @@ public class MainView {
 		}
 	}
 
-	/**
-	 * Open the window.
-	 */
 	public void open() {
 		treeInput = new RootFileWrapper(name:'')
 
@@ -152,13 +145,13 @@ public class MainView {
 		mntmLoadDuplicateResultsSession.setText(i18n.msg('FDFUI.fileLoadDuplicateResultsSession'))
 		mntmLoadDuplicateResultsSession.addSelectionListener(new ClosureSelectionAdapter(c: loadDuplicateResultsSession))
 		
-		new MenuItem(menuFile, SWT.SEPARATOR);
+		new MenuItem(menuFile, SWT.SEPARATOR)
 		
 		mntmPreferences = new MenuItem(menuFile, SWT.NONE)
 		mntmPreferences.setText(i18n.msg('FDFUI.filePreferences'))
 		mntmPreferences.addSelectionListener(new ClosureSelectionAdapter(c: openPreferences))
 		
-		new MenuItem(menuFile, SWT.SEPARATOR);
+		new MenuItem(menuFile, SWT.SEPARATOR)
 		
 		MenuItem mntmNewItem_2 = new MenuItem(menuFile, SWT.NONE)
 		mntmNewItem_2.setText(i18n.msg('FDFUI.fileClose'))
@@ -260,7 +253,6 @@ public class MainView {
 			return
 		}
 		
-		
 		def filters = []
 		Long minSize = minSizeOption.getData() as Long
 		Long maxSize = maxSizeOption.getData() as Long
@@ -284,10 +276,10 @@ public class MainView {
 	}
 	
 	def loadSearchSession = {
-		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN);
-		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')] as String []);
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String []);
-		String fn = dlg.open();
+		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN)
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')] as String [])
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String [])
+		String fn = dlg.open()
 		if (fn != null) {
 			def progress
 			new File(fn).withObjectInputStream { ios ->
@@ -300,10 +292,10 @@ public class MainView {
 	}
 	
 	def loadDuplicateResultsSession = {
-		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN);
-		dlg.setFilterNames([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')] as String []);
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String []);
-		String fn = dlg.open();
+		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN)
+		dlg.setFilterNames([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')] as String [])
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String [])
+		String fn = dlg.open()
 		if (fn != null) {
 			def entries
 			new File(fn).withObjectInputStream { ios ->
@@ -312,7 +304,7 @@ public class MainView {
 			}
 			def sanitized = sanitizeEntries(entries)
 			if ( !sanitized.nonExistingFiles.isEmpty() ){
-				def dialog = new FilesNotFoundDialog(shlFileDuplicateFinder, , SWT.DIALOG_TRIM)
+				def dialog = new FilesNotFoundDialog(shlFileDuplicateFinder, SWT.DIALOG_TRIM)
 				dialog.files = sanitized.nonExistingFiles
 				dialog.open()
 			}

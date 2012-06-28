@@ -18,8 +18,9 @@ class MD5Utils {
 	}
 
 	static def generateMD5(InputStream is) {
-		MessageDigest digest = MessageDigest.getInstance('MD5')
-		byte[] buffer = new byte[8192]
+		is = new BufferedInputStream(is, 16384);
+		MessageDigest digest = MessageDigest.getInstance('MD5');
+		byte[] buffer = new byte[16384]
 		int read = 0
 		while( (read = is.read(buffer)) > 0) {
 			digest.update(buffer, 0, read);

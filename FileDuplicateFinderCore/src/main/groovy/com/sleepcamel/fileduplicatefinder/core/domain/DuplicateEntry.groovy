@@ -2,11 +2,17 @@ package com.sleepcamel.fileduplicatefinder.core.domain
 
 class DuplicateEntry implements Serializable {
 
-	String hash
+	def hash
 	def files = []
 	
 	def hasDuplicates(){
 		files.size() > 1
+	}
+	
+	def addFile(file){
+		if ( !files.contains(file) ){
+			files.add(file)
+		}
 	}
 
 	def removeNonExistingFiles(){

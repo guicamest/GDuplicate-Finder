@@ -3,7 +3,8 @@ package com.sleepcamel.fileduplicatefinder.core.domain
 import static groovyx.gpars.GParsPool.runForkJoin
 import static groovyx.gpars.GParsPool.withPool
 
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.sleepcamel.fileduplicatefinder.core.domain.finder.DuplicateFinderPhase
 
 import groovy.beans.Bindable
 import groovy.transform.Synchronized
@@ -15,20 +16,33 @@ class DuplicateFinderProgress implements Serializable {
 	synchronized def totalFiles
 	synchronized def totalFileSize
 	synchronized def finishedScanning
+	def finishedFindingDuplicates = false
 
 	List foundFiles
-	List processedFiles
+	
+	def phases = []
+	synchronized def currentPhase
+	def progressData = []
+	
+	def duplicatedEntries
+	
+	def initPhases(){
+		def sizePhase = new DuplicateFinderPhase(name:'Size Phase')
+		sizePhase.hashClosure = { file ->
+			file.size
+		}
 
-	def processedFilesQty
-	def processedFileSize
-	def finishedFindingDuplicates
-	
-	def filesMap = [:] as ConcurrentHashMap
-	
-	def duplicatedEntries = []
-	def duplicatedFiles = []
-	
+		phases.add(sizePhase)
+		def md5Phase = new DuplicateFinderPhase(name:'Hash Phase')
+		md5Phase.hashClosure = { file ->
+			file.md5()
+		}
+
+		phases.add(md5Phase)
+	}
+
 	DuplicateFinderProgress(){
+		initPhases()
 		startScan()
 		startFindingDuplicates()
 	}
@@ -38,12 +52,7 @@ class DuplicateFinderProgress implements Serializable {
 		totalFileSize = 0
 		foundFiles = []
 		finishedScanning = false
-		
-		processedFilesQty = 0
-		processedFileSize = 0
-		processedFiles = []
 		finishedFindingDuplicates = false
-		
 	}
 	
 	@Synchronized
@@ -58,52 +67,55 @@ class DuplicateFinderProgress implements Serializable {
 	}
 	
 	def startFindingDuplicates(){
+		currentPhase = phases.get(0)
+		currentPhase.start(foundFiles)
+		updateProgressData()
 		finishedFindingDuplicates = false
-		processedFilesQty = 0
-		processedFileSize = 0
-		filesMap.clear()
 	}
 
-	@Synchronized
-	def fileProcessed(file){
-		synchronized (foundFiles) {
-			foundFiles.remove(file)
-			processedFiles << file
-		}
-
-		def md5 = file.md5()
-		synchronized (filesMap) {
-			if ( filesMap[md5] == null ){
-				filesMap[md5] = new DuplicateEntry(hash: md5)
-			}
-		}
-		filesMap[md5].files << file
-
-		processedFilesQty++
-		processedFileSize += file.size
-	}
-	
-	def percentDone(){
-		double dnow = processedFileSize
-		double dtotal = totalFileSize
-		dnow/dtotal
-	}
-	
 	def finishedFindingDuplicates(){
-		updateEntries()
 		finishedFindingDuplicates = true
 	}
 	
-	def updateEntries(){
-		duplicatedFiles.clear()
-		duplicatedEntries.clear()
-		filesMap.each {
-			def duplicateEntry = it.value
-			boolean hasDuplicates = duplicateEntry.hasDuplicates()
-			if ( hasDuplicates ){
-				duplicatedEntries << duplicateEntry
-			}
+	def nextPhase(){
+		currentPhase.finished()
+		def currentPhaseIdx = phaseNumber()
+		if ( currentPhaseIdx == phases.size() - 1 ){
+			duplicatedEntries = currentPhase.duplicatedEntries
+			currentPhase = null
+		}else{
+			def lastPhaseOutput = currentPhase.possibleDuplicateFiles
+			currentPhase = phases.get(currentPhaseIdx + 1)
+			currentPhase.start(lastPhaseOutput)
 		}
-		duplicatedFiles.addAll(duplicatedEntries.collect { it.files }.flatten())
+	}
+	
+	def processFile(file){
+		currentPhase.processFile(file)
+		updateProgressData()
+	}
+	
+	def updateProgressData(){
+		synchronized (currentPhase) {
+			progressData = [phaseNumber: phaseNumber(),
+			                percentDone: currentPhase.percentDone(),
+			                processedFilesQty: currentPhase.processedFilesQty,
+			                processedFileSize: currentPhase.processedFileSize,
+			                totalFiles: currentPhase.totalFiles,
+			                totalFileSize: currentPhase.totalFileSize
+			                ]
+		}
+	}
+	
+	def hasPhasesLeft(){
+		currentPhase != null
+	}
+
+	def phaseNumber(){
+		phases.indexOf(currentPhase)
+	}
+
+	def duplicatedEntries(){
+		duplicatedEntries
 	}
 }

@@ -45,7 +45,7 @@ windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 Requires Java >= 1.6
 
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip FileDuplicateFinderUI-1.0.zip
+and unzip FileDuplicateFinderUI-1.1.zip
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 

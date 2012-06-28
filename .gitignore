@@ -7,7 +7,11 @@ FileDuplicateFinderCore/bin/
 FileDuplicateFinderUI/.classpath
 FileDuplicateFinderUI/.project
 FileDuplicateFinderUI/.settings/
-FileDuplicateFinderUI/build/
+FileDuplicateFinderUI/build/classes
+FileDuplicateFinderUI/build/libs
+FileDuplicateFinderUI/build/resources
+FileDuplicateFinderUI/build/scripts
+FileDuplicateFinderUI/build/tmp
 FileDuplicateFinderUI/bin/
 FileDuplicateFinderUI/settings.dat
 forWiki

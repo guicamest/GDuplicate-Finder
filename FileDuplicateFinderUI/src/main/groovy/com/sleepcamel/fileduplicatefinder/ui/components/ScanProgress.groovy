@@ -23,9 +23,9 @@ import org.eclipse.swt.widgets.FileDialog
 import org.eclipse.swt.widgets.Label
 import org.eclipse.swt.widgets.ProgressBar
 
-import com.sleepcamel.fileduplicatefinder.core.domain.DuplicateFinder
 import com.sleepcamel.fileduplicatefinder.core.domain.DuplicateFinderProgress
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.AndWrapperFilter
+import com.sleepcamel.fileduplicatefinder.core.domain.finder.SequentialDuplicateFinder
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
@@ -41,6 +41,7 @@ public class ScanProgress extends Composite {
 	Button btnSuspend
 	Button btnResume
 	Button btnSaveProgress
+	Button btnCancel
 	
 	Closure finishedFindingDuplicates
 	Closure cancelFindingDuplicates
@@ -85,7 +86,7 @@ public class ScanProgress extends Composite {
 		btnSaveProgress.setText(i18n.msg('FDFUI.scanProgressSaveProgressBtn'))
 		btnSaveProgress.addSelectionListener(new ClosureSelectionAdapter(c: save))
 		
-		Button btnCancel = new Button(btnComposite, SWT.NONE)
+		btnCancel = new Button(btnComposite, SWT.NONE)
 		btnCancel.setText(i18n.msg('FDFUI.scanProgressCancelBtn'))
 		btnCancel.addSelectionListener(new ClosureSelectionAdapter(c: cancel))
 		
@@ -113,7 +114,7 @@ public class ScanProgress extends Composite {
 	
 	def scanAndSearch(filters, directories){
 		suspended = false
-		def duplicateFinder = new DuplicateFinder(directories:directories)
+		def duplicateFinder = new SequentialDuplicateFinder(directories:directories)
 		if ( !filters.isEmpty() ) duplicateFinder.filter = new AndWrapperFilter(filters : filters)
 
 		Thread.start { thread ->
@@ -143,8 +144,8 @@ public class ScanProgress extends Composite {
 	}
 	
 	def suspend = {
-		duplicateFinder.suspend()
 		reportingThread.interrupt()
+		duplicateFinder.suspend()
 		suspended = true
 	}
 	
@@ -168,12 +169,12 @@ public class ScanProgress extends Composite {
 		suspended = false
 		reportingThread = Thread.start { thread ->
 			try{
-			duplicateFinder = new DuplicateFinder()
+			duplicateFinder = new SequentialDuplicateFinder()
 			duplicateFinder.findProgress = findProgress
 			
 			Display.getDefault().syncExec(new Runnable() { public void run() {
 				btnComposite.visible = true
-				def intPercentDone = Math.ceil(findProgress.percentDone() * 100) as Integer
+				def intPercentDone = Math.ceil(findProgress.getProgressData().percentDone * 100) as Integer
 				progressBar.setSelection(intPercentDone)
 				progressBar.setMaximum(100)
 			}})
@@ -184,24 +185,37 @@ public class ScanProgress extends Composite {
 
 			while( !findProgress.finishedFindingDuplicates ){
 				Thread.sleep(1000L)
-				def percentDone = findProgress.percentDone()
-				def elapsedTime = stopWatch.getTime()
-				def timeLeft = Math.floor((elapsedTime * (1 - percentDone)) / percentDone) as Long
-				def intPercentDone = Math.ceil(percentDone * 100) as Integer
-
-				Display.getDefault().syncExec(new Runnable() { public void run() {
-					progressBar.setSelection(intPercentDone)
-					label.text = i18n.msg('FDFUI.scanProgressFindingLbl', Utils.percentString(percentDone), findProgress.processedFilesQty, findProgress.totalFiles,
-																		Utils.formatBytes(findProgress.processedFileSize), Utils.formatBytes(findProgress.totalFileSize),
-																		Utils.formatInterval(elapsedTime), Utils.formatInterval(timeLeft))
-				}})
+				if ( Thread.interrupted() ){
+					return
+				}
+				updateProgress(findProgress, stopWatch)
 			}
-			
+			Thread.sleep(1000L)
+			updateProgress(findProgress, stopWatch)
+			stopWatch.stop()
+
 			Display.getDefault().asyncExec(new Runnable() {	public void run() {
-				finishedFindingDuplicates.call(findProgress.duplicatedEntries)
+				label.text = i18n.msg('FDFUI.scanProgressLoadingResultsLbl')
+				finishedFindingDuplicates.call(findProgress.duplicatedEntries())
 			}})
 			}catch(Exception e){}
 		}
+	}
+	
+	def updateProgress(findProgress, stopWatch){
+		def data = findProgress.getProgressData()
+		def percentDone = data.percentDone
+		def elapsedTime = stopWatch.getTime()
+		def timeLeft = Math.floor((elapsedTime * (1 - percentDone)) / percentDone) as Long
+		def intPercentDone = Math.ceil(percentDone * 100) as Integer
+
+		Display.getDefault().asyncExec(new Runnable() { public void run() {
+			progressBar.setSelection(intPercentDone)
+			label.text = i18n.msg('FDFUI.scanProgressFindingLbl', Utils.percentString(percentDone), data.phaseNumber + 1,
+																data.processedFilesQty, data.totalFiles,
+																Utils.formatBytes(data.processedFileSize), Utils.formatBytes(data.totalFileSize),
+																Utils.formatInterval(elapsedTime), Utils.formatInterval(timeLeft))
+		}})
 	}
 	
 	def cancel = {
