@@ -7,12 +7,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.vfs.CacheStrategy
 import org.apache.commons.vfs.FileObject
-import org.apache.commons.vfs.FileSystemException
 import org.apache.commons.vfs.FileSystemManager
 import org.apache.commons.vfs.FileSystemOptions
 import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.impl.StandardFileSystemManager
 import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder
+
+import com.sleepcamel.fileduplicatefinder.core.util.MD5Utils
 
 
 
@@ -77,6 +78,10 @@ class FileObjectAdapter implements FileAdapter<FileObject>{
 	public Long size(FileObject file) {
 		isDir(file) ? 0L : file.getContent().getSize()
 	}
+	
+	String md5(FileObject file) {
+		MD5Utils.generateMD5(new BufferedInputStream(inputStream(file)))
+	}
 
 	public Object[] files(FileObject file) {
 		file.getChildren()
@@ -107,4 +112,5 @@ class FileObjectAdapter implements FileAdapter<FileObject>{
 	def read(ObjectInputStream ois) {
 		resolveFileObject(ois.readObject())
 	}
+
 }

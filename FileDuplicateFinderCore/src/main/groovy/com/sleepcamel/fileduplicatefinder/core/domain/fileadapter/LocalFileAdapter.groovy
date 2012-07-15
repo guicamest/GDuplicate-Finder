@@ -1,8 +1,12 @@
+
+
 package com.sleepcamel.fileduplicatefinder.core.domain.fileadapter
 
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import com.sleepcamel.fileduplicatefinder.core.util.MD5Utils
 
 
 class LocalFileAdapter implements FileAdapter<File> {
@@ -57,6 +61,10 @@ class LocalFileAdapter implements FileAdapter<File> {
 
 	def read(ObjectInputStream ois) {
 		ois.readObject()
+	}
+
+	String md5(File file) {
+		MD5Utils.generateMD5(new BufferedInputStream(inputStream(file)))
 	}
 
 }

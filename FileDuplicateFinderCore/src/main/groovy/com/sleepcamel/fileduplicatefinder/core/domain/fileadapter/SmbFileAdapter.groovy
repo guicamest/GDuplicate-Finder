@@ -1,8 +1,10 @@
 package com.sleepcamel.fileduplicatefinder.core.domain.fileadapter
 
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+
+import com.sleepcamel.fileduplicatefinder.core.util.MD5Utils
 
 
 import jcifs.smb.SmbFile
@@ -64,6 +66,11 @@ class SmbFileAdapter implements FileAdapter<SmbFile> {
 
 	def read(ObjectInputStream ois) {
 		throw new RuntimeException('Not implemented yet')
+	}
+
+	@Override
+	public String md5(SmbFile file) {
+		MD5Utils.generateMD5(new BufferedInputStream(inputStream(file)))
 	}
 
 }

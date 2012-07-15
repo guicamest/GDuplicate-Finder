@@ -3,7 +3,7 @@ apply plugin: 'groovy'
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
-version = '1.1'
+version = "$GDuplicateFinderVersion"
 
 dependencies {
 	
@@ -16,6 +16,8 @@ dependencies {
 	compile "commons-net:commons-net:$commonsNetVersion"
 	compile "commons-httpclient:commons-httpclient:$commonsHttpclientVersion"
 	compile "commons-collections:commons-collections:$commonsCollectionsVersion"
+	compile "com.amazonaws:aws-java-sdk:$awsSdkVersion"
+	compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonMapperVersion"
 	
 	compile "org.codehaus.gpars:gpars:$gparsVersion"
 	testCompile "junit:junit:$junitVersion"

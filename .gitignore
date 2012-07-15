@@ -4,6 +4,7 @@ FileDuplicateFinderCore/.project
 FileDuplicateFinderCore/.settings/
 FileDuplicateFinderCore/build/
 FileDuplicateFinderCore/bin/
+FileDuplicateFinderCore/src/main/groovy/forTesting/
 FileDuplicateFinderUI/.classpath
 FileDuplicateFinderUI/.project
 FileDuplicateFinderUI/.settings/

@@ -7,16 +7,17 @@ import org.apache.commons.vfs.FileObject
 
 import groovy.beans.Bindable
 import groovy.util.logging.Commons
-import groovyx.gpars.GParsPool;
+import groovyx.gpars.GParsPool
 import jcifs.smb.SmbFile
 
 import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.FileAdapter
 import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.FileObjectAdapter
 import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.LocalFileAdapter
+import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.S3FileAdapter
 import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.SmbFileAdapter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.DirectoryFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.FileWrapperFilter
-import com.sleepcamel.fileduplicatefinder.core.util.MD5Utils
+import com.sleepcamel.fileduplicatefinder.core.domain.s3.S3ObjectWrapper
 
 @Bindable
 @Commons
@@ -53,6 +54,7 @@ class FileWrapper implements Serializable {
 		adapters.put(FileObject, new FileObjectAdapter())
 		adapters.put(SmbFile, new SmbFileAdapter())
 		adapters.put(File, new LocalFileAdapter())
+		adapters.put(S3ObjectWrapper, new S3FileAdapter())
 	}
 	
 	FileWrapper(file){
@@ -64,7 +66,7 @@ class FileWrapper implements Serializable {
 		this.parent = parent
 		adapterToUse = getAdapterToUse(file?.class)
 		if ( adapterToUse == null ){
-			log.info("No adapter found for file ${file}")
+			log.warn("No adapter found for file ${file}")
 		}else{
 			size = adapterToUse.size(file)
 			path = adapterToUse.getAbsolutePath(file)
@@ -114,7 +116,7 @@ class FileWrapper implements Serializable {
 	
 	def md5(){
 		if ( md5.isEmpty() ){
-			md5 = MD5Utils.generateMD5(inputStream())
+			md5 = adapterToUse.md5(file)
 		}
 		md5
 	}
@@ -125,7 +127,7 @@ class FileWrapper implements Serializable {
 	
 	def isFatherOrGrandFatherOf(FileWrapper possibleSon){
 		if ( depth() >= possibleSon.depth() )
-			return false;
+			return false
 
 		def sonsParentWrapper = possibleSon.getParentWrapper()
 		(sonsParentWrapper == this) ?: isFatherOrGrandFatherOf(sonsParentWrapper)
@@ -167,7 +169,7 @@ class FileWrapper implements Serializable {
 		adapterToUse?.class == LocalFileAdapter
 	}
 
-	String toString() {"${file?.name} ($path)"}
+	String toString() {"${name} ($path)"}
 
 	public boolean equals(Object obj) {
 		if (obj == null)

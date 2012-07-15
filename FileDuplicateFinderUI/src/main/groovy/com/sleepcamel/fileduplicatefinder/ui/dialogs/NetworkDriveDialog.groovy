@@ -234,7 +234,7 @@ public class NetworkDriveDialog extends Dialog {
 		}
 	}
 	
-	def updateModel = {
+	def updateModel(){
 		model.protocol = cmbProtocol.getSelection().getFirstElement().name.toUpperCase()
 		if ( btnCheckButton.getSelection() ){
 			model.username = 'GUEST'

@@ -5,7 +5,8 @@ import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 public enum Protocol {
 	SMB('Smb', 445),
 	SFTP('Sftp', 22),
-	FTP('Ftp', 21)
+	FTP('Ftp', 21),
+	S3('S3', 80)
 
 	private String name
 	private Integer defaultPort

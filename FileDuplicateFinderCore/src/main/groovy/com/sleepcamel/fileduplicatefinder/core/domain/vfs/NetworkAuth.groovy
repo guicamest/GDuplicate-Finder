@@ -3,7 +3,11 @@ package com.sleepcamel.fileduplicatefinder.core.domain.vfs
 
 
 
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.FileObjectAdapter
+import com.sleepcamel.fileduplicatefinder.core.domain.s3.S3ObjectWrapper
 
 import groovy.beans.Bindable
 import groovy.transform.EqualsAndHashCode
@@ -48,6 +52,14 @@ class NetworkAuth implements Serializable {
 	}
 
 	def folderFile(){
+		if ( protocol == 'S3' ){
+			AmazonS3Client s3 = new AmazonS3Client(new BasicAWSCredentials(username, password))
+			def path = folder.trim()
+			if ( !path.isEmpty() && !path.endsWith('/') ){
+				path = "$path/"
+			}
+			return new S3ObjectWrapper(s3:s3, summary:new S3ObjectSummary(bucketName:hostname, key: path) )
+		}
 		FileObjectAdapter.resolveFileObject(sharePath())
 	}
 
@@ -55,7 +67,7 @@ class NetworkAuth implements Serializable {
 		"$username @ $hostname - $folder"
 	}
 
-	def checkPathExists = {
+	def checkPathExists(){
 		folderFile()?.exists()
 	}
 }

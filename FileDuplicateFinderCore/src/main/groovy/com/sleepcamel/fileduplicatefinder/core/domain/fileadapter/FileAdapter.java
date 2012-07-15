@@ -21,6 +21,8 @@ public interface FileAdapter<E> extends Serializable {
 	
 	Long size(E file);
 	
+	String md5(E file);
+	
 	Object[] files(E file);
 
 	InputStream inputStream(E file);

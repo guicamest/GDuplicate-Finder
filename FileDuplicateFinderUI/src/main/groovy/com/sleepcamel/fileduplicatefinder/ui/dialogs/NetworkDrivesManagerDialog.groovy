@@ -167,7 +167,7 @@ public class NetworkDrivesManagerDialog extends Dialog {
 		}
 		
 		if ( errors.size() != 0 ){
-			MessageDialog.openError(shlDriveManager, i18n.msg('FDFUI.networkDriveManagerDialogErrorTitle'), i18n.msg('FDFUI.networkDriveManagerDialogErrotText', errors.join('\n')))
+			MessageDialog.openError(shlDriveManager, i18n.msg('FDFUI.networkDriveManagerDialogErrorTitle'), i18n.msg('FDFUI.networkDriveManagerDialogErrorText', errors.join('\n')))
 			return
 		}
 		drives.each {

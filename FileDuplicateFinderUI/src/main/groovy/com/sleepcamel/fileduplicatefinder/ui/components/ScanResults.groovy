@@ -260,12 +260,9 @@ public class ScanResults extends Composite {
 		}
 		def selectedFiles = asList.groupBy {it.getMd5()}
 
-//		println "Deleting files... $selectedFiles"
-
 		entries.each { entry ->
 			if ( entry.hash in selectedFiles.keySet()){
 				selectedFiles[entry.hash].each { fileToDelete ->
-//					println "Removing file $fileToDelete with hash ${entry.hash}"
 					if ( fileToDelete.delete() ){
 						entry.files.remove(fileToDelete)
 					}
@@ -305,7 +302,7 @@ public class ScanResults extends Composite {
 					file = PreviewFilesCache.instance.get(selectedFile.md5())
 					if( !file && MessageDialog.openQuestion(null, i18n.msg('FDFUI.scanResultsPreviewFileTitle'), i18n.msg('FDFUI.scanResultsPreviewFileText')) ){
 						file = File.createTempFile('dff', selectedFile.name)
-						FileUtils.copyInputStreamToFile(selectedFile.file.getInputStream(), file)
+						FileUtils.copyInputStreamToFile(selectedFile.inputStream(), file)
 						PreviewFilesCache.instance.put(selectedFile.md5(), file)
 					}
 					break
