@@ -177,7 +177,7 @@ public class NetworkDriveDialog extends Dialog {
 			shell.dispose()
 		}))
 	
-		cmbProtocol.setSelection(new StructuredSelection(Protocol.SFTP))
+		cmbProtocol.setSelection(new StructuredSelection(Protocol.valueOf(model.getProtocol())))
 		createBindings()
 		shell.pack()
 	}

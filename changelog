@@ -1,0 +1,28 @@
+
+========================
+ChangeLog Version 1.2.0
+========================
+*Added Amazon S3 to supported network drives
+*Added portuguese to internationalization
+*Added notification when update is available
+
+
+========================
+ChangeLog Version 1.1
+========================
+*Improved finder algorithm
+
+
+========================
+ChangeLog Version 1.0
+========================
+
+*Added internationalization support
+*Manage network drives(add, edit, remove)
+*Turn on/off network drives
+*Save/load duplicates results session
+*Stop, save, load and resume a search for duplicates
+*Open duplicate files with system's default editor
+*Internationalization ( english, spanish )
+*Supported network drives(Smb, Scp, Ftp)
+

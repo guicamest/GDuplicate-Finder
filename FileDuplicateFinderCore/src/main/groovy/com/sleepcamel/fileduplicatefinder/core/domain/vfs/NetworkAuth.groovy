@@ -20,7 +20,7 @@ class NetworkAuth implements Serializable {
 	String password = ''
 	String folder = ''
 	String protocol = 'SMB'
-	int port = -1
+	int port = 445
 	
 	def sharePath(){
 		StringBuilder sb = new StringBuilder()

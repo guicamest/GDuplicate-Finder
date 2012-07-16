@@ -47,6 +47,9 @@ def loadConfiguration() {
 	def config = new ConfigSlurper(environment).parse(configFile.toURL())
 	
 	project.ext.config = config	
+	new File('version.json').withWriter{
+		it << "{ version : ${version} }"
+	}
 }
 
 def autodetectOS(){
@@ -81,5 +84,41 @@ startScripts {
 		windowsScript.text = windowsScript.text.replace("set $optsEnvVar=", "set $optsEnvVar=$jvmOpts") 
 	}
 }
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+processResources {
+	filter ReplaceTokens, tokens: [
+		gduplicatefinder_version : version.toString(),
+		gduplicatefinder_build : project.ext.environment
+	]
+}
+
+task copyToBin(type:Copy){
+	from 'build/resources/main'
+    into 'bin'
+}
+copyToBin.dependsOn << "processResources"
+
+/*
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
+task a(){
+}
+processResources.dependsOn << "a"
+
+compileGroovy {
+	println "${DefaultGroovyMethods.dump(this)}"
+	new File('version',destinationDir).withWriter{
+		it << "${project.ext.environment}\r\n${version}"
+	}
+}
+
+gradle.taskGraph.beforeTask { task ->
+   if (task == jar) {
+       task.outputs.files.each { println it }
+   }
+}
+*/
 
 
