@@ -6,7 +6,7 @@ mainClassName = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
-version = "$GDuplicateFinderVersion"
+version = "${GDuplicateFinderVersion}"
 
 buildscript {
 	repositories {
@@ -48,7 +48,7 @@ def loadConfiguration() {
 	
 	project.ext.config = config	
 	new File('version.json').withWriter{
-		it << "{ version : ${version} }"
+		it << "{ version : ${GDuplicateFinderVersion} }"
 	}
 }
 
@@ -88,9 +88,11 @@ startScripts {
 import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
+	String v = version
+	String env = project.ext.environment
 	filter ReplaceTokens, tokens: [
-		gduplicatefinder_version : version.toString(),
-		gduplicatefinder_build : project.ext.environment
+		gduplicatefinder_version : v,
+		gduplicatefinder_build : env
 	]
 }
 
