@@ -46,9 +46,17 @@ def loadConfiguration() {
 	def configFile = file('config.groovy')
 	def config = new ConfigSlurper(environment).parse(configFile.toURL())
 	
-	project.ext.config = config	
+	project.ext.config = config
+	updateVersionFile()
+}
+
+task updateVersion(){
+	updateVersionFile()
+}
+
+def updateVersionFile(){
 	new File('version.json').withWriter{
-		it << "{ version : ${GDuplicateFinderVersion} }"
+		it << "{ \"version\" : \"${GDuplicateFinderVersion}\" }"
 	}
 }
 
@@ -88,12 +96,21 @@ startScripts {
 import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
+
 	String v = version
 	String env = project.ext.environment
-	filter ReplaceTokens, tokens: [
-		gduplicatefinder_version : v,
-		gduplicatefinder_build : env
-	]
+	from(sourceSets.main.resources.srcDirs) {
+		exclude '**/*.properties', '**/*.xml'
+    }
+	
+	from(sourceSets.main.resources.srcDirs) {
+		include '**/*.properties', '**/*.xml'
+		filter ReplaceTokens, tokens: [
+			gduplicatefinder_version : v,
+			gduplicatefinder_build : env
+		]
+    }
+
 }
 
 task copyToBin(type:Copy){
