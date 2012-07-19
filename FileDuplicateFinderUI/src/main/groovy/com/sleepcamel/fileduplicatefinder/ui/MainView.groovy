@@ -173,6 +173,14 @@ public class MainView {
 		Menu menuHelp = new Menu(mntmHelp)
 		mntmHelp.setMenu(menuHelp)
 		
+		MenuItem mntmUpdate = new MenuItem(menuHelp, SWT.NONE)
+		mntmUpdate.setText(i18n.msg('FDFUI.helpUpdate'))
+		mntmUpdate.addSelectionListener(new ClosureSelectionAdapter(c: {
+			UpdateFinder.instance.searchForUpdate(false)
+		}))
+		
+		new MenuItem(menuHelp, SWT.SEPARATOR)
+		
 		MenuItem mntmAbout = new MenuItem(menuHelp, SWT.NONE)
 		mntmAbout.setText(i18n.msg('FDFUI.helpAbout'))
 		mntmAbout.addSelectionListener(new ClosureSelectionAdapter(c: openAboutDialog))
@@ -236,6 +244,7 @@ public class MainView {
 		if ( showMsg ){
 			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
 		}
+		UpdateFinder.instance.searchForUpdate(true)
 	}
 	
 	def close = {

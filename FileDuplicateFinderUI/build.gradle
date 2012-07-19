@@ -8,6 +8,9 @@ targetCompatibility = '1.6'
 
 version = "${GDuplicateFinderVersion}"
 
+import org.apache.tools.ant.filters.ReplaceTokens
+import groovy.text.GStringTemplateEngine
+
 buildscript {
 	repositories {
 		add(new org.apache.ivy.plugins.resolver.URLResolver()) {
@@ -50,16 +53,6 @@ def loadConfiguration() {
 	updateVersionFile()
 }
 
-task updateVersion(){
-	updateVersionFile()
-}
-
-def updateVersionFile(){
-	new File('version.json').withWriter{
-		it << "{ \"version\" : \"${GDuplicateFinderVersion}\" }"
-	}
-}
-
 def autodetectOS(){
 	def defaultOS = 'maccocoa'
 	def osName = System.getProperty('os.name').toLowerCase()
@@ -77,6 +70,7 @@ def autodetectOS(){
 }
 
 distZip {
+	baseName = gDuplicateFinderZipName
 	destinationDir = new File(destinationDir, project.ext.environment)
 }
 
@@ -92,8 +86,6 @@ startScripts {
 		windowsScript.text = windowsScript.text.replace("set $optsEnvVar=", "set $optsEnvVar=$jvmOpts") 
 	}
 }
-
-import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
 
@@ -119,25 +111,19 @@ task copyToBin(type:Copy){
 }
 copyToBin.dependsOn << "processResources"
 
-/*
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-
-task a(){
+task generateVersionFile(){
+	updateVersionFile()
 }
-processResources.dependsOn << "a"
 
-compileGroovy {
-	println "${DefaultGroovyMethods.dump(this)}"
-	new File('version',destinationDir).withWriter{
-		it << "${project.ext.environment}\r\n${version}"
+def updateVersionFile(){
+	def f = new File('version.gsp')
+	def binding = [ version : GDuplicateFinderVersion ]
+	['windows32', 'windows64', 'linux32', 'linux64', 'maccocoa32', 'maccocoa64'].each{
+		binding["${it}downloadPath"] = "http://sourceforge.net/projects/gdupfinder/files/${it}/${gDuplicateFinderZipName}-${GDuplicateFinderVersion}.zip/download"
+	}
+	def template = new GStringTemplateEngine().createTemplate(f).make(binding)
+
+	new File('version.json').withWriter{
+		it << template.toString()
 	}
 }
-
-gradle.taskGraph.beforeTask { task ->
-   if (task == jar) {
-       task.outputs.files.each { println it }
-   }
-}
-*/
-
-
