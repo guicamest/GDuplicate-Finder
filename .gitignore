@@ -11,6 +11,7 @@ FileDuplicateFinderUI/.settings/
 FileDuplicateFinderUI/build/
 FileDuplicateFinderUI/bin/
 FileDuplicateFinderUI/settings.dat
+FileDuplicateFinderUI/gduplicatefinder.properties
 forWiki
 readme.html
 pushToSourceForge.sh

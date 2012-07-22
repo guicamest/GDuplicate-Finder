@@ -1,6 +1,7 @@
 package com.sleepcamel.fileduplicatefinder.ui.utils
 
 import org.apache.commons.beanutils.BeanUtils
+import org.eclipse.jface.preference.PreferenceStore
 
 
 @Singleton
@@ -10,7 +11,8 @@ class Settings implements Serializable {
 	static final String SETTINGS_FILENAME = 'settings.dat'
 	
 	def lastNetworkAuthModels
-	def lastLocale = Locale.getDefault()
+	transient def lastLocale
+	transient def PreferenceStore ps
 	
 	def getLastNetworkDrivesAuthModels(){
 		lastNetworkAuthModels?:[]
@@ -37,7 +39,23 @@ class Settings implements Serializable {
 				ois.close()
 			}
 			if ( invalidFile ) file.delete()
+			lastLocale = new Locale(preferenceStore().getString('language'))
 		}
+	}
+	
+	def preferenceStore(){
+		if ( !ps ){
+			// Set the preference store
+			ps = new PreferenceStore('gduplicatefinder.properties');
+			ps.setDefault('language', Locale.getDefault().getLanguage())
+			ps.setDefault('automaticUpdates', true)
+			try {
+				ps.load();
+			} catch (IOException e) {
+				// Ignore
+			}
+		}
+		ps
 	}
 	
 	def save(){

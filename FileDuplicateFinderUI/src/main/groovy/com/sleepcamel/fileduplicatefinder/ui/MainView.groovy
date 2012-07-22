@@ -41,8 +41,8 @@ import com.sleepcamel.fileduplicatefinder.ui.components.SizeOption
 import com.sleepcamel.fileduplicatefinder.ui.components.TextFieldOption
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.AboutDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.FilesNotFoundDialog
-import com.sleepcamel.fileduplicatefinder.ui.dialogs.LanguagesDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.preference.GDFPreferenceDialog
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
@@ -244,7 +244,9 @@ public class MainView {
 		if ( showMsg ){
 			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
 		}
-		UpdateFinder.instance.searchForUpdate(true)
+		if ( Settings.instance.preferenceStore().getBoolean('automaticUpdates') ){
+			UpdateFinder.instance.searchForUpdate(true)
+		}
 	}
 	
 	def close = {
@@ -364,7 +366,7 @@ public class MainView {
 	}
 	
 	def openPreferences = {
-		new LanguagesDialog(shlFileDuplicateFinder, , SWT.DIALOG_TRIM).open()
+		new GDFPreferenceDialog(shlFileDuplicateFinder).open()
 	}
 
 	def openDrivesMapper = {
