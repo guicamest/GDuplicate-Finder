@@ -22,14 +22,18 @@ public class DuplicateFinderPhase implements Serializable {
 	def duplicatedEntries = []
 	def possibleDuplicateFiles = []
 	
-	def start(initialFiles){
-		this.initialFiles = initialFiles
+	def start(firstFiles){
+		synchronized (this){
+		initialFiles = firstFiles
 		processedFiles.clear()
 		processedFilesQty = 0
 		processedFileSize = 0
 		filesMap.clear()
+		synchronized (initialFiles){
 		totalFiles = initialFiles.size()
-		totalFileSize = initialFiles.inject(0) { a, b -> a + b.size }
+		totalFileSize = initialFiles.sum(0){ it.size }
+		}
+		}
 	}
 	
 	def processFile(file){

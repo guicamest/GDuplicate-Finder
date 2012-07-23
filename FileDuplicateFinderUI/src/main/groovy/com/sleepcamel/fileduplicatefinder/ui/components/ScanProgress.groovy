@@ -118,7 +118,6 @@ public class ScanProgress extends Composite {
 		if ( !filters.isEmpty() ) duplicateFinder.filter = new AndWrapperFilter(filters : filters)
 
 		Thread.start { thread ->
-
 			Display.getDefault().syncExec(new Runnable() { public void run() {
 			btnComposite.visible = false
 			}})
@@ -137,7 +136,6 @@ public class ScanProgress extends Composite {
 				}})
 				Thread.sleep(1000L)
 			}
-			
 			findDuplicates(progress)
 			return
 		}
@@ -172,13 +170,13 @@ public class ScanProgress extends Composite {
 			duplicateFinder = new SequentialDuplicateFinder()
 			duplicateFinder.findProgress = findProgress
 			
+			def progressDone = findProgress.getProgressData().percentDone
 			Display.getDefault().syncExec(new Runnable() { public void run() {
 				btnComposite.visible = true
-				def intPercentDone = Math.ceil(findProgress.getProgressData().percentDone * 100) as Integer
+				def intPercentDone = Math.ceil(progressDone * 100) as Integer
 				progressBar.setSelection(intPercentDone)
 				progressBar.setMaximum(100)
 			}})
-			
 			duplicateFinder.invokeMethod(methodName,null)
 			def stopWatch = new StopWatch()
 			stopWatch.start()
@@ -193,7 +191,6 @@ public class ScanProgress extends Composite {
 			Thread.sleep(1000L)
 			updateProgress(findProgress, stopWatch)
 			stopWatch.stop()
-
 			Display.getDefault().asyncExec(new Runnable() {	public void run() {
 				label.text = i18n.msg('FDFUI.scanProgressLoadingResultsLbl')
 				finishedFindingDuplicates.call(findProgress.duplicatedEntries())

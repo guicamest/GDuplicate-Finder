@@ -6,6 +6,7 @@ ChangeLog Version 1.2.0
 *Added portuguese to internationalization
 *Added notification when update is available
 *Updated preferences dialog
+*Fixed bug in searching files
 
 
 ========================

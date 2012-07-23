@@ -3,6 +3,8 @@ package com.sleepcamel.fileduplicatefinder.core.domain
 import static groovyx.gpars.GParsPool.runForkJoin
 import static groovyx.gpars.GParsPool.withPool
 
+import java.util.concurrent.ConcurrentHashMap
+
 
 import com.sleepcamel.fileduplicatefinder.core.domain.finder.DuplicateFinderPhase
 
@@ -16,13 +18,14 @@ class DuplicateFinderProgress implements Serializable {
 	synchronized def totalFiles
 	synchronized def totalFileSize
 	synchronized def finishedScanning
-	def finishedFindingDuplicates = false
+	synchronized def finishedFindingDuplicates = false
 
 	List foundFiles
 	
 	def phases = []
 	synchronized def currentPhase
-	def progressData = []
+	synchronized def progressData = [phaseNumber: 0, percentDone: 0, processedFilesQty: 0, processedFileSize: 0,
+			                totalFiles: 0, totalFileSize: 0] as ConcurrentHashMap
 	
 	def duplicatedEntries
 	
@@ -50,7 +53,7 @@ class DuplicateFinderProgress implements Serializable {
 	def startScan(){
 		totalFiles = 0
 		totalFileSize = 0
-		foundFiles = []
+		foundFiles = [].asSynchronized()
 		finishedScanning = false
 		finishedFindingDuplicates = false
 	}
@@ -96,14 +99,14 @@ class DuplicateFinderProgress implements Serializable {
 	}
 	
 	def updateProgressData(){
-		synchronized (currentPhase) {
-			progressData = [phaseNumber: phaseNumber(),
-			                percentDone: currentPhase.percentDone(),
-			                processedFilesQty: currentPhase.processedFilesQty,
-			                processedFileSize: currentPhase.processedFileSize,
-			                totalFiles: currentPhase.totalFiles,
-			                totalFileSize: currentPhase.totalFileSize
-			                ]
+		def cPhase = currentPhase
+		synchronized (cPhase) {
+			progressData['phaseNumber'] = phaseNumber()
+			progressData['percentDone'] = cPhase.percentDone()
+			progressData['processedFilesQty'] = cPhase.processedFilesQty
+			progressData['processedFileSize'] = cPhase.processedFileSize
+			progressData['totalFiles'] = cPhase.totalFiles
+			progressData['totalFileSize'] = cPhase.totalFileSize
 		}
 	}
 	

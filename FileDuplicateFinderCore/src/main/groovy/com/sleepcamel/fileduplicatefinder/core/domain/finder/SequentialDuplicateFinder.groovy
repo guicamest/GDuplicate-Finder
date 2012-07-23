@@ -38,7 +38,7 @@ class SequentialDuplicateFinder implements DuplicateFinder {
 						}
 					}
 				}
-				while( !pool.isQuiescent() )
+				while( !pool.isQuiescent() ){}
 				findProgress.scanFinished()
 			}
 		}
@@ -70,14 +70,15 @@ class SequentialDuplicateFinder implements DuplicateFinder {
 			try{
 				while( findProgress.hasPhasesLeft() ){
 					DuplicateFinderPhase current = findProgress.currentPhase
-					def files = new ArrayList(current.initialFiles)
-						files.each {
-							if ( Thread.interrupted() ){
-								throw new InterruptedException()
-							}
-							findProgress.processFile(it)
+					def files
+					synchronized(current.initialFiles){files = new ArrayList(current.initialFiles)}
+					files.each {
+						if ( Thread.interrupted() ){
+							throw new InterruptedException()
 						}
-						findProgress.nextPhase()
+						findProgress.processFile(it)
+					}
+					findProgress.nextPhase()
 				}
 			}catch(InterruptedException e){
 //				findProgress.currentPhase.syncProgress()
