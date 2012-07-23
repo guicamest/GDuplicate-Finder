@@ -91,13 +91,13 @@ public class ScanResults extends Composite {
 		SashForm sashForm = new SashForm(this, SWT.NONE)
 		sashForm.setLayoutData(BorderLayout.CENTER)
 		
-		listViewer = new ListViewer(sashForm, SWT.BORDER | SWT.V_SCROLL)
+		listViewer = new ListViewer(sashForm, SWT.BORDER | SWT.V_SCROLL | SWT.VIRTUAL)
 		listViewer.setContentProvider(new ObservableListContentProvider())
 		listViewer.setLabelProvider(new ListLabelProvider())
 		listViewer.setInput(Observables.staticObservableList(folderList))
 		listViewer.addSelectionChangedListener(new ClosureSelectionAdapter(c: filterTable))
 		
-		checkboxTableViewer = CheckboxTableViewer.newCheckList(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI)
+		checkboxTableViewer = CheckboxTableViewer.newCheckList(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.VIRTUAL)
 
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider()
 		checkboxTableViewer.setContentProvider(contentProvider)
@@ -189,7 +189,7 @@ public class ScanResults extends Composite {
 
 		def firstElement = [ filePath : 'All' , count : observableFileList.size()]
 		folderList.add(0, firstElement)
-
+		
 		tableFilter.filterUsingPath('All')
 		listViewer.refresh()
 	}
