@@ -1,5 +1,6 @@
 package com.sleepcamel.fileduplicatefinder.ui.utils
 
+
 import org.apache.commons.beanutils.BeanUtils
 import org.eclipse.jface.preference.PreferenceStore
 
@@ -39,18 +40,18 @@ class Settings implements Serializable {
 				ois.close()
 			}
 			if ( invalidFile ) file.delete()
-			lastLocale = new Locale(preferenceStore().getString('language'))
 		}
+		lastLocale = new Locale(preferenceStore().getString('language'))
 	}
 	
 	def preferenceStore(){
 		if ( !ps ){
 			// Set the preference store
-			ps = new PreferenceStore('gduplicatefinder.properties');
+			ps = new PreferenceStore('gduplicatefinder.properties')
 			ps.setDefault('language', Locale.getDefault().getLanguage())
 			ps.setDefault('automaticUpdates', true)
 			try {
-				ps.load();
+				ps.load()
 			} catch (IOException e) {
 				// Ignore
 			}
