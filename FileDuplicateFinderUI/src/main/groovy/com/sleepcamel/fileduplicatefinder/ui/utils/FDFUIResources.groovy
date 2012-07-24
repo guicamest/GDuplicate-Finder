@@ -10,7 +10,6 @@ import java.util.MissingResourceException
 import java.util.ResourceBundle
 
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
 import org.eclipse.swt.graphics.Image
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
@@ -49,7 +48,7 @@ class FDFUIResources {
 
 		availableLocales = langsFile.readLines().collect {new Locale(it)}
 
-        resourceBundle = ResourceBundle.getBundle(BUNDLE_BASENAME, Settings.instance.getLastLocale())
+        resourceBundle = ResourceBundle.getBundle(BUNDLE_BASENAME, Settings.instance.getLastLocale(), new I18nControl())
     }
 
 	@Synchronized
