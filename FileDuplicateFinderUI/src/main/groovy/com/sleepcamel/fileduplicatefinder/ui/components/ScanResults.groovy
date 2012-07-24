@@ -97,7 +97,7 @@ public class ScanResults extends Composite {
 		listViewer.setInput(Observables.staticObservableList(folderList))
 		listViewer.addSelectionChangedListener(new ClosureSelectionAdapter(c: filterTable))
 		
-		checkboxTableViewer = CheckboxTableViewer.newCheckList(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.VIRTUAL)
+		checkboxTableViewer = CheckboxTableViewer.newCheckList(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL)
 
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider()
 		checkboxTableViewer.setContentProvider(contentProvider)
