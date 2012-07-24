@@ -21,12 +21,14 @@ you configure the Eclipse project for you. You can also suggest improvements.
 - Stop, save, load and resume a search for duplicates
 - Open duplicate files with system's default editor
 - Internationalization
+- Update checker
 
 ## Network Shares supported
 
 - SMB (Samba)
 - SFTP / SCP (Connection via Ssh)
 - FTP
+- Amazon S3
 
 
 ## How to build
@@ -45,7 +47,7 @@ windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 Requires Java >= 1.6
 
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip FileDuplicateFinderUI-1.1.zip
+and unzip GDuplicateFinder-1.2.0.zip
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 
