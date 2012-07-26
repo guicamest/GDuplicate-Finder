@@ -4,6 +4,7 @@ import java.io.File
 
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize
 
+import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import org.eclipse.core.databinding.beans.BeanProperties
 import org.eclipse.core.databinding.observable.Realm
@@ -47,6 +48,8 @@ import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
+import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileAssociations
+import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileHandler
 
 
 public class MainView {
@@ -74,16 +77,22 @@ public class MainView {
 	FDFUIResources i18n = FDFUIResources.instance
 	
 	def treeInput
+	def syncedDrives = false
 
 	public static void main(String[] args) {
 		try {
-			new MainView().open()
+			new MainView().open(args)
 		} catch (Exception e) {
 			e.printStackTrace()
 		}
 	}
+	
+	MainView(){
+		FileAssociations.instance.registerHandler('drs', loadDuplicateResultsSessionFile)
+		FileAssociations.instance.registerHandler('sps', loadSearchSessionFile)
+	}
 
-	public void open() {
+	public void open(String[] args) {
 		treeInput = new RootFileWrapper(name:'')
 
 		Display display = Display.getDefault()
@@ -92,13 +101,34 @@ public class MainView {
                	createContents()
             }
 		})
-
 		def iconsFiles = [16, 24, 32, 48, 64, 128, 256, 512].collect { "logo_${it}x${it}.png" }
 		def iconsImages = FDFUIResources.instance.getIcons(iconsFiles) as Image[]
 		shlFileDuplicateFinder.setImages(iconsImages)
-
 		shlFileDuplicateFinder.open()
 		shlFileDuplicateFinder.layout()
+
+		def handled = false
+		if ( args.length != 0 ){
+			FileHandler handler = FileAssociations.instance.getHandlerFor(args[0])
+			if ( handler ){
+				handled = handler.handle(args[0])
+			}else{
+				showCouldNotOpenFile(i18n.msg('FDFUI.couldNotOpenFileDialogUnknownFileExtensionText',args[0], FilenameUtils.getExtension(args[0])))
+			}
+		}
+		
+		def showMsg = false
+		if ( !handled ){
+			showMsg = !syncAndRefresh(true)
+		}
+
+		if ( showMsg ){
+			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
+		}
+		if ( Settings.instance.preferenceStore().getBoolean('automaticUpdates') ){
+			UpdateFinder.instance.searchForUpdate(true)
+		}
+
 		while (!shlFileDuplicateFinder.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep()
@@ -194,8 +224,6 @@ public class MainView {
 		def property = new FileWrapperBeanListProperty(propertyDescriptor, FileWrapper.class)
 		def decorator = new BeanListPropertyDecorator(property, propertyDescriptor)
 		
-		def showMsg = !syncDrivesWithTree(true)
-
 		ViewerSupport.bind(checkboxTreeViewer, treeInput, decorator, BeanProperties.value(FileWrapper.class, 'name'))
 		
 		checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
@@ -240,13 +268,6 @@ public class MainView {
 		scanResults.filesDeleted = updateDirectories
 
 		stackLayout.topControl = sashForm
-		
-		if ( showMsg ){
-			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
-		}
-		if ( Settings.instance.preferenceStore().getBoolean('automaticUpdates') ){
-			UpdateFinder.instance.searchForUpdate(true)
-		}
 	}
 	
 	def close = {
@@ -292,11 +313,12 @@ public class MainView {
 		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String [])
 		String fn = dlg.open()
 		if (fn != null) {
-			def progress
-			new File(fn).withObjectInputStream { ios ->
-				progress = ios.readObject()
-				DefaultGroovyMethodsSupport.closeQuietly(ios)
-			}
+			loadSearchSessionFile(new File(fn))
+		}
+	}
+	
+	def loadSearchSessionFile = { File file ->
+		loadFile(file){ progress ->
 			showScanProgress()
 			scanProgress.resumeSearch(progress)
 		}
@@ -308,11 +330,12 @@ public class MainView {
 		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String [])
 		String fn = dlg.open()
 		if (fn != null) {
-			def entries
-			new File(fn).withObjectInputStream { ios ->
-				entries = ios.readObject()
-				DefaultGroovyMethodsSupport.closeQuietly(ios)
-			}
+			loadDuplicateResultsSessionFile(new File(fn))
+		}
+	}
+	
+	def loadDuplicateResultsSessionFile = { File file ->
+		loadFile(file){ entries ->
 			def sanitized = sanitizeEntries(entries)
 			if ( !sanitized.nonExistingFiles.isEmpty() ){
 				def dialog = new FilesNotFoundDialog(shlFileDuplicateFinder, SWT.DIALOG_TRIM)
@@ -321,6 +344,27 @@ public class MainView {
 			}
 			showDuplicates(sanitized.entries)
 		}
+	}
+	
+	boolean loadFile(File file, afterOpenedClosure){
+		def obj
+		def loaded = false
+		try{
+			file.withObjectInputStream { ios ->
+				obj = ios.readObject()
+				DefaultGroovyMethodsSupport.closeQuietly(ios)
+			}
+			afterOpenedClosure.call(obj)
+			loaded = true
+		}catch(FileNotFoundException e){
+			showCouldNotOpenFile(i18n.msg('FDFUI.couldNotOpenFileDialogSessionFileNotFoundText',file.getAbsolutePath()))
+		}catch(StreamCorruptedException e){
+			showCouldNotOpenFile(i18n.msg('FDFUI.couldNotOpenFileDialogDamagedSessionFileText',file.getAbsolutePath()))
+		}catch(InvalidClassException e){
+			showCouldNotOpenFile(i18n.msg('FDFUI.couldNotOpenFileDialogDamagedSessionFileText',file.getAbsolutePath()))
+		}
+		
+		loaded
 	}
 	
 	def sanitizeEntries = { entries ->
@@ -360,6 +404,9 @@ public class MainView {
 	}
 	
 	def searchAgain = {
+		if ( !syncedDrives ){
+			syncAndRefresh()
+		}
 		stackLayout.topControl = sashForm
 		shlFileDuplicateFinder.layout()
 		enableFileMenu()
@@ -376,11 +423,17 @@ public class MainView {
 		
 		def newModels = manager.open()
 		Settings.instance.lastNetworkAuthModels = newModels
-		syncDrivesWithTree()
+		syncAndRefresh()
+	}
+	
+	def syncAndRefresh(umount = false){
+		def status = syncDrivesWithTree(umount)
 		checkboxTreeViewer.refresh()
+		status
 	}
 
 	def syncDrivesWithTree(umountAtErrors = false){
+		syncedDrives = true
 		def successfullSync = true
 		def fileRoots = []
 		File.listRoots().each { root ->
@@ -414,5 +467,8 @@ public class MainView {
 		directories.unique().each { directory -> treeInput.reloadDirectoryFiles(directory) }
 	}
 
+	def showCouldNotOpenFile(msg){
+		MessageDialog.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.couldNotOpenFileDialogTitle'), msg)
+	}
 }
 

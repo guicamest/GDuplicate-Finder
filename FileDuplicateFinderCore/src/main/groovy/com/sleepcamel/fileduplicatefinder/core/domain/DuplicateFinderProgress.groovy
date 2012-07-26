@@ -11,10 +11,11 @@ import com.sleepcamel.fileduplicatefinder.core.domain.finder.DuplicateFinderPhas
 import groovy.beans.Bindable
 import groovy.transform.Synchronized
 
-
 @Bindable
 class DuplicateFinderProgress implements Serializable {
 
+	private static final long serialVersionUID = 6444577992643698844L;
+	
 	synchronized def totalFiles
 	synchronized def totalFileSize
 	synchronized def finishedScanning
