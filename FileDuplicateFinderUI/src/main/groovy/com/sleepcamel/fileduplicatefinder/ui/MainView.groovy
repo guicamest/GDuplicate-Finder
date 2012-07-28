@@ -464,7 +464,9 @@ public class MainView {
 	}
 	
 	def updateDirectories = { directories ->
-		directories.unique().each { directory -> treeInput.reloadDirectoryFiles(directory) }
+		if ( syncedDrives ){
+			directories.unique().each { directory -> treeInput.reloadDirectoryFiles(directory) }
+		}
 	}
 
 	def showCouldNotOpenFile(msg){

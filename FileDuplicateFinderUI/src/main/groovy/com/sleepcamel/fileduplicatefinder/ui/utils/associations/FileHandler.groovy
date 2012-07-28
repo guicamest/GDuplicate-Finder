@@ -5,7 +5,7 @@ class FileHandler {
 
 	Closure closure
 	
-	void handle(String fileName){
+	def handle(String fileName){
 		closure.call(new File(fileName))
 	}
 }

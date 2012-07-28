@@ -12,23 +12,27 @@ public class TableCheckStateProvider implements ICheckStateProvider, ICheckState
 
 	def files = [:]
 	
-	public TableCheckStateProvider(IObservableList list) {
+	TableCheckStateProvider(IObservableList list) {
 		list.addListChangeListener(this)
 	}
 	
-	public void checkStateChanged(CheckStateChangedEvent event) {
+	void checkStateChanged(CheckStateChangedEvent event) {
 		files[event.getElement()] = event.getChecked()
 	}
 
-	public boolean isChecked(Object paramObject) {
+	boolean isChecked(Object paramObject) {
 		files[paramObject]
 	}
+	
+	List getCheckedElements(){
+		files.findAll {it.value}.collect {it.key}
+	}
 
-	public boolean isGrayed(Object paramObject) {
+	boolean isGrayed(Object paramObject) {
 		false
 	}
 
-	public void handleListChange(ListChangeEvent event) {
+	void handleListChange(ListChangeEvent event) {
 		event.diff.differences.each{ ListDiffEntry diffEntry ->
 			if ( diffEntry.isAddition() ){
 				files[diffEntry.getElement()] = false
@@ -36,6 +40,11 @@ public class TableCheckStateProvider implements ICheckStateProvider, ICheckState
 				files.remove(diffEntry.getElement())
 			}
 		}
+	}
+
+	void setSelectedOnlyTheseElements(Object[] elements) {
+		def set = elements as Set
+		files.each { it.value = (set.contains(it.key)) }
 	}
 
 }

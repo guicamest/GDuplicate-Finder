@@ -1,26 +1,38 @@
 package com.sleepcamel.fileduplicatefinder.ui.components
 
+import groovy.beans.Bindable
+
 import java.awt.Desktop
 import java.util.ArrayList
 import java.util.List
 
 import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
+import org.eclipse.core.databinding.DataBindingContext
 import org.eclipse.core.databinding.beans.BeansObservables
 import org.eclipse.core.databinding.observable.Observables
 import org.eclipse.core.databinding.observable.list.IObservableList
 import org.eclipse.core.databinding.observable.list.WritableList
 import org.eclipse.core.databinding.observable.map.IObservableMap
+import org.eclipse.core.databinding.observable.value.IObservableValue
 import org.eclipse.jface.action.Action
+import org.eclipse.jface.databinding.swt.SWTObservables
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider
 import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.viewers.CheckboxTableViewer
 import org.eclipse.jface.viewers.ColumnWeightData
 import org.eclipse.jface.viewers.ListViewer
+import org.eclipse.jface.viewers.StructuredSelection
 import org.eclipse.jface.viewers.TableLayout
 import org.eclipse.jface.viewers.ViewerFilter
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.SashForm
+import org.eclipse.swt.events.ArmEvent;
+import org.eclipse.swt.events.ArmListener
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.layout.RowLayout
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
@@ -38,10 +50,8 @@ import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.LocalFileAdapt
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ColumnSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ListLabelProvider
-import com.sleepcamel.fileduplicatefinder.ui.adapters.TableCheckStateProvider
 import com.sleepcamel.fileduplicatefinder.ui.adapters.TableLabelProvider
 import com.sleepcamel.fileduplicatefinder.ui.filters.PathTableFilter
-import com.sleepcamel.fileduplicatefinder.ui.listeners.MenuKeyDetectListener
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.PreviewFilesCache
 
@@ -58,12 +68,15 @@ public class ScanResults extends Composite {
 	private CheckboxTableViewer checkboxTableViewer
 	
 	PathTableFilter tableFilter
-	MenuKeyDetectListener menuKeyListener
 	IObservableList observableFileList
 	
 	Closure filesDeleted
 	
 	FDFUIResources i18n = FDFUIResources.instance
+	
+	private static char TOGGLE_SELECTION_MODE_KEY = 'k'
+	
+	@Bindable def keepSelection = false
 
 	public ScanResults(Composite parent, int style) {
 		super(parent,  SWT.FILL)
@@ -76,6 +89,11 @@ public class ScanResults extends Composite {
 		rl_btnComposite.justify = true
 		rl_btnComposite.spacing = 30
 		btnComposite.setLayout(rl_btnComposite)
+		
+		Button btnSelectionMode = new Button(btnComposite, SWT.CHECK)
+		btnSelectionMode.setText(i18n.msg('FDFUI.scanResultsKeepSelectionCheckLabel'))
+		btnSelectionMode.setToolTipText(i18n.msg('FDFUI.scanResultsKeepSelectionCheckTooltip'))
+		btnSelectionMode.addSelectionListener(new ClosureSelectionAdapter(c:toggleSelectionMode))
 		
 		Button btnDeleteDuplicates = new Button(btnComposite, SWT.NONE)
 		btnDeleteDuplicates.setText(i18n.msg('FDFUI.scanResultsDeleteBtn'))
@@ -97,19 +115,16 @@ public class ScanResults extends Composite {
 		listViewer.setInput(Observables.staticObservableList(folderList))
 		listViewer.addSelectionChangedListener(new ClosureSelectionAdapter(c: filterTable))
 		
-		checkboxTableViewer = CheckboxTableViewer.newCheckList(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL)
+		observableFileList = new WritableList(fileList, FileWrapper.class)
+		checkboxTableViewer = new MyCheckboxTableViewer(sashForm, SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL, observableFileList)
 
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider()
 		checkboxTableViewer.setContentProvider(contentProvider)
 
 		def modelProperties = ['name', 'friendlyPath', 'size', 'md5']
-		observableFileList = new WritableList(fileList, FileWrapper.class)
 		IObservableMap[] attributes = BeansObservables.observeMaps(contentProvider.getKnownElements(), FileWrapper.class, modelProperties as String[])
 		checkboxTableViewer.setLabelProvider(new TableLabelProvider(attributes, observableFileList))
 
-		TableCheckStateProvider checkStateProvider = new TableCheckStateProvider(observableFileList)
-		checkboxTableViewer.setCheckStateProvider(checkStateProvider)
-		checkboxTableViewer.addCheckStateListener(checkStateProvider)
 		checkboxTableViewer.setInput(observableFileList)
 
 		ColumnSelectionAdapter.instance.viewer = checkboxTableViewer
@@ -123,14 +138,28 @@ public class ScanResults extends Composite {
 		Table table = checkboxTableViewer.getTable()
 		table.setHeaderVisible(true)
 
-		menuKeyListener = new MenuKeyDetectListener()
+		def lis = new KeyListener(){
+			public void keyPressed(KeyEvent paramKeyEvent) {
+			}
+			public void keyReleased(KeyEvent paramKeyEvent) {
+				if ( paramKeyEvent.character == TOGGLE_SELECTION_MODE_KEY ){
+					toggleSelectionMode()
+				}
+			}
+		}
 		
-		table.addKeyListener(menuKeyListener)
-		table.addMenuDetectListener(menuKeyListener)
+		table.addKeyListener(lis)
+		listViewer.getList().addKeyListener(lis)
+		btnComposite.addKeyListener(lis)
 		
 		Menu tableContextMenu = new Menu(table)
-//		table.setMenu(tableContextMenu)
-
+		table.setMenu(tableContextMenu)
+		table.addMenuDetectListener(new MenuDetectListener(){
+			void menuDetected(MenuDetectEvent paramMenuDetectEvent){
+				paramMenuDetectEvent.doit = (!checkboxTableViewer.getSelection().isEmpty())
+			}
+		})
+		
 		MenuItem mntmSelectAll = new MenuItem(tableContextMenu, SWT.NONE)
 		mntmSelectAll.setText(i18n.msg('FDFUI.scanResultsMenuSelectAll'))
 		mntmSelectAll.addSelectionListener(new ClosureSelectionAdapter(c: selectAll))
@@ -139,13 +168,35 @@ public class ScanResults extends Composite {
 		mntmDeselectAll.setText(i18n.msg('FDFUI.scanResultsMenuDeselectAll'))
 		mntmDeselectAll.addSelectionListener(new ClosureSelectionAdapter(c: deselectAll))
 		
+		MenuItem mntmSelectGroupDuplicates = new MenuItem(tableContextMenu, SWT.NONE)
+		mntmSelectGroupDuplicates.setText(i18n.msg('FDFUI.scanResultsMenuGroupDuplicates'))
+		mntmSelectGroupDuplicates.addSelectionListener(new ClosureSelectionAdapter(c: selectAllButOneInGroup))
+		
 		new MenuItem(tableContextMenu, SWT.SEPARATOR)
-
-		MenuItem mntmSelectAllFromFolder = new MenuItem(tableContextMenu, SWT.NONE)
+		
+		MenuItem mntmGoToFolder = new MenuItem(tableContextMenu, SWT.NONE)
+		mntmGoToFolder.setText(i18n.msg('FDFUI.scanResultsSeeDuplicatesInFolder'))
+		mntmGoToFolder.addSelectionListener(new ClosureSelectionAdapter(c: seeDuplicatesInFolder))
+		mntmGoToFolder.addArmListener(new ArmListener(){
+			void widgetArmed(ArmEvent paramArmEvent){
+				paramArmEvent.widget.setEnabled(PathTableFilter.ALL_FILTER.equals(tableFilter.getLastPath()))
+			}
+		})
+		
+		org.eclipse.swt.widgets.List list = listViewer.getList()
+		Menu listContextMenu = new Menu(list)
+		list.setMenu(listContextMenu)
+		list.addMenuDetectListener(new MenuDetectListener(){
+			void menuDetected(MenuDetectEvent paramMenuDetectEvent){
+				paramMenuDetectEvent.doit = (!listViewer.getSelection().isEmpty())
+			}
+		})
+		
+		MenuItem mntmSelectAllFromFolder = new MenuItem(listContextMenu, SWT.NONE)
 		mntmSelectAllFromFolder.setText(i18n.msg('FDFUI.scanResultsMenuSelectAllFromFolder'))
 		mntmSelectAllFromFolder.addSelectionListener(new ClosureSelectionAdapter(c: selectAllFromFolder))
 		
-		MenuItem mntmDeselectAllFromFolder = new MenuItem(tableContextMenu, SWT.NONE)
+		MenuItem mntmDeselectAllFromFolder = new MenuItem(listContextMenu, SWT.NONE)
 		mntmDeselectAllFromFolder.setText(i18n.msg('FDFUI.scanResultsMenuDeselectAllFromFolder'))
 		mntmDeselectAllFromFolder.addSelectionListener(new ClosureSelectionAdapter(c: deselectAllFromFolder))
 		
@@ -163,6 +214,19 @@ public class ScanResults extends Composite {
 		
 		sashForm.setWeights([2, 5] as int[])
 		checkboxTableViewer.refresh()
+		createBindings(btnSelectionMode)
+	}
+	
+	def createBindings(selectionBtn){
+		def bindingContext = new DataBindingContext()
+		IObservableValue btnSelectionObservable = SWTObservables.observeSelection(selectionBtn)
+		IObservableValue valueSelectionObservable = BeansObservables.observeValue(this, 'keepSelection')
+		bindingContext.bindValue(btnSelectionObservable, valueSelectionObservable)
+	}
+	
+	def toggleSelectionMode = { event ->
+		if ( event ){ event.doit = false }
+		keepSelection = !keepSelection
 	}
 	
 	def createColumn(viewer, columnName){
@@ -193,9 +257,22 @@ public class ScanResults extends Composite {
 		tableFilter.filterUsingPath('All')
 		listViewer.refresh()
 	}
-	
+
+	def seeDuplicatesInFolder = {
+		def currentItem = checkboxTableViewer.getSelection().getFirstElement()
+		if ( currentItem ){
+			listViewer.setSelection(new StructuredSelection(folderList.find { it.filePath == currentItem.getParentWrapper().getFriendlyPath() }))
+		}
+	}
+
 	def filterTable = { selectedEvent ->
-		if ( !selectedEvent.getSelection().isEmpty() && tableFilter.filterUsingPath(selectedEvent.getSelection().getFirstElement().filePath) ){
+		if ( !selectedEvent.getSelection().isEmpty() ){
+			filterTableByPath( selectedEvent.getSelection().getFirstElement().filePath )
+		}
+	}
+	
+	def filterTableByPath = { path ->
+		if ( tableFilter.filterUsingPath(path) ){
 			checkboxTableViewer.refresh()
 		}
 	}
@@ -204,10 +281,18 @@ public class ScanResults extends Composite {
 	def deselectAllFromFolder = { allFromFolderToState(false) }
 	def allFromFolderToState = { state ->
 		keepIfCtrlDown(state) {
-			def currentItem = checkboxTableViewer.getSelection().getFirstElement()
-			if ( !currentItem ) return null
-			def father = currentItem.getParentWrapper()
-			fileList.findAll { file -> file.getParentWrapper().equals(father) }
+			def currentItem = listViewer.getSelection().getFirstElement()
+			if ( !currentItem ) {return null}
+			if ( currentItem.filePath == PathTableFilter.ALL_FILTER ) {return fileList}
+			fileList.findAll { file -> currentItem.filePath == file.getParentWrapper().getFriendlyPath() }
+		}
+	}
+	
+	def selectAllButOneInGroup = {
+		keepIfCtrlDown(true) {
+			lazySelect(checkboxTableViewer.getFilteredElements(fileList)){ List groupList ->
+				(groupList.size() > 1 ? groupList[0..-2] : [])
+			}
 		}
 	}
 	
@@ -215,20 +300,18 @@ public class ScanResults extends Composite {
 	def deselectAll = { selectionToState(false) }
 	def selectionToState = { state ->
 		keepIfCtrlDown(state) {
-			checkboxTableViewer.getSelection().toArray()
+			checkboxTableViewer.getFilteredElements(fileList)
 		}
 	}
 
 	def keepIfCtrlDown(boolean toSelected, Closure c){
-		def keepSelected = menuKeyListener.ctrlStatus
 		def items = c.call()
-		if ( items == null )
+		if ( items == null ){
 			return
+		}
 
-		if ( keepSelected ){
-			items.each{
-				checkboxTableViewer.setChecked(it, toSelected)
-			}
+		if ( keepSelection ){
+			items.each{ checkboxTableViewer.setChecked(it, toSelected) }
 		}else{
 			items = ( toSelected ? items : [] ) as Object[]
 			checkboxTableViewer.setCheckedElements(items)
@@ -253,7 +336,9 @@ public class ScanResults extends Composite {
 			if ( !MessageDialog.openConfirm(null, i18n.msg('FDFUI.scanResultsAllInGroupDialogTitle'), i18n.msg('FDFUI.scanResultsAllInGroupDialogText')) )
 				return
 		}
-		def asList = checkboxTableViewer.getCheckedElements() as List
+		
+		// Don't use getCheckedElements() because it might not return all items as table is virtual
+		def asList = checkboxTableViewer.getAllCheckedElements()
 		if ( asList.isEmpty() ){
 			MessageDialog.openInformation(null, i18n.msg('FDFUI.scanResultsNoFileDialogTitle'), i18n.msg('FDFUI.scanResultsNoFileDialogText'))
 			return
@@ -282,12 +367,18 @@ public class ScanResults extends Composite {
 		def allSelected = false
 		for(DuplicateEntry entry:entries){
 			allSelected = true
-			entry.getFiles().each { allSelected = allSelected && checkboxTableViewer.getChecked(it) }
+			entry.getFiles().each { allSelected = ( allSelected && checkboxTableViewer.getChecked(it) ) }
 			if ( allSelected ){
 				break
 			}
 		}
 		allSelected
+	}
+	
+	def lazySelect(List files, Closure selectFilesInGroupClosure){
+		files.groupBy{it.md5()}.collect {
+			selectFilesInGroupClosure.call(it.value)
+		}.flatten()
 	}
 	
 	def openFile = { event ->
