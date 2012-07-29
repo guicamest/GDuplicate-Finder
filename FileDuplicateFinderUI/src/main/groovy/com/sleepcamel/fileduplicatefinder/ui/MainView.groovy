@@ -45,6 +45,7 @@ import com.sleepcamel.fileduplicatefinder.ui.dialogs.FilesNotFoundDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.preference.GDFPreferenceDialog
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
+import com.sleepcamel.fileduplicatefinder.ui.model.SearchParameters
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
@@ -70,6 +71,7 @@ public class MainView {
 	private CheckboxTreeViewer checkboxTreeViewer
 	
 	MenuItem mntmNewSearch
+	MenuItem mntmLoadSearchParameters
 	MenuItem mntmLoadSearchSession
 	MenuItem mntmLoadDuplicateResultsSession
 	MenuItem mntmPreferences
@@ -90,6 +92,7 @@ public class MainView {
 	MainView(){
 		FileAssociations.instance.registerHandler('drs', loadDuplicateResultsSessionFile)
 		FileAssociations.instance.registerHandler('sps', loadSearchSessionFile)
+		FileAssociations.instance.registerHandler('sp', loadSearchParametersFile)
 	}
 
 	public void open(String[] args) {
@@ -117,14 +120,10 @@ public class MainView {
 			}
 		}
 		
-		def showMsg = false
 		if ( !handled ){
-			showMsg = !syncAndRefresh(true)
+			syncAndShowMessage()
 		}
 
-		if ( showMsg ){
-			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
-		}
 		if ( Settings.instance.preferenceStore().getBoolean('automaticUpdates') ){
 			UpdateFinder.instance.searchForUpdate(true)
 		}
@@ -166,6 +165,10 @@ public class MainView {
 		mntmNewSearch = new MenuItem(menuFile, SWT.NONE)
 		mntmNewSearch.setText(i18n.msg('FDFUI.fileNewSearch'))
 		mntmNewSearch.addSelectionListener(new ClosureSelectionAdapter(c: searchAgain))
+		
+		mntmLoadSearchParameters = new MenuItem(menuFile, SWT.NONE)
+		mntmLoadSearchParameters.setText(i18n.msg('FDFUI.fileLoadSearchParameters'))
+		mntmLoadSearchParameters.addSelectionListener(new ClosureSelectionAdapter(c: loadSearchParameters))
 		
 		mntmLoadSearchSession = new MenuItem(menuFile, SWT.NONE)
 		mntmLoadSearchSession.setText(i18n.msg('FDFUI.fileLoadSearchSession'))
@@ -251,6 +254,10 @@ public class MainView {
 		extensionsOption.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false))
 		extensionsOption.setToolTipText(i18n.msg('FDFUI.extensionFilterTooltip'))
 		
+		Button btnSaveParameters = new Button(composite, SWT.NONE)
+		btnSaveParameters.setText(i18n.msg('FDFUI.saveParametersBtn'))
+		btnSaveParameters.addSelectionListener(new ClosureSelectionAdapter(c: saveSearchParameters))
+		
 		Button btnDuplicateSearch = new Button(composite, SWT.NONE)
 		btnDuplicateSearch.setText(i18n.msg('FDFUI.searchBtn'))
 		btnDuplicateSearch.addSelectionListener(new ClosureSelectionAdapter(c: searchForDuplicates))
@@ -277,7 +284,7 @@ public class MainView {
 	def openAboutDialog = {
 		new AboutDialog(shlFileDuplicateFinder, SWT.DIALOG_TRIM).open()
 	}
-
+	
 	def searchForDuplicates = {
 		def directories = checkboxTreeViewer.getCheckedElements()
 		if ( directories.length == 0 ){
@@ -307,14 +314,42 @@ public class MainView {
 		scanProgress.scanAndSearch(filters, directories)
 	}
 	
-	def loadSearchSession = {
-		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN)
-		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')] as String [])
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')] as String [])
+	def saveSearchParameters = {
+		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.SAVE)
+		dlg.setFilterNames([i18n.msg('FDFUI.loadSearchParametersDialogFilterNames')] as String [])
+		dlg.setFilterExtensions([i18n.msg('FDFUI.loadSearchParametersDialogFilterExtensions')] as String [])
 		String fn = dlg.open()
 		if (fn != null) {
-			loadSearchSessionFile(new File(fn))
+			new File(fn).withObjectOutputStream { oos ->
+				oos.writeObject(getSearchParameters())
+				DefaultGroovyMethodsSupport.closeQuietly(oos)
+			}
 		}
+	}
+	
+	def loadSearchParameters = {
+		showOpenFileDialog([i18n.msg('FDFUI.loadSearchParametersDialogFilterNames')], [i18n.msg('FDFUI.loadSearchParametersDialogFilterExtensions')], loadSearchParametersFile)
+	}
+	
+	def loadSearchParametersFile = { File file ->
+		loadFile(file){ SearchParameters parameters ->
+			syncAndShowMessage()
+			minSizeOption.setData(parameters.getMinSize())
+			maxSizeOption.setData(parameters.getMaxSize())
+			nameOption.setData(parameters.getNamesFilter())
+			extensionsOption.setData(parameters.getExtensionsFilter())
+//			checkboxTreeViewer
+		}
+	}
+	
+	def getSearchParameters = {
+		new SearchParameters(minSize: minSizeOption.getData() as Long, maxSize: maxSizeOption.getData() as Long,
+			namesFilter: nameOption.getData(), extensionsFilter: extensionsOption.getData(),
+			directories: checkboxTreeViewer.getCheckedElements())
+	}
+	
+	def loadSearchSession = {
+		showOpenFileDialog([i18n.msg('FDFUI.loadSearchSessionDialogFilterNames')], [i18n.msg('FDFUI.loadSearchSessionDialogFilterExtensions')], loadSearchSessionFile)
 	}
 	
 	def loadSearchSessionFile = { File file ->
@@ -325,13 +360,7 @@ public class MainView {
 	}
 	
 	def loadDuplicateResultsSession = {
-		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN)
-		dlg.setFilterNames([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')] as String [])
-		dlg.setFilterExtensions([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')] as String [])
-		String fn = dlg.open()
-		if (fn != null) {
-			loadDuplicateResultsSessionFile(new File(fn))
-		}
+		showOpenFileDialog([i18n.msg('FDFUI.loadDuplicateSessionDialogFilterNames')], [i18n.msg('FDFUI.loadDuplicateSessionDialogFilterExtensions')], loadDuplicateResultsSessionFile)
 	}
 	
 	def loadDuplicateResultsSessionFile = { File file ->
@@ -343,6 +372,16 @@ public class MainView {
 				dialog.open()
 			}
 			showDuplicates(sanitized.entries)
+		}
+	}
+	
+	def showOpenFileDialog(names, extensions, Closure c){
+		FileDialog dlg = new FileDialog(shlFileDuplicateFinder, SWT.OPEN)
+		dlg.setFilterNames(names as String [])
+		dlg.setFilterExtensions(extensions as String [])
+		String fn = dlg.open()
+		if (fn != null) {
+			c.call(new File(fn))
 		}
 	}
 	
@@ -393,6 +432,7 @@ public class MainView {
 	
 	def setFileMenuStatus = { state ->
 		mntmNewSearch.setEnabled(state)
+		mntmLoadSearchParameters.setEnabled(state)
 		mntmLoadSearchSession.setEnabled(state)
 		mntmLoadDuplicateResultsSession.setEnabled(state)
 	}
@@ -424,6 +464,12 @@ public class MainView {
 		def newModels = manager.open()
 		Settings.instance.lastNetworkAuthModels = newModels
 		syncAndRefresh()
+	}
+	
+	def syncAndShowMessage(){
+		if ( !syncAndRefresh(true) ){
+			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
+		}
 	}
 	
 	def syncAndRefresh(umount = false){

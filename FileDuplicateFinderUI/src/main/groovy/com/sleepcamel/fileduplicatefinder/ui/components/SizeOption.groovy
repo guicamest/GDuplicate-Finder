@@ -12,4 +12,12 @@ public class SizeOption extends SelectableOption {
 	def getData() {
 		child.enabled ? ((SizeWidget)child).getData() : null
 	}
+	
+	void setData(data){
+		super.setData(data)
+		if ( !data ){
+			return
+		}
+		child.setData(data)
+	}
 }

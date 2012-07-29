@@ -22,4 +22,12 @@ public class TextFieldOption extends SelectableOption {
 
 		text.split(',').collect { it.trim() }
 	}
+	
+	void setData(data){
+		super.setData(data)
+		if ( !data ){
+			return
+		}
+		((Text)child).setText(data.join(', '))
+	}
 }

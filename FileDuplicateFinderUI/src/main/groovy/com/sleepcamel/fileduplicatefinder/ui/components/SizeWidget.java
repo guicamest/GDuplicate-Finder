@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileSize;
+import com.sleepcamel.fileduplicatefinder.ui.utils.Utils;
 
 public class SizeWidget extends Composite {
 
@@ -45,5 +46,11 @@ public class SizeWidget extends Composite {
 		StructuredSelection selection = (StructuredSelection) combo.getSelection();
 		FileSize selectedElement = (FileSize) selection.getFirstElement();
 		return selectedElement.toBytes(spinner.getSelection());
+	}
+	
+	public void setData(Object data){
+		Object[] obj = Utils.getCountAndFileSize((Long) data);
+		spinner.setSelection(((Double) obj[0]).intValue());
+		combo.setSelection(new StructuredSelection(obj[1]));
 	}
 }

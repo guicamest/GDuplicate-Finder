@@ -20,11 +20,22 @@ public class Utils {
 	}
 	
 	public static String formatBytes(long bytes){
+		Object[] countAndFileSize = getCountAndFileSize(bytes);
+		return String.format("%3.2f %s", countAndFileSize[0], ((FileSize) countAndFileSize[1]).getFriendlyName());
+	}
+	
+	public static Object[] getCountAndFileSize(long bytes){
+		Object[] ret = new Object[2];
 		for(FileSize size:FileSize.reversedValues()){
 			double step = size.getSizeInBytes();
-	        if (bytes > step) return String.format("%3.2f %s", bytes / step, size.getFriendlyName());
+			ret[1] = size;
+	        if (bytes > step){
+	        	ret[0] = bytes / step;
+	        	return ret;
+	        }
 		}
-	    return Long.toString(bytes);
+		ret[0] = bytes / 1.0;
+		return ret;
 	}
 
 }
