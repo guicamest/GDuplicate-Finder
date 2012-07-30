@@ -2,6 +2,12 @@ GDuplicateFinder Changelog
 
 
 ========================
+ChangeLog Version 1.3.0
+========================
+*Improved duplicate files selection
+
+
+========================
 ChangeLog Version 1.2.0
 ========================
 *Added Amazon S3 to supported network drives
