@@ -10,7 +10,6 @@ import org.eclipse.swt.graphics.Rectangle
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button
-import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Label
 import org.eclipse.swt.widgets.Link
@@ -19,18 +18,17 @@ import org.eclipse.wb.swt.SWTResourceManager
 
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources;
 
-class AboutDialog extends Dialog {
+class AboutDialog extends InternationalizedDialog {
 
 	Shell shlAbout
-	FDFUIResources i18n = FDFUIResources.instance
 	static final Integer DIALOG_WIDTH = 383
 	static final Integer DIALOG_HEIGHT = 137
 
 	public AboutDialog(Shell parent, int style) {
-		super(parent, style)
+		super(parent, style, 'FDFUI.aboutDialogTitle')
 	}
 
-	public Object open() {
+	public Object doOpen() {
 		createContents()
 		shlAbout.open()
 		shlAbout.layout()
@@ -48,7 +46,7 @@ class AboutDialog extends Dialog {
 		int x = ( parentBounds.x + parentBounds.width - DIALOG_WIDTH ) / 2
 		int y = ( parentBounds.y + parentBounds.height - DIALOG_HEIGHT ) / 2
 		shlAbout.setBounds(x, y, DIALOG_WIDTH, DIALOG_HEIGHT)
-		shlAbout.setText(i18n.msg('FDFUI.aboutDialogTitle'))
+		shlAbout.setText(title)
 		shlAbout.setLayout(new GridLayout(1, false))
 		
 		Label lblFileDuplicateFinder = new Label(shlAbout, SWT.NONE)

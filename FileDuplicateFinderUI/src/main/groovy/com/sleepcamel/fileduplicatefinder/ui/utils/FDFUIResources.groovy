@@ -8,6 +8,7 @@ import java.io.File
 import java.text.MessageFormat
 import java.util.MissingResourceException
 import java.util.ResourceBundle
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils
 import org.eclipse.swt.graphics.Image
@@ -64,12 +65,15 @@ class FDFUIResources {
 		MessageFormat.format(msg(messageKey), arr)
 	}
 	
+	def messageToKey = [:] as ConcurrentHashMap
+	
     def msg(String messageKey){
 		def msg = null
         if (messageKey != null) {
 		    synchronized (resourceBundle) {
 		        try {
 		            msg = resourceBundle.getString(messageKey)
+					messageToKey[msg] = messageKey
 		        } catch (MissingResourceException ex){
 		            msg = messageKey + ' Untranslated'
 		            log.error('Unable to retrieve i18n key', ex)
@@ -78,4 +82,12 @@ class FDFUIResources {
         }
         msg
     }
+	
+	def keyForMsg(message){
+		def ret = message
+		if ( messageToKey.containsKey(message) ){
+			ret = messageToKey[message]
+		}
+		ret
+	}
 }

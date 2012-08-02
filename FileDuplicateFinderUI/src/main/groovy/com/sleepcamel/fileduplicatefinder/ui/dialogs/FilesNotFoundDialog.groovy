@@ -4,7 +4,6 @@ import java.util.List
 
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
-import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Display
@@ -15,17 +14,16 @@ import org.eclipse.swt.SWT
 
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 
-public class FilesNotFoundDialog extends Dialog {
+public class FilesNotFoundDialog extends InternationalizedDialog {
 
 	Shell shlFilesWereNot
 	List files
-	FDFUIResources i18n = FDFUIResources.instance
 
 	public FilesNotFoundDialog(Shell parent, int style) {
-		super(parent, style)
+		super(parent, style, 'FDFUI.filesNotFoundDialogTitle')
 	}
 
-	public void open() {
+	public Object doOpen() {
 		createContents()
 		shlFilesWereNot.open()
 		shlFilesWereNot.layout()
@@ -40,7 +38,7 @@ public class FilesNotFoundDialog extends Dialog {
 	private void createContents() {
 		shlFilesWereNot = new Shell(getParent(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL)
 		shlFilesWereNot.setSize(450, 300)
-		shlFilesWereNot.setText(i18n.msg('FDFUI.filesNotFoundDialogTitle'))
+		shlFilesWereNot.setText(title)
 		
 		Label lblTheFollowingFiles = new Label(shlFilesWereNot, SWT.NONE)
 		lblTheFollowingFiles.setBounds(10, 10, 424, 15)

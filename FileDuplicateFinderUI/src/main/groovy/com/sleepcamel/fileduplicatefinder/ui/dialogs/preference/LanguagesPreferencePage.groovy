@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.eclipse.jface.dialogs.IMessageProvider
 import org.eclipse.jface.preference.ComboFieldEditor
 
+import com.sleepcamel.fileduplicatefinder.ui.PropertyConsts
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 
 public class LanguagesPreferencePage extends InternationalizedPreferencePage {
@@ -17,7 +18,7 @@ public class LanguagesPreferencePage extends InternationalizedPreferencePage {
 	protected void createFieldEditors() {
 		List<Locale> locales = FDFUIResources.instance.availableLocales
 		String [][] f = locales.collect{ [StringUtils.capitalize(it.getDisplayName(it)), it.getLanguage() ] }
-		ComboFieldEditor comboFieldEditor = new ComboFieldEditor('language', i18n.msg('FDFUI.preferencesDialogLanguagePageChooseLanguage'), f, getFieldEditorParent())
+		ComboFieldEditor comboFieldEditor = new ComboFieldEditor(PropertyConsts.LANGUAGE, i18n.msg('FDFUI.preferencesDialogLanguagePageChooseLanguage'), f, getFieldEditorParent())
 		addField(comboFieldEditor)
 	}
 	
@@ -25,7 +26,7 @@ public class LanguagesPreferencePage extends InternationalizedPreferencePage {
 		boolean ok = super.performOk()
 		def ps = getPreferenceStore()
 		if ( ok && ps ){
-			def ll = new Locale(ps.getString('language'))
+			def ll = new Locale(ps.getString(PropertyConsts.LANGUAGE))
 			def msg = i18n.msg('FDFUI.preferencesDialogLanguagePageChangedText', StringUtils.capitalize(ll.getDisplayName(ll)))
 			setMessage(msg, IMessageProvider.INFORMATION)
 		}

@@ -13,6 +13,7 @@ FileDuplicateFinderUI/bin/
 FileDuplicateFinderUI/settings.dat
 FileDuplicateFinderUI/gduplicatefinder.properties
 forWiki
+prodData
 readme.html
 pushToSourceForge.sh
 version.json

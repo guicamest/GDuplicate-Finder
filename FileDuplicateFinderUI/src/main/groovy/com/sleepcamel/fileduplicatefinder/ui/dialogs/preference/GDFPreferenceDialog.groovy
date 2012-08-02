@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Shell
 
+import com.sleepcamel.fileduplicatefinder.ui.tracking.AnalyticsTracker;
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
@@ -16,20 +17,27 @@ public class GDFPreferenceDialog extends PreferenceDialog {
 
 	private Button okButton
 	FDFUIResources i18n = FDFUIResources.instance
+	AnalyticsTracker tracker = AnalyticsTracker.instance
+	def title
 
 	public GDFPreferenceDialog(Shell parentShell) {
 		super(parentShell, getPreferenceMgr())
+		title = i18n.msg('FDFUI.preferencesDialogTitle')
 	}
 
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell)
 		newShell.setImages(getParentShell().getImages())
-		newShell.setText(i18n.msg('FDFUI.preferencesDialogTitle'))
+		newShell.setText(title)
 	}
 
 	public int open() {
+		def lastPage = tracker.lastPage
+		tracker.trackPageView("/${i18n.keyForMsg(title)}")
 		setPreferenceStore(Settings.instance.preferenceStore())
-		super.open()
+		def retValue = super.open()
+		tracker.trackPageView(lastPage)
+		retValue
 	}
 
 	private static PreferenceManager getPreferenceMgr() {

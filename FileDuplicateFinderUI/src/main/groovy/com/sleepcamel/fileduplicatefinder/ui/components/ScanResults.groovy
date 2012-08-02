@@ -18,7 +18,6 @@ import org.eclipse.core.databinding.observable.value.IObservableValue
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.databinding.swt.SWTObservables
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider
-import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.jface.viewers.CheckboxTableViewer
 import org.eclipse.jface.viewers.ColumnWeightData
 import org.eclipse.jface.viewers.ListViewer
@@ -51,6 +50,7 @@ import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ColumnSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ListLabelProvider
 import com.sleepcamel.fileduplicatefinder.ui.adapters.TableLabelProvider
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.InternationalizedTrackingMessageDialogHelper
 import com.sleepcamel.fileduplicatefinder.ui.filters.PathTableFilter
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.PreviewFilesCache
@@ -333,14 +333,14 @@ public class ScanResults extends Composite {
 	
 	def deleteDuplicates = {
 		if ( groupIsAllSelected() ){
-			if ( !MessageDialog.openConfirm(null, i18n.msg('FDFUI.scanResultsAllInGroupDialogTitle'), i18n.msg('FDFUI.scanResultsAllInGroupDialogText')) )
+			if ( !InternationalizedTrackingMessageDialogHelper.openConfirm(null, i18n.msg('FDFUI.scanResultsAllInGroupDialogTitle'), i18n.msg('FDFUI.scanResultsAllInGroupDialogText')) )
 				return
 		}
 		
 		// Don't use getCheckedElements() because it might not return all items as table is virtual
 		def asList = checkboxTableViewer.getAllCheckedElements()
 		if ( asList.isEmpty() ){
-			MessageDialog.openInformation(null, i18n.msg('FDFUI.scanResultsNoFileDialogTitle'), i18n.msg('FDFUI.scanResultsNoFileDialogText'))
+			InternationalizedTrackingMessageDialogHelper.openInformation(null, i18n.msg('FDFUI.scanResultsNoFileDialogTitle'), i18n.msg('FDFUI.scanResultsNoFileDialogText'))
 			return
 		}
 		def selectedFiles = asList.groupBy {it.getMd5()}
@@ -391,7 +391,7 @@ public class ScanResults extends Composite {
 					break
 				default:
 					file = PreviewFilesCache.instance.get(selectedFile.md5())
-					if( !file && MessageDialog.openQuestion(null, i18n.msg('FDFUI.scanResultsPreviewFileTitle'), i18n.msg('FDFUI.scanResultsPreviewFileText')) ){
+					if( !file && InternationalizedTrackingMessageDialogHelper.openQuestion(null, i18n.msg('FDFUI.scanResultsPreviewFileTitle'), i18n.msg('FDFUI.scanResultsPreviewFileText')) ){
 						file = File.createTempFile('dff', selectedFile.name)
 						FileUtils.copyInputStreamToFile(selectedFile.inputStream(), file)
 						PreviewFilesCache.instance.put(selectedFile.md5(), file)

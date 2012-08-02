@@ -13,11 +13,9 @@ import org.eclipse.jface.viewers.ComboViewer
 import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.SelectionChangedEvent
 import org.eclipse.jface.viewers.StructuredSelection
-import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.layout.GridLayout
-import org.eclipse.swt.layout.RowData
 import org.eclipse.swt.widgets.Text
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Label
@@ -32,9 +30,8 @@ import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
 import com.sleepcamel.fileduplicatefinder.ui.model.Protocol
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
-import com.sleepcamel.fileduplicatefinder.ui.utils.FileSize
 
-public class NetworkDriveDialog extends Dialog {
+public class NetworkDriveDialog extends InternationalizedDialog {
 
 	protected Object result
 	protected Shell shell
@@ -51,14 +48,11 @@ public class NetworkDriveDialog extends Dialog {
 	Label lblError
 	NetworkAuth model = new NetworkAuth()
 	
-	FDFUIResources i18n = FDFUIResources.instance
-
 	public NetworkDriveDialog(Shell parent, int style) {
-		super(parent, style)
-		setText(i18n.msg('FDFUI.networkDriveDialogTitle'))
+		super(parent, style, 'FDFUI.networkDriveDialogTitle')
 	}
 
-	public Object open() {
+	public Object doOpen() {
 		Display display = getParent().getDisplay()
 		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
 			public void run() {
@@ -78,7 +72,7 @@ public class NetworkDriveDialog extends Dialog {
 	def createContents() {
 		shell = new Shell(getParent(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL)
 		shell.setSize(450, SWT.DEFAULT)
-		shell.setText(getText())
+		shell.setText(title)
 		shell.setLayout(new GridLayout(1, false))
 		
 		Composite composite = new Composite(shell, SWT.NONE)

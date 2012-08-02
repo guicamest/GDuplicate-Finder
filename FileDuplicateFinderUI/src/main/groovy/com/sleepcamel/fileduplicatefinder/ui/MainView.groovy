@@ -5,6 +5,7 @@ import java.io.File
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize
 
 import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.time.StopWatch;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import org.eclipse.core.databinding.beans.BeanProperties
 import org.eclipse.core.databinding.observable.Realm
@@ -42,13 +43,16 @@ import com.sleepcamel.fileduplicatefinder.ui.components.SizeOption
 import com.sleepcamel.fileduplicatefinder.ui.components.TextFieldOption
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.AboutDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.FilesNotFoundDialog
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.InternationalizedTrackingMessageDialogHelper
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.NetworkDrivesManagerDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.preference.GDFPreferenceDialog
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.model.SearchParameters
+import com.sleepcamel.fileduplicatefinder.ui.tracking.AnalyticsTracker
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
+import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileAssociations
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileHandler
 
@@ -77,6 +81,7 @@ public class MainView {
 	MenuItem mntmPreferences
 	
 	FDFUIResources i18n = FDFUIResources.instance
+	AnalyticsTracker tracker = AnalyticsTracker.instance
 	
 	def treeInput
 	def syncedDrives = false
@@ -124,15 +129,39 @@ public class MainView {
 			syncAndShowMessage()
 		}
 
-		if ( Settings.instance.preferenceStore().getBoolean('automaticUpdates') ){
+		def ps = Settings.instance.preferenceStore()
+		if ( ps.getBoolean(PropertyConsts.AUTOMATIC_UPDATES) ){
 			UpdateFinder.instance.searchForUpdate(true)
 		}
-
-		while (!shlFileDuplicateFinder.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep()
-			}
+		
+		boolean firstTime = ps.getBoolean(PropertyConsts.FIRST_TIME)
+		if ( firstTime ){
+			def dialog = new MessageDialog(shlFileDuplicateFinder, i18n.msg('FDFUI.userExperienceDialogTitle'), null, i18n.msg('FDFUI.userExperienceDialogText'), MessageDialog.INFORMATION, [i18n.msg('FDFUI.userExperienceDialogOkLbl'), i18n.msg('FDFUI.userExperienceDialogNoLbl')] as String[], 0)
+			dialog.setShellStyle(dialog.getShellStyle())
+			boolean inUserExperience = (dialog.open() == 0)
+			ps.setValue(PropertyConsts.TRACKING, inUserExperience)
+			ps.setValue(PropertyConsts.FIRST_TIME, false)
+			ps.save()
 		}
+
+		tracker.trackStarted()
+		try{
+			def sw = new StopWatch()
+			sw.start()
+			while (!shlFileDuplicateFinder.isDisposed()) {
+				if (!display.readAndDispatch()) {
+					display.sleep()
+				}
+			}
+			sw.stop()
+			Settings.instance.save()
+			tracker.trackLastEvent('AppClosed','Normal',Utils.formatInterval(sw.getTime()))
+		}catch(Exception e){
+			tracker.trackLastEvent('AppClosed','Exception',e.getMessage())
+		}
+		ps.setValue(PropertyConsts.TS_LAST, tracker.getCurrentTS())
+		ps.setValue(PropertyConsts.VISITS, tracker.getVisits())
+		ps.save()
 //		addWindowListener
 //		(new WindowAdapter() {
 //		  public void windowClosing(WindowEvent e) {
@@ -140,7 +169,6 @@ public class MainView {
 //			}
 //		  }
 //		)
-		Settings.instance.save()
 	}
 	
 	/**
@@ -288,7 +316,7 @@ public class MainView {
 	def searchForDuplicates = {
 		def directories = checkboxTreeViewer.getCheckedElements()
 		if ( directories.length == 0 ){
-			MessageDialog.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.noFolderSelectedDialogTitle'), i18n.msg('FDFUI.noFolderSelectedDialogText'))
+			InternationalizedTrackingMessageDialogHelper.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.noFolderSelectedDialogTitle'), i18n.msg('FDFUI.noFolderSelectedDialogText'))
 			return
 		}
 		
@@ -338,7 +366,6 @@ public class MainView {
 			maxSizeOption.setData(parameters.getMaxSize())
 			nameOption.setData(parameters.getNamesFilter())
 			extensionsOption.setData(parameters.getExtensionsFilter())
-//			checkboxTreeViewer
 		}
 	}
 	
@@ -371,6 +398,7 @@ public class MainView {
 				dialog.files = sanitized.nonExistingFiles
 				dialog.open()
 			}
+			tracker.trackPageView("/seeDuplicates?file")
 			showDuplicates(sanitized.entries)
 		}
 	}
@@ -444,6 +472,7 @@ public class MainView {
 	}
 	
 	def searchAgain = {
+		tracker.trackPageView("/search")
 		if ( !syncedDrives ){
 			syncAndRefresh()
 		}
@@ -468,7 +497,7 @@ public class MainView {
 	
 	def syncAndShowMessage(){
 		if ( !syncAndRefresh(true) ){
-			MessageDialog.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
+			InternationalizedTrackingMessageDialogHelper.openInformation(shlFileDuplicateFinder, i18n.msg('FDFUI.disconnectedDrivesDialogTitle'), i18n.msg('FDFUI.disconnectedDrivesDialogText'))
 		}
 	}
 	
@@ -516,7 +545,7 @@ public class MainView {
 	}
 
 	def showCouldNotOpenFile(msg){
-		MessageDialog.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.couldNotOpenFileDialogTitle'), msg)
+		InternationalizedTrackingMessageDialogHelper.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.couldNotOpenFileDialogTitle'), msg)
 	}
 }
 

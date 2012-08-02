@@ -28,6 +28,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.AndWrapperFilt
 import com.sleepcamel.fileduplicatefinder.core.domain.finder.SequentialDuplicateFinder
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.NegativeUpdateValueStrategy
+import com.sleepcamel.fileduplicatefinder.ui.tracking.AnalyticsTracker
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 
@@ -113,6 +114,7 @@ public class ScanProgress extends Composite {
 	}
 	
 	def scanAndSearch(filters, directories){
+		AnalyticsTracker.instance.trackPageView("/scanAndSearchDuplicates?filters=${filters}&directories=${directories.length}")
 		suspended = false
 		def duplicateFinder = new SequentialDuplicateFinder(directories:directories)
 		if ( !filters.isEmpty() ) duplicateFinder.filter = new AndWrapperFilter(filters : filters)
@@ -155,10 +157,12 @@ public class ScanProgress extends Composite {
 	def reportingThread
 	
 	def findDuplicates(findProgress){
+		AnalyticsTracker.instance.trackPageView("/findDuplicates")
 		search(findProgress, 'findDuplicates')
 	}
 	
 	def resumeSearch(findProgress){
+		AnalyticsTracker.instance.trackPageView("/findDuplicates?file")
 		search(findProgress, 'resume')
 	}
 
@@ -193,6 +197,7 @@ public class ScanProgress extends Composite {
 			stopWatch.stop()
 			Display.getDefault().asyncExec(new Runnable() {	public void run() {
 				label.text = i18n.msg('FDFUI.scanProgressLoadingResultsLbl')
+				AnalyticsTracker.instance.trackPageView("/seeDuplicates")
 				finishedFindingDuplicates.call(findProgress.duplicatedEntries())
 			}})
 			}catch(Exception e){}

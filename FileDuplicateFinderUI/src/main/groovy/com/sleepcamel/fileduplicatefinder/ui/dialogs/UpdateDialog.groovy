@@ -11,7 +11,6 @@ import org.eclipse.swt.layout.RowLayout
 import org.eclipse.swt.program.Program
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Dialog
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Label
 import org.eclipse.swt.widgets.Link
@@ -20,10 +19,9 @@ import org.eclipse.swt.widgets.Shell
 import com.sleepcamel.fileduplicatefinder.ui.model.UpdateStatus
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources;
 
-class UpdateDialog extends Dialog {
+class UpdateDialog extends InternationalizedDialog {
 
 	Shell shlUpdate
-	FDFUIResources i18n = FDFUIResources.instance
 	static final Integer DIALOG_WIDTH = 400
 	static final Integer DIALOG_HEIGHT = 120
 	def downloadUrl;
@@ -31,13 +29,13 @@ class UpdateDialog extends Dialog {
 	UpdateStatus status;
 	
 	public UpdateDialog(UpdateStatus s, String version, String downloadUrl) {
-		super(new Shell(Display.getCurrent()), SWT.NONE)
+		super(new Shell(Display.getCurrent()), SWT.NONE, 'FDFUI.updateDialogTitle')
 		this.status = s
 		this.version = version
 		this.downloadUrl = downloadUrl
 	}
 
-	public Object open() {
+	public Object doOpen() {
 		createContents()
 		shlUpdate.open()
 		shlUpdate.layout()
@@ -55,7 +53,7 @@ class UpdateDialog extends Dialog {
 		int x = ( parentBounds.x + parentBounds.width - DIALOG_WIDTH ) / 2
 		int y = ( parentBounds.y + parentBounds.height - DIALOG_HEIGHT ) / 2
 		shlUpdate.setBounds(x, y, DIALOG_WIDTH, DIALOG_HEIGHT)
-		shlUpdate.setText(i18n.msg('FDFUI.updateDialogTitle'))
+		shlUpdate.setText(title)
 		shlUpdate.setLayout(new GridLayout(1, false))
 		
 		Composite composite = new Composite(shlUpdate, SWT.NONE)

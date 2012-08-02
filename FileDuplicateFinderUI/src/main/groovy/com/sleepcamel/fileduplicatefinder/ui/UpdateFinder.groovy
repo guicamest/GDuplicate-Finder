@@ -14,6 +14,14 @@ import com.sleepcamel.fileduplicatefinder.ui.model.UpdateStatus;
 @Singleton
 class UpdateFinder {
 
+	def props = new Properties()
+	def currentVersion
+
+	private UpdateFinder(){
+		props.load(UpdateFinder.class.getResourceAsStream('app.properties'))
+		currentVersion = props.getProperty('FDFUI.app.version')
+	}
+	
 	def searchForUpdate(automaticCheck){
 		Thread.start {
 			def showDialog = !automaticCheck
@@ -22,13 +30,9 @@ class UpdateFinder {
 			def downloadUrl
 
 			try{
-				def props = new Properties()
-				props.load(UpdateFinder.class.getResourceAsStream('app.properties'))
-				
 				def appArch = props.getProperty('FDFUI.app.build')
 				
-				String appVersion = props.getProperty('FDFUI.app.version')
-				def appVersionInts = appVersion.split('\\.').collect { Integer.parseInt(it) }
+				def appVersionInts = currentVersion.split('\\.').collect { Integer.parseInt(it) }
 				def currentAppVersion = new Version(appVersionInts[0], appVersionInts[1], appVersionInts[2], null)
 				
 				HttpClient client = new DefaultHttpClient()
