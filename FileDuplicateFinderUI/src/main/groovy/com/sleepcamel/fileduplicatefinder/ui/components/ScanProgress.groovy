@@ -113,7 +113,8 @@ public class ScanProgress extends Composite {
 		bindingContext.bindValue(WidgetProperties.enabled().observe(btnSaveProgress), modelSuspendValue)
 	}
 	
-	def scanAndSearch(filters, directories){
+	def scanAndSearch(filters, directories, autodelete = false){
+		println "B - $autodelete"
 		AnalyticsTracker.instance.trackPageView("/scanAndSearchDuplicates?filters=${filters}&directories=${directories.length}")
 		suspended = false
 		def duplicateFinder = new SequentialDuplicateFinder(directories:directories)
@@ -138,7 +139,7 @@ public class ScanProgress extends Composite {
 				}})
 				Thread.sleep(1000L)
 			}
-			findDuplicates(progress)
+			findDuplicates(progress, autodelete)
 			return
 		}
 	}
@@ -156,9 +157,9 @@ public class ScanProgress extends Composite {
 	
 	def reportingThread
 	
-	def findDuplicates(findProgress){
+	def findDuplicates(findProgress, autodelete = false){
 		AnalyticsTracker.instance.trackPageView("/findDuplicates")
-		search(findProgress, 'findDuplicates')
+		search(findProgress, 'findDuplicates', autodelete)
 	}
 	
 	def resumeSearch(findProgress){
@@ -166,7 +167,7 @@ public class ScanProgress extends Composite {
 		search(findProgress, 'resume')
 	}
 
-	def search(findProgress, methodName){
+	def search(findProgress, methodName, autodelete = false){
 		currentProgress = findProgress
 		suspended = false
 		reportingThread = Thread.start { thread ->
@@ -198,7 +199,7 @@ public class ScanProgress extends Composite {
 			Display.getDefault().asyncExec(new Runnable() {	public void run() {
 				label.text = i18n.msg('FDFUI.scanProgressLoadingResultsLbl')
 				AnalyticsTracker.instance.trackPageView("/seeDuplicates")
-				finishedFindingDuplicates.call(findProgress.duplicatedEntries())
+				finishedFindingDuplicates.call(findProgress.duplicatedEntries(), autodelete)
 			}})
 			}catch(Exception e){}
 		}

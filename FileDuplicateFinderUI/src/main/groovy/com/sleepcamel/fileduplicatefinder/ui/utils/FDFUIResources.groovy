@@ -73,7 +73,7 @@ class FDFUIResources {
 		    synchronized (resourceBundle) {
 		        try {
 		            msg = resourceBundle.getString(messageKey)
-					messageToKey[msg] = messageKey
+					messageToKey[msg] = messageKey?.replaceAll('FDFUI\\.','')
 		        } catch (MissingResourceException ex){
 		            msg = messageKey + ' Untranslated'
 		            log.error('Unable to retrieve i18n key', ex)

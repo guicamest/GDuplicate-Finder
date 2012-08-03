@@ -240,6 +240,13 @@ public class ScanResults extends Composite {
 		refresh()
 	}
 	
+	def autoDeleteEntries(List<DuplicateEntry> entries){
+		this.entries = entries
+		doDelete(lazySelect((entries*.getFiles()).flatten()){ List groupList ->
+			(groupList.size() > 1 ? groupList[0..-2] : [])
+		})
+	}
+	
 	def refresh(){
 		observableFileList.clear()
 		folderList.clear()
@@ -338,12 +345,15 @@ public class ScanResults extends Composite {
 		}
 		
 		// Don't use getCheckedElements() because it might not return all items as table is virtual
-		def asList = checkboxTableViewer.getAllCheckedElements()
-		if ( asList.isEmpty() ){
+		doDelete(checkboxTableViewer.getAllCheckedElements())
+	}
+	
+	def doDelete = { files ->
+		if ( files.isEmpty() ){
 			InternationalizedTrackingMessageDialogHelper.openInformation(null, i18n.msg('FDFUI.scanResultsNoFileDialogTitle'), i18n.msg('FDFUI.scanResultsNoFileDialogText'))
 			return
 		}
-		def selectedFiles = asList.groupBy {it.getMd5()}
+		def selectedFiles = files.groupBy {it.getMd5()}
 
 		entries.each { entry ->
 			if ( entry.hash in selectedFiles.keySet()){
@@ -356,7 +366,7 @@ public class ScanResults extends Composite {
 		}
 
 		// Call close to refresh deleted file's parents
-		filesDeleted(asList.collect{it.getParentWrapper()})
+		filesDeleted(files.collect{it.getParentWrapper()})
 		entries.removeAll{ entry ->
 			!entry.hasDuplicates()
 		}

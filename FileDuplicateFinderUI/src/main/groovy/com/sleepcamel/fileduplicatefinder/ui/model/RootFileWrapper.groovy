@@ -21,8 +21,10 @@ class RootFileWrapper extends FileWrapper {
 		def currentDirFiles = dirs
 		def dirToUpdate
 		parents.each { parent ->
-			dirToUpdate = currentDirFiles.find{ it -> parent == it }
-			currentDirFiles = dirToUpdate.dirs
+			if ( currentDirFiles ){
+				dirToUpdate = currentDirFiles.find{ it -> parent == it }
+				currentDirFiles = dirToUpdate.dirs
+			}
 		}
 		dirToUpdate.loadFiles(true)
 	}

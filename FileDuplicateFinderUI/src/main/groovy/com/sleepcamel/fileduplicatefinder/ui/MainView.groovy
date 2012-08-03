@@ -289,6 +289,11 @@ public class MainView {
 		Button btnDuplicateSearch = new Button(composite, SWT.NONE)
 		btnDuplicateSearch.setText(i18n.msg('FDFUI.searchBtn'))
 		btnDuplicateSearch.addSelectionListener(new ClosureSelectionAdapter(c: searchForDuplicates))
+		
+		Button btnAutoDelete = new Button(composite, SWT.NONE)
+		btnAutoDelete.setText(i18n.msg('FDFUI.autoDeleteBtnLabel'))
+		btnAutoDelete.setToolTipText(i18n.msg('FDFUI.autoDeleteBtnTooltip'))
+		btnAutoDelete.addSelectionListener(new ClosureSelectionAdapter(c: autoDelete))
 
 		scrolledComposite_1.setContent(composite)
 		scrolledComposite_1.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT))
@@ -313,7 +318,13 @@ public class MainView {
 		new AboutDialog(shlFileDuplicateFinder, SWT.DIALOG_TRIM).open()
 	}
 	
-	def searchForDuplicates = {
+	def autoDelete = {
+		doSearchForDuplicates(true)
+	}
+	
+	def searchForDuplicates = {doSearchForDuplicates()}
+	
+	def doSearchForDuplicates = { autodelete = false ->
 		def directories = checkboxTreeViewer.getCheckedElements()
 		if ( directories.length == 0 ){
 			InternationalizedTrackingMessageDialogHelper.openError(shlFileDuplicateFinder, i18n.msg('FDFUI.noFolderSelectedDialogTitle'), i18n.msg('FDFUI.noFolderSelectedDialogText'))
@@ -339,7 +350,7 @@ public class MainView {
 		}
 
 		showScanProgress()
-		scanProgress.scanAndSearch(filters, directories)
+		scanProgress.scanAndSearch(filters, directories, autodelete)
 	}
 	
 	def saveSearchParameters = {
@@ -443,8 +454,12 @@ public class MainView {
 		sanitized
 	}
 	
-	def showDuplicates = { entries ->
-		scanResults.updateEntries(entries)
+	def showDuplicates = { entries, autodelete = false ->
+		if ( autodelete ){
+			scanResults.autoDeleteEntries(entries)
+		}else{
+			scanResults.updateEntries(entries)
+		}
 		stackLayout.topControl = scanResults
 		shlFileDuplicateFinder.layout()
 		enableFileMenu()
