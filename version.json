@@ -1,11 +1,11 @@
 {
-	"version" : "1.2.0",
+	"version" : "2.0.0",
 	"builds" : {
-				"windows32" : "http://sourceforge.net/projects/gdupfinder/files/windows32/GDuplicateFinder-1.2.0.zip/download",
-				"windows64" : "http://sourceforge.net/projects/gdupfinder/files/windows64/GDuplicateFinder-1.2.0.zip/download",
-				"linux32" : "http://sourceforge.net/projects/gdupfinder/files/linux32/GDuplicateFinder-1.2.0.zip/download",
-				"linux64" : "http://sourceforge.net/projects/gdupfinder/files/linux64/GDuplicateFinder-1.2.0.zip/download",
-				"maccocoa32" : "http://sourceforge.net/projects/gdupfinder/files/maccocoa32/GDuplicateFinder-1.2.0.zip/download",
-				"maccocoa64" : "http://sourceforge.net/projects/gdupfinder/files/maccocoa64/GDuplicateFinder-1.2.0.zip/download"
+				"windows32" : "http://sourceforge.net/projects/gdupfinder/files/windows32/GDuplicateFinder-2.0.0.zip/download",
+				"windows64" : "http://sourceforge.net/projects/gdupfinder/files/windows64/GDuplicateFinder-2.0.0.zip/download",
+				"linux32" : "http://sourceforge.net/projects/gdupfinder/files/linux32/GDuplicateFinder-2.0.0.zip/download",
+				"linux64" : "http://sourceforge.net/projects/gdupfinder/files/linux64/GDuplicateFinder-2.0.0.zip/download",
+				"maccocoa32" : "http://sourceforge.net/projects/gdupfinder/files/maccocoa32/GDuplicateFinder-2.0.0.zip/download",
+				"maccocoa64" : "http://sourceforge.net/projects/gdupfinder/files/maccocoa64/GDuplicateFinder-2.0.0.zip/download"
 				}
 }
