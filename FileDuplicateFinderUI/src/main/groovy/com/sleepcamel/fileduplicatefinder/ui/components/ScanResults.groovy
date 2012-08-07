@@ -50,6 +50,7 @@ import com.sleepcamel.fileduplicatefinder.ui.adapters.ClosureSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ColumnSelectionAdapter
 import com.sleepcamel.fileduplicatefinder.ui.adapters.ListLabelProvider
 import com.sleepcamel.fileduplicatefinder.ui.adapters.TableLabelProvider
+import com.sleepcamel.fileduplicatefinder.ui.dialogs.DeletedFilesDialog
 import com.sleepcamel.fileduplicatefinder.ui.dialogs.InternationalizedTrackingMessageDialogHelper
 import com.sleepcamel.fileduplicatefinder.ui.filters.PathTableFilter
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
@@ -109,7 +110,7 @@ public class ScanResults extends Composite {
 		SashForm sashForm = new SashForm(this, SWT.NONE)
 		sashForm.setLayoutData(BorderLayout.CENTER)
 		
-		listViewer = new ListViewer(sashForm, SWT.BORDER | SWT.V_SCROLL | SWT.VIRTUAL)
+		listViewer = new ListViewer(sashForm, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL)
 		listViewer.setContentProvider(new ObservableListContentProvider())
 		listViewer.setLabelProvider(new ListLabelProvider())
 		listViewer.setInput(Observables.staticObservableList(folderList))
@@ -355,15 +356,27 @@ public class ScanResults extends Composite {
 		}
 		def selectedFiles = files.groupBy {it.getMd5()}
 
+		def deletedFiles = []
+		def notDeletedFiles = []
+		
 		entries.each { entry ->
 			if ( entry.hash in selectedFiles.keySet()){
 				selectedFiles[entry.hash].each { fileToDelete ->
-					if ( fileToDelete.delete() ){
+					def deleted = fileToDelete.delete()
+					def list = notDeletedFiles
+					if ( deleted ){
+						list = deletedFiles
 						entry.files.remove(fileToDelete)
 					}
+					list << fileToDelete
 				}
 			}
 		}
+		
+		def dialog = new DeletedFilesDialog(getShell())
+		dialog.setDeletedFiles(deletedFiles)
+		dialog.setNotDeletedFiles(notDeletedFiles)
+		dialog.open()
 
 		// Call close to refresh deleted file's parents
 		filesDeleted(files.collect{it.getParentWrapper()})
