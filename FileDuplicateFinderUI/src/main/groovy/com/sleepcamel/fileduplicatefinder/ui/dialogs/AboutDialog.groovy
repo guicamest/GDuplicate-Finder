@@ -66,7 +66,6 @@ class AboutDialog extends InternationalizedDialog {
 				try {
 					desktop.mail(new URI(mailto))
 				} catch (Exception e1) {
-					System.out.println(e1)
 				}
 			}
 		})

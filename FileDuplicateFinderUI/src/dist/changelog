@@ -1,13 +1,13 @@
 GDuplicateFinder Changelog
 
 ========================
-ChangeLog Version 1.3.0
+ChangeLog Version 2.0.0
 ========================
 *Ability to run program with file to load search parameters / search session / duplicate results
 *Improved duplicate files selection
 *Save/load search parameters
 *Added user experience improvement program
-*Auto-delete FEATURE
+*AUTO-DELETE feature. Searches for duplicates, and when finished, removes all but one file in each duplicate group, keeping that copy
 
 
 ========================

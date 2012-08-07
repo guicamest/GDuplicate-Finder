@@ -77,7 +77,6 @@ class UpdateDialog extends InternationalizedDialog {
 						Program.launch(downloadUrl.toString())
 						shlUpdate.dispose()
 					} catch (Exception e1) {
-						System.out.println(e1)
 					}
 				}
 			})

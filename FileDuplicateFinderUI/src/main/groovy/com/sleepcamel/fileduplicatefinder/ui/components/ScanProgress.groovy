@@ -114,7 +114,6 @@ public class ScanProgress extends Composite {
 	}
 	
 	def scanAndSearch(filters, directories, autodelete = false){
-		println "B - $autodelete"
 		AnalyticsTracker.instance.trackPageView("/scanAndSearchDuplicates?filters=${filters}&directories=${directories.length}")
 		suspended = false
 		def duplicateFinder = new SequentialDuplicateFinder(directories:directories)
