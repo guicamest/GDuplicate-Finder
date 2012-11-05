@@ -1,11 +1,11 @@
 package com.sleepcamel.fileduplicatefinder.ui
 
-import java.io.File
-
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize
 
+import java.awt.Desktop
+
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import org.eclipse.core.databinding.beans.BeanProperties
 import org.eclipse.core.databinding.observable.Realm
@@ -19,6 +19,7 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.custom.ScrolledComposite
 import org.eclipse.swt.custom.StackLayout
+import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Button
@@ -28,7 +29,6 @@ import org.eclipse.swt.widgets.FileDialog
 import org.eclipse.swt.widgets.Menu
 import org.eclipse.swt.widgets.MenuItem
 import org.eclipse.swt.widgets.Shell
-import org.eclipse.swt.graphics.Image
 
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.ExtensionFilter
@@ -242,6 +242,10 @@ public class MainView {
 		
 		new MenuItem(menuHelp, SWT.SEPARATOR)
 		
+		MenuItem mntmDonate = new MenuItem(menuHelp, SWT.NONE)
+		mntmDonate.setText(i18n.msg('FDFUI.helpDonate'))
+		mntmDonate.addSelectionListener(new ClosureSelectionAdapter(c: goToDonationPage))
+		
 		MenuItem mntmAbout = new MenuItem(menuHelp, SWT.NONE)
 		mntmAbout.setText(i18n.msg('FDFUI.helpAbout'))
 		mntmAbout.addSelectionListener(new ClosureSelectionAdapter(c: openAboutDialog))
@@ -312,6 +316,12 @@ public class MainView {
 	
 	def close = {
 		shlFileDuplicateFinder.close()
+	}
+	
+	def goToDonationPage = {
+		try{
+		Desktop.getDesktop().browse(new URI('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y'))
+		} catch (Exception e1) {}
 	}
 
 	def openAboutDialog = {

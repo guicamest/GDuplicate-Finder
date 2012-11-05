@@ -21,9 +21,11 @@ dependencies {
 	
 	compile "org.codehaus.gpars:gpars:$gparsVersion"
 	testCompile "junit:junit:$junitVersion"
+	/*
 	testCompile (group: 'org.spockframework', name: 'spock-core', version: spockVersion) {
-        exclude module: 'groovy-all'
-    }
+        	exclude module: 'groovy-all'
+    	}
+    */
 	
 	compile fileTree(dir: "lib", include: '*.jar')
 }

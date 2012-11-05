@@ -10,8 +10,10 @@ Taking advantage of Groovy facilities and GPars power to process in parallel,
 GDuplicateFinder will help you get rid of those duplicates you always
 wanted to dispose in an easy and friendly way.
 
-If you feel like contributing, you can always fork this [repo](https://github.com/guicamest/GDuplicate-Finder). Gradle will help
+If you feel like contributing with code, you can always fork this [repo](https://github.com/guicamest/GDuplicate-Finder). Gradle will help
 you configure the Eclipse project for you. You can also suggest improvements.
+
+If you don't feel like coding but want to donate some money, you can do that using [paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y).
 
 ## Current features
 
