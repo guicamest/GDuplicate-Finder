@@ -1,6 +1,14 @@
 GDuplicateFinder Changelog
 
 ========================
+ChangeLog Version 2.0.1
+========================
+*Changed misleading text: 'Keep selection' for 'Multi-batch-select'
+*Added donation links
+*Added readme (thx to PFG)
+
+
+========================
 ChangeLog Version 2.0.0
 ========================
 *Ability to run program with file to load search parameters / search session / duplicate results
