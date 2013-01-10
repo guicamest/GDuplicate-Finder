@@ -48,7 +48,7 @@ windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 Requires Java >= 1.6
 
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip GDuplicateFinder-2.0.0.zip
+and unzip GDuplicateFinder-2.0.1.zip
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 
@@ -64,6 +64,12 @@ you should install **gtk2-engines-pixbuf** package.
 On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 
 ##ChangeLog
+
+### Version 2.0.1
+
+- Changed misleading text: 'Keep selection' for 'Multi-batch-select'
+- Added donation links
+- Added readme (thx to PFG)
 
 ### Version 2.0.0
 
