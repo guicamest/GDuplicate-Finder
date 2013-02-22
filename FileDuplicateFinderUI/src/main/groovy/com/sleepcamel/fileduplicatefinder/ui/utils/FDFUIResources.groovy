@@ -47,7 +47,15 @@ class FDFUIResources {
 		File langsFile = File.createTempFile('ddf', 'langs')
 		FileUtils.copyURLToFile(resource, langsFile)
 
-		availableLocales = langsFile.readLines().collect {new Locale(it)}
+		availableLocales = langsFile.readLines().collect {
+			def parts = it.split('_')
+			switch(parts.size()){
+				case 1: return new Locale(parts[0])
+				case 2: return new Locale(parts[0], parts[1])
+				case 3: return new Locale(parts[0], parts[1], parts[2])
+				default: throw new RuntimeException('Wrong language')
+			}
+		}
 
         resourceBundle = ResourceBundle.getBundle(BUNDLE_BASENAME, Settings.instance.getLastLocale(), new I18nControl())
     }

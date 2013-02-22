@@ -90,6 +90,7 @@ public class MainView {
 		try {
 			new MainView().open(args)
 		} catch (Exception e) {
+			println "${e.class}"
 			e.printStackTrace()
 		}
 	}

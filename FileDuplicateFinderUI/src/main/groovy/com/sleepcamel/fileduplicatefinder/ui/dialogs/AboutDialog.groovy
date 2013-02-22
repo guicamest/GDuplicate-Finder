@@ -62,8 +62,8 @@ class AboutDialog extends InternationalizedDialog {
 		link.setText("<a href=\"$mailto\">${i18n.msg('FDFUI.aboutDialogLinkText')}</a>")
 		link.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e){
-				Desktop desktop = Desktop.getDesktop()
 				try {
+					Desktop desktop = Desktop.getDesktop()
 					desktop.mail(new URI(mailto))
 				} catch (Exception e1) {
 				}

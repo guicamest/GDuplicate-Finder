@@ -1,6 +1,13 @@
 GDuplicateFinder Changelog
 
 ========================
+ChangeLog Version 2.0.2
+========================
+*Improved support for internationalization
+*Added Traditional and Simplified Chinese languages (kudos to Zac Zhang!)
+
+
+========================
 ChangeLog Version 2.0.1
 ========================
 *Changed misleading text: 'Keep selection' for 'Multi-batch-select'
@@ -37,7 +44,6 @@ ChangeLog Version 1.1
 ========================
 ChangeLog Version 1.0
 ========================
-
 *Added internationalization support
 *Manage network drives(add, edit, remove)
 *Turn on/off network drives
@@ -46,4 +52,4 @@ ChangeLog Version 1.0
 *Open duplicate files with system's default editor
 *Internationalization ( english, spanish )
 *Supported network drives(Smb, Scp, Ftp)
-
+*Thanks a lot to Diego Parra who provided me with the Gradle build for different platforms with SWT

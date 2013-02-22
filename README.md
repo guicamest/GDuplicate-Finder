@@ -48,7 +48,7 @@ windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 Requires Java >= 1.6
 
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip GDuplicateFinder-2.0.1.zip
+and unzip GDuplicateFinder-2.0.2.zip
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 
@@ -64,6 +64,11 @@ you should install **gtk2-engines-pixbuf** package.
 On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 
 ##ChangeLog
+
+### Version 2.0.2
+
+- Improved support for internationalization
+- Added Traditional and Simplified Chinese languages (kudos to Zac Zhang!)
 
 ### Version 2.0.1
 
@@ -88,6 +93,7 @@ On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 - Fixed bug in searching files
 
 ### Version 1.1
+
 - Improved finder algorithm
 
 ### Version 1.0
@@ -100,5 +106,5 @@ On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 - Open duplicate files with system's default editor
 - Internationalization ( english, spanish )
 - Supported network drives(Smb, Scp, Ftp)
-
+- Thanks a lot to Diego Parra who provided me with the Gradle build for different platforms with SWT
 

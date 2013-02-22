@@ -17,9 +17,13 @@ public class LanguagesPreferencePage extends InternationalizedPreferencePage {
 	
 	protected void createFieldEditors() {
 		List<Locale> locales = FDFUIResources.instance.availableLocales
-		String [][] f = locales.collect{ [StringUtils.capitalize(it.getDisplayName(it)), it.getLanguage() ] }
+		String [][] f = locales.collect{ [StringUtils.capitalize(it.getDisplayName(it)), getFullLanguage(it) ] }
 		ComboFieldEditor comboFieldEditor = new ComboFieldEditor(PropertyConsts.LANGUAGE, i18n.msg('FDFUI.preferencesDialogLanguagePageChooseLanguage'), f, getFieldEditorParent())
 		addField(comboFieldEditor)
+	}
+	
+	private String getFullLanguage(Locale l){
+		l.getCountry() ? "${l.getLanguage()}_${l.getCountry()}" : l.getLanguage()
 	}
 	
 	public boolean performOk() {

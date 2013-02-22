@@ -1,3 +1,5 @@
 es
 en
 pt
+zh_cn
+zh_tw
