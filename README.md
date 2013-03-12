@@ -65,6 +65,10 @@ On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 
 ##ChangeLog
 
+### Version 2.0.3
+
+- Fixed bug: Chinese characters not displaying correctly on Windows 7
+
 ### Version 2.0.2
 
 - Improved support for internationalization
