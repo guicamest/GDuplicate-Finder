@@ -112,3 +112,9 @@ On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
 - Supported network drives(Smb, Scp, Ftp)
 - Thanks a lot to Diego Parra who provided me with the Gradle build for different platforms with SWT
 
+## Donations
+
+Thanks a lot to the following people for their donations to keep GDuplicateFinder alive!
+- Prezzy card holder from New Zealand
+- Risto Ronkka from Finland
+
