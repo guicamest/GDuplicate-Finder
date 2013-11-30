@@ -6,7 +6,7 @@ import org.apache.commons.vfs.FileObject
 
 
 import groovy.beans.Bindable
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import groovyx.gpars.GParsPool
 import jcifs.smb.SmbFile
 
@@ -20,7 +20,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.FileWrapperFil
 import com.sleepcamel.fileduplicatefinder.core.domain.s3.S3ObjectWrapper
 
 @Bindable
-@Commons
+@Slf4j
 class FileWrapper implements Serializable {
 
 	def isRoot = false

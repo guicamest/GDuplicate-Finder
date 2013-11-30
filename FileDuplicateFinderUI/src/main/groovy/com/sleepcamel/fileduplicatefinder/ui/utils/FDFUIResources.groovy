@@ -2,7 +2,7 @@ package com.sleepcamel.fileduplicatefinder.ui.utils
 
 import groovy.lang.Singleton
 import groovy.transform.Synchronized
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 
 import java.io.File
 import java.text.MessageFormat
@@ -15,7 +15,7 @@ import org.eclipse.swt.graphics.Image
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
 @Singleton
-@Commons
+@Slf4j
 class FDFUIResources {
 	private final String BUNDLE_PATH = 'com.sleepcamel.fileduplicatefinder.ui.i18n.'
     private final String BUNDLE_BASENAME = "${BUNDLE_PATH}resources"

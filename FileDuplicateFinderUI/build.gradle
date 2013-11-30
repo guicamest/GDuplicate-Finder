@@ -25,9 +25,15 @@ buildscript {
  
 dependencies {
 	compile project(':FileDuplicateFinderCore')
+	
 	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
-	compile "commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"
+	
+	compile("commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"){
+		exclude group: 'commons-logging', module: 'commons-logging'
+	}
+	
 	compile "commons-io:commons-io:$commonsIoVersion"
+	
 	compile fileTree(dir: "${project.ext.config.allLibs}", include: '*.jar')
 	compile fileTree(dir: "${project.ext.config.swtLibs}", include: '*.jar')
 	compile fileTree(dir: "${project.ext.config.swtOsJars}", include: '*.jar')
@@ -117,6 +123,10 @@ task generateVersionFile(){
 
 def updateVersionFile(){
 	def f = new File('version.gsp')
+	if ( !f.exists() ){
+		println "Could not find ${f.absolutePath}. Version json not updated"
+		return
+	}
 	def binding = [ version : GDuplicateFinderVersion ]
 	['windows32', 'windows64', 'linux32', 'linux64', 'maccocoa32', 'maccocoa64'].each{
 		binding["${it}downloadPath"] = "http://sourceforge.net/projects/gdupfinder/files/${it}/${gDuplicateFinderZipName}-${GDuplicateFinderVersion}.zip/download"

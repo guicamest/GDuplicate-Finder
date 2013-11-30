@@ -1,6 +1,7 @@
 package com.sleepcamel.fileduplicatefinder.ui
 
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize
+import groovy.util.logging.Slf4j
 
 import java.awt.Desktop
 
@@ -51,12 +52,13 @@ import com.sleepcamel.fileduplicatefinder.ui.model.SearchParameters
 import com.sleepcamel.fileduplicatefinder.ui.tracking.AnalyticsTracker
 import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
+import com.sleepcamel.fileduplicatefinder.ui.utils.OSInfo
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileAssociations
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileHandler
 
-
+@Slf4j
 public class MainView {
 
 	protected Shell shlFileDuplicateFinder
@@ -102,6 +104,8 @@ public class MainView {
 	}
 
 	public void open(String[] args) {
+		log.info(i18n.msg('FDFUI.buildNotice',OSInfo.autodetectOS()))
+
 		treeInput = new RootFileWrapper(name:'')
 
 		Display display = Display.getDefault()

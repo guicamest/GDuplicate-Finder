@@ -1,5 +1,7 @@
+
 subprojects {
 	apply plugin: 'eclipse'
+	apply plugin: 'project-reports'
 	
 	repositories {
 		mavenCentral name: 'seasar', artifactUrls: ['http://maven.seasar.org/maven2/']

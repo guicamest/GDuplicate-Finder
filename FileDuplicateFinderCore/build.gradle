@@ -11,13 +11,20 @@ dependencies {
 	compile "org.apache.commons:commons-compress:$commonsCompressVersion"
 	
 	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
-	compile "commons-logging:commons-logging:$commonsLoggingVersion"
+//	compile "commons-logging:commons-logging:$commonsLoggingVersion"
 	compile "commons-codec:commons-codec:$commonsCodecVersion"
 	compile "commons-net:commons-net:$commonsNetVersion"
-	compile "commons-httpclient:commons-httpclient:$commonsHttpclientVersion"
+	compile("commons-httpclient:commons-httpclient:$commonsHttpclientVersion"){
+		exclude group: 'commons-logging', module: 'commons-logging'
+	}
 	compile "commons-collections:commons-collections:$commonsCollectionsVersion"
-	compile "com.amazonaws:aws-java-sdk:$awsSdkVersion"
+	compile("com.amazonaws:aws-java-sdk:$awsSdkVersion"){
+		exclude group: 'commons-logging', module: 'commons-logging'
+	}
 	compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonMapperVersion"
+	
+	compile "org.slf4j:jcl-over-slf4j:$jclOSlf4jVersion"
+	compile "ch.qos.logback:logback-classic:$logbackVersion"
 	
 	compile "org.codehaus.gpars:gpars:$gparsVersion"
 	testCompile "junit:junit:$junitVersion"

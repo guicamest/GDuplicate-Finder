@@ -4,7 +4,7 @@ import static groovyx.gpars.GParsPool.runForkJoin
 import static groovyx.gpars.GParsPool.withPool
 import static groovyx.gpars.GParsPool.withExistingPool
 import groovy.beans.Bindable
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 
 import java.lang.Thread
 import java.util.concurrent.atomic.AtomicBoolean
@@ -15,7 +15,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.DefaultFilter
 
 
 @Bindable
-@Commons
+@Slf4j
 class SequentialDuplicateFinder implements DuplicateFinder {
 
 	List directories

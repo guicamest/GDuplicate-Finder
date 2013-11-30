@@ -2,7 +2,7 @@
 
 package com.sleepcamel.fileduplicatefinder.core.domain.fileadapter
 
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 
 import java.io.InputStream
 import java.io.ObjectInputStream
@@ -15,7 +15,7 @@ import com.amazonaws.services.s3.model.ObjectListing
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.sleepcamel.fileduplicatefinder.core.domain.s3.S3ObjectWrapper
 
-@Commons
+@Slf4j
 class S3FileAdapter implements FileAdapter<S3ObjectWrapper>{
 
 	private static int MD5_STRING_LENGTH = 32

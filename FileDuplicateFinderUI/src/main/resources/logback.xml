@@ -1,0 +1,24 @@
+<configuration>
+
+        <!-- We define all our logging task into the appender like CONSOLE, FILE etc.
+         Here we are logging the ConsoleAppender, as the name indicates, appends on the console. -->
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                        <!-- pattern define in which format you want format your message should
+                                be logged -->
+                        <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+                        </Pattern>
+                </encoder>
+        </appender>
+
+        <!-- root level logger support following level attributes: TRACE, DEBUG,
+                INFO, WARN, ERROR, ALL or OFF. Using root logger, you can handle level of
+                APPENDER by just adding appender-ref into root as below: In root, There can
+                be zero appender-ref. -->
+        <root level="ERROR">
+                <appender-ref ref="STDOUT" />
+        </root>
+        
+        <logger name="com.sleepcamel.fileduplicatefinder" level="INFO"/>
+
+</configuration>

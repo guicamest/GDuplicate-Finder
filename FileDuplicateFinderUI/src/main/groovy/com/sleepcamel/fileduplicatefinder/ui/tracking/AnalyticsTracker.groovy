@@ -1,18 +1,18 @@
 package com.sleepcamel.fileduplicatefinder.ui.tracking
 
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 
 import com.dmurph.tracking.AnalyticsConfigData
 import com.dmurph.tracking.JGoogleAnalyticsTracker
 import com.dmurph.tracking.VisitorData
-import com.dmurph.tracking.JGoogleAnalyticsTracker.DispatchMode;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.DispatchMode
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion
-import com.sleepcamel.fileduplicatefinder.ui.PropertyConsts;
+import com.sleepcamel.fileduplicatefinder.ui.PropertyConsts
 import com.sleepcamel.fileduplicatefinder.ui.UpdateFinder
 import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 
 @Singleton
-@Commons
+@Slf4j
 class AnalyticsTracker {
 
 	JGoogleAnalyticsTracker tracker
