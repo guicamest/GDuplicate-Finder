@@ -48,7 +48,7 @@ windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
 Requires Java >= 1.6
 
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip GDuplicateFinder-2.0.2.zip
+and unzip GDuplicateFinder-2.0.3.zip
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 
@@ -62,6 +62,13 @@ If you are getting *Unable to locate theme engine in module_path: "pixmap"*
 you should install **gtk2-engines-pixbuf** package.
 
 On an Ubuntu distribution just run `sudo apt-get install gtk2-engines-pixbuf`
+
+### Cannot load 64-bit SWT libraries
+
+If you are getting *Exception in thread "main" java.lang.UnsatisfiedLinkError: Cannot load 64-bit SWT libraries on 32-bit JVM*
+it means your default java installation is 32-bit. You can verify it opening a console and typing *java -version*.
+To fix it, either install 64-bit java and set it as default or download the 32-bit version of GDuplicateFinder.
+For more info, follow [this thread](http://sourceforge.net/p/gdupfinder/discussion/general/thread/a1a82607/)
 
 ##ChangeLog
 
