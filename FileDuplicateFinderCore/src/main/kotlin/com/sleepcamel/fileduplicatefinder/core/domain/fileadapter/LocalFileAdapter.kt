@@ -33,7 +33,9 @@ class LocalFileAdapter : FileAdapter<File> {
     override fun depth(file: File): Int = file.absolutePath.count { "$it" == File.separator }
 
     override fun files(file: File): Array<Any> {
-        return if (isDir(file)) file.listFiles()?.map { it as Any }?.toTypedArray() ?:emptyArray() else emptyArray()
+        // Avoid isDir call (list returns null in that case)
+        return file.list()?.map { File(file, it) as Any }?.toTypedArray() ?: emptyArray()
+        //if (isDir(file)) file.listFiles()?.map { it as Any }?.toTypedArray() ?:emptyArray() else emptyArray()
     }
 
     override fun getParentFile(file: File): File = file.parentFile
