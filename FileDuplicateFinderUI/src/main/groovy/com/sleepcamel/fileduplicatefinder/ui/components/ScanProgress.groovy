@@ -1,5 +1,6 @@
 package com.sleepcamel.fileduplicatefinder.ui.components
 
+import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.FileWrapperFilter
 import groovy.beans.Bindable
 import groovy.lang.Closure
 
@@ -116,12 +117,13 @@ public class ScanProgress extends Composite {
 	def scanAndSearch(filters, directories, autodelete = false){
 		AnalyticsTracker.instance.trackPageView("/scanAndSearchDuplicates?filters=${filters}&directories=${directories.length}")
 		suspended = false
-		def duplicateFinder = new SequentialDuplicateFinder(directories:directories)
-		if ( !filters.isEmpty() ) duplicateFinder.filter = new AndWrapperFilter(filters : filters)
+		FileWrapperFilter filter = !filters.isEmpty() ? new AndWrapperFilter(filters : filters) : null
+
+		def duplicateFinder = new SequentialDuplicateFinder(directories as List, filter)
 
 		Thread.start { thread ->
 			Display.getDefault().syncExec(new Runnable() { public void run() {
-			btnComposite.visible = false
+				btnComposite.visible = false
 			}})
 			
 			def progress = duplicateFinder.findProgress
@@ -134,12 +136,11 @@ public class ScanProgress extends Composite {
 				double currentFiles = progress.totalFiles
 				def filesPerSec = currentFiles / (elapsedTime / 1000.0)
 				Display.getDefault().syncExec(new Runnable() { public void run() {
-					label.text = i18n.msg('FDFUI.scanProgressScanningLbl', currentFiles, Utils.formatBytes(progress.totalFileSize), Utils.formatInterval(elapsedTime), filesPerSec)
+					label.text = i18n.msg('FDFUI.scanProgressScanningLbl', currentFiles, Utils.formatBytes(progress.totalFileSize.get()), Utils.formatInterval(elapsedTime), filesPerSec)
 				}})
 				Thread.sleep(1000L)
 			}
 			findDuplicates(progress, autodelete)
-			return
 		}
 	}
 	
