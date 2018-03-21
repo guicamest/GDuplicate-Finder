@@ -4,7 +4,9 @@ import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
 
 
 class RootFileWrapper extends FileWrapper {
-	RootFileWrapper(){		super(null)
+
+	RootFileWrapper(){
+		super(new File(""))
 	}
 
 	def reloadDirectoryFiles = { directory ->

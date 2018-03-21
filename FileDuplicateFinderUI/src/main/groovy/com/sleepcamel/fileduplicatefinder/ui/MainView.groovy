@@ -1,36 +1,5 @@
 package com.sleepcamel.fileduplicatefinder.ui
 
-import static org.apache.commons.io.FileUtils.byteCountToDisplaySize
-import groovy.util.logging.Slf4j
-
-import java.awt.Desktop
-
-import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang3.time.StopWatch
-import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
-import org.eclipse.core.databinding.beans.BeanProperties
-import org.eclipse.core.databinding.observable.Realm
-import org.eclipse.core.internal.databinding.beans.BeanListPropertyDecorator
-import org.eclipse.core.internal.databinding.beans.BeanPropertyHelper
-import org.eclipse.jface.databinding.swt.SWTObservables
-import org.eclipse.jface.databinding.viewers.ViewerSupport
-import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.jface.viewers.CheckboxTreeViewer
-import org.eclipse.swt.SWT
-import org.eclipse.swt.custom.SashForm
-import org.eclipse.swt.custom.ScrolledComposite
-import org.eclipse.swt.custom.StackLayout
-import org.eclipse.swt.graphics.Image
-import org.eclipse.swt.layout.GridData
-import org.eclipse.swt.layout.GridLayout
-import org.eclipse.swt.widgets.Button
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Display
-import org.eclipse.swt.widgets.FileDialog
-import org.eclipse.swt.widgets.Menu
-import org.eclipse.swt.widgets.MenuItem
-import org.eclipse.swt.widgets.Shell
-
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.ExtensionFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.NameFilter
@@ -50,16 +19,38 @@ import com.sleepcamel.fileduplicatefinder.ui.dialogs.preference.GDFPreferenceDia
 import com.sleepcamel.fileduplicatefinder.ui.model.RootFileWrapper
 import com.sleepcamel.fileduplicatefinder.ui.model.SearchParameters
 import com.sleepcamel.fileduplicatefinder.ui.tracking.AnalyticsTracker
-import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
-import com.sleepcamel.fileduplicatefinder.ui.utils.FileWrapperBeanListProperty
-import com.sleepcamel.fileduplicatefinder.ui.utils.OSInfo
-import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
-import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
+import com.sleepcamel.fileduplicatefinder.ui.utils.*
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileAssociations
 import com.sleepcamel.fileduplicatefinder.ui.utils.associations.FileHandler
+import groovy.util.logging.Slf4j
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang3.time.StopWatch
+import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
+import org.eclipse.core.databinding.beans.BeanProperties
+import org.eclipse.core.databinding.observable.Realm
+import org.eclipse.core.internal.databinding.beans.BeanListPropertyDecorator
+import org.eclipse.core.internal.databinding.beans.BeanPropertyHelper
+import org.eclipse.jface.databinding.swt.SWTObservables
+import org.eclipse.jface.databinding.viewers.ObservableListTreeContentProvider
+import org.eclipse.jface.databinding.viewers.TreeStructureAdvisor
+import org.eclipse.jface.databinding.viewers.ViewerSupport
+import org.eclipse.jface.dialogs.MessageDialog
+import org.eclipse.jface.viewers.CheckboxTreeViewer
+import org.eclipse.swt.SWT
+import org.eclipse.swt.custom.SashForm
+import org.eclipse.swt.custom.ScrolledComposite
+import org.eclipse.swt.custom.StackLayout
+import org.eclipse.swt.graphics.Image
+import org.eclipse.swt.layout.GridData
+import org.eclipse.swt.layout.GridLayout
+import org.eclipse.swt.widgets.*
+
+import java.awt.Desktop
 
 @Slf4j
 public class MainView {
+
+	//http://www.java2s.com/Code/Java/SWT-JFace-Eclipse/CreateaSWTtreelazy.htm
 
 	protected Shell shlFileDuplicateFinder
 
@@ -106,7 +97,8 @@ public class MainView {
 	public void open(String[] args) {
 		log.info(i18n.msg('FDFUI.buildNotice',OSInfo.autodetectOS()))
 
-		treeInput = new RootFileWrapper(name:'')
+		//https://stackoverflow.com/a/20779740
+		treeInput = new RootFileWrapper()
 
 		Display display = Display.getDefault()
 		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
@@ -263,10 +255,22 @@ public class MainView {
 		def propertyDescriptor = BeanPropertyHelper.getPropertyDescriptor(FileWrapper.class, 'dirs')
 		def property = new FileWrapperBeanListProperty(propertyDescriptor, FileWrapper.class)
 		def decorator = new BeanListPropertyDecorator(property, propertyDescriptor)
-		
-		ViewerSupport.bind(checkboxTreeViewer, treeInput, decorator, BeanProperties.value(FileWrapper.class, 'name'))
-		
-		checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
+
+		//ViewerSupport.bind(checkboxTreeViewer, treeInput, decorator, BeanProperties.value(FileWrapper.class, 'name'))
+
+		//TODO USE https://manuelselva.wordpress.com/2008/04/16/jfaces-viewers-performances/ ?
+		//TODO ILazyTreePathContentProvider y ILazyTreeContentProvider
+		Realm realm = SWTObservables.getRealm(checkboxTreeViewer.getControl().getDisplay());
+        ObservableListTreeContentProvider contentProvider = new ObservableListTreeContentProvider(decorator.listFactory(realm), (TreeStructureAdvisor)null);
+        if (checkboxTreeViewer.getInput() != null) {
+			checkboxTreeViewer.setInput((Object)null);
+        }
+
+		checkboxTreeViewer.setContentProvider(contentProvider);
+        checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
+		//checkboxTreeViewer.setInput(treeInput)
+
+		//checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
 		
 		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(sashForm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL)
 		scrolledComposite_1.setExpandHorizontal(true)
@@ -325,7 +329,7 @@ public class MainView {
 	
 	def goToDonationPage = {
 		try{
-		Desktop.getDesktop().browse(new URI('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y'))
+			Desktop.getDesktop().browse(new URI('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y'))
 		} catch (Exception e1) {}
 	}
 
@@ -443,6 +447,7 @@ public class MainView {
 		def obj
 		def loaded = false
 		try{
+			// TODO Ask for S3 access and secret in case one is present
 			file.withObjectInputStream { ios ->
 				obj = ios.readObject()
 				DefaultGroovyMethodsSupport.closeQuietly(ios)
@@ -532,8 +537,10 @@ public class MainView {
 	}
 	
 	def syncAndRefresh(umount = false){
+		// Done in main thread... do async and show progress bar
 		def status = syncDrivesWithTree(umount)
-		checkboxTreeViewer.refresh()
+		checkboxTreeViewer.setInput(treeInput)
+		//checkboxTreeViewer.refresh()
 		status
 	}
 
@@ -560,7 +567,7 @@ public class MainView {
 			Settings.instance.getLastNetworkDrivesAuthModels().each { it.isMounted = false }
 		}
 		
-		fileRoots*.isRoot = true
+		fileRoots*.uiRoot = true
 
 		treeInput.files.clear()
 		treeInput.files.addAll(fileRoots)

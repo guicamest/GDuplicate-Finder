@@ -1,3 +1,4 @@
+
 loadConfiguration()
 apply plugin: 'groovy'
 apply plugin: 'application'
@@ -11,22 +12,15 @@ version = "${GDuplicateFinderVersion}"
 import org.apache.tools.ant.filters.ReplaceTokens
 import groovy.text.GStringTemplateEngine
 
-buildscript {
-	repositories {
-		add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-				name = 'GitHub'
-				addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
-			}
-
-		mavenCentral name: 'jboss', artifactUrls: ['http://repository.jboss.org/maven2/']
-	}
-	
+repositories {
+	mavenCentral()
+	mavenLocal()
 }
- 
+
 dependencies {
 	compile project(':FileDuplicateFinderCore')
 	
-	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
 	
 	compile("commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"){
 		exclude group: 'commons-logging', module: 'commons-logging'
@@ -39,9 +33,11 @@ dependencies {
 	compile fileTree(dir: "${project.ext.config.swtOsJars}", include: '*.jar')
 }
 
-task "create-dirs" << {
-   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
-   sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
+task "create-dirs" {
+	doLast {
+		sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
+		sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
+	}
 }
 
 
@@ -53,7 +49,7 @@ def loadConfiguration() {
 	println "os is set to ${environment}"
 	
 	def configFile = file('config.groovy')
-	def config = new ConfigSlurper(environment).parse(configFile.toURL())
+	def config = new ConfigSlurper(environment).parse(configFile.toURI().toURL())
 	
 	project.ext.config = config
 	updateVersionFile()

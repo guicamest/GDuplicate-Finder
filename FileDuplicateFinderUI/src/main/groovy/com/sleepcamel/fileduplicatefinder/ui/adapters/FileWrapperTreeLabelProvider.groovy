@@ -36,7 +36,7 @@ class FileWrapperTreeLabelProvider implements ILabelProvider {
 	public Image getImage(Object arg0) {
 		def img = dir
 		FileWrapper wrapper = (FileWrapper) arg0
-		if ( wrapper.isRoot ){
+		if ( wrapper.uiRoot ){
 			img = wrapper.isLocal() ? drive : netDrive
 		}
 		img

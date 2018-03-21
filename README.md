@@ -1,4 +1,4 @@
-#GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
+# GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
 
 Unlike other duplicate finders such as Easy Duplicate File Finder,
 Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,

@@ -1,16 +1,27 @@
-apply plugin: 'groovy'
+buildscript {
+	ext.kotlin_version = '1.2.30'
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+	}
+}
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+plugins {
+	id "org.jetbrains.kotlin.jvm" version '1.2.30'
+}
 
 version = "$GDuplicateFinderVersion"
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
 
 dependencies {
 	
 	compile "org.apache.commons:commons-lang3:$commonsLang3Version"
 	compile "org.apache.commons:commons-compress:$commonsCompressVersion"
-	
-	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+
 //	compile "commons-logging:commons-logging:$commonsLoggingVersion"
 	compile "commons-codec:commons-codec:$commonsCodecVersion"
 	compile "commons-net:commons-net:$commonsNetVersion"
@@ -22,11 +33,11 @@ dependencies {
 		exclude group: 'commons-logging', module: 'commons-logging'
 	}
 	compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonMapperVersion"
-	
+
 	compile "org.slf4j:jcl-over-slf4j:$jclOSlf4jVersion"
 	compile "ch.qos.logback:logback-classic:$logbackVersion"
 	
-	compile "org.codehaus.gpars:gpars:$gparsVersion"
+	//compile "org.codehaus.gpars:gpars:$gparsVersion"
 	testCompile "junit:junit:$junitVersion"
 	/*
 	testCompile (group: 'org.spockframework', name: 'spock-core', version: spockVersion) {
@@ -35,9 +46,29 @@ dependencies {
     */
 	
 	compile fileTree(dir: "lib", include: '*.jar')
+    compile "org.jetbrains.kotlin:kotlin-stdlib"//:$kotlin_version"
+	compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.+"
 }
 
-task "create-dirs" << {
-   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
-   sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
+kotlin {
+	experimental {
+		coroutines 'enable'
+	}
+}
+
+task "create-dirs" {
+   doLast {
+	   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
+	   sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
+   }
+}
+
+compileKotlin {
+	kotlinOptions {
+		jvmTarget = "1.6"
+	}
+}
+
+repositories {
+    mavenCentral()
 }

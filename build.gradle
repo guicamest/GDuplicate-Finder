@@ -1,10 +1,7 @@
 
 subprojects {
-	apply plugin: 'eclipse'
+	//apply plugin: 'eclipse'
+	apply plugin: 'idea'
 	apply plugin: 'project-reports'
-	
-	repositories {
-		mavenCentral name: 'seasar', artifactUrls: ['http://maven.seasar.org/maven2/']
-		mavenCentral name: 'spock', artifactUrls: ['http://m2repo.spockframework.org/snapshots']
-	}	
+
 }	

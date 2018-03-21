@@ -10,9 +10,22 @@ import com.sleepcamel.fileduplicatefinder.ui.PropertyConsts;
 @Singleton
 class Settings implements Serializable {
 
-	static final long serialVersionUID = -6618469841127325812L
-	static final String SETTINGS_FILENAME = 'settings.dat'
-	static final String PROPERTIES_FILENAME = 'gduplicatefinder.properties'
+	{
+		def file = new File(SETTINGS_FILENAME)
+		boolean invalidFile = false
+		if ( file.exists() ){
+			file.withObjectInputStream { ois ->
+				try{
+					BeanUtils.copyProperties(this, ois.readObject())
+				}catch(Exception e){
+					invalidFile = true
+				}
+				ois.close()
+			}
+			if ( invalidFile ) file.delete()
+		}
+		lastLocale = new Locale(preferenceStore().getString(PropertyConsts.LANGUAGE))
+	}
 
 	def lastNetworkAuthModels
 	transient def lastLocale
@@ -28,23 +41,6 @@ class Settings implements Serializable {
 
 	def getMountedNetworkDrivesAuthModels(){
 		getLastNetworkDrivesAuthModels().findAll { it.isMounted }.collect { it.auth }
-	}
-
-	private Settings(){
-		def file = new File(SETTINGS_FILENAME)
-		boolean invalidFile = false
-		if ( file.exists() ){
-			file.withObjectInputStream { ois ->
-				try{
-					BeanUtils.copyProperties(this, ois.readObject())
-				}catch(Exception e){
-					invalidFile = true
-				}
-				ois.close()
-			}
-			if ( invalidFile ) file.delete()
-		}
-		lastLocale = new Locale(preferenceStore().getString(PropertyConsts.LANGUAGE))
 	}
 
 	def preferenceStore(){
@@ -104,4 +100,7 @@ class Settings implements Serializable {
 			oos.close()
 		}
 	}
+	static final long serialVersionUID = -6618469841127325812L
+	String SETTINGS_FILENAME = 'settings.dat'
+	String PROPERTIES_FILENAME = 'gduplicatefinder.properties'
 }

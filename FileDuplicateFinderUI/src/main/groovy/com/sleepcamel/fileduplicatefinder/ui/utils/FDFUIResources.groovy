@@ -31,7 +31,7 @@ class FDFUIResources {
 		icons.collect{ new Image(null, this.getClass().getResourceAsStream("/com/sleepcamel/fileduplicatefinder/ui/icons/$it")) }
 	}
 	
-	private FDFUIResources() {
+	{
 		try{
 			loadResources()
 			log.info('Loaded i18n resources')
