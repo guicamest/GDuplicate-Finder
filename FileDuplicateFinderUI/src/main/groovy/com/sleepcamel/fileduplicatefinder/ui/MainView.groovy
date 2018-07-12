@@ -108,6 +108,11 @@ public class MainView {
 		//https://stackoverflow.com/a/20779740
 		treeInput = new RootFileWrapper()
 
+		//https://stackoverflow.com/a/6700253
+		//Before .getDefault to work on MAC
+		Display.setAppName(i18n.msg('FDFUI.appTitle'))
+		Display.setAppVersion(UpdateFinder.instance.currentVersion)
+
 		Display display = Display.getDefault()
 		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
             public void run() {

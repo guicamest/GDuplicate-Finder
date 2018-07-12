@@ -15,7 +15,7 @@ import com.sleepcamel.fileduplicatefinder.ui.model.UpdateStatus;
 class UpdateFinder {
 
 	def props = new Properties()
-	def currentVersion
+	String currentVersion
 
 	{
 		props.load(UpdateFinder.class.getResourceAsStream('app.properties'))
