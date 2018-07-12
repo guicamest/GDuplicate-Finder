@@ -50,9 +50,9 @@ Requires Java >= 1.6
 Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
 and unzip GDuplicateFinder-2.0.3.zip
 
-On windows run: `bin/FileDuplicateFinderUI.bat`
+On windows run: `bin/gduplicatefinder.bat`
 
-If you are on Mac or linux, run: `bin/FileDuplicateFinderUI`
+If you are on Mac or linux, run: `bin/gduplicatefinder`
 
 ##Troubleshooting
 

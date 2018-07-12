@@ -2,7 +2,7 @@ GDuplicateFinder HOW TO (thx to PFG)
 -------------------------------------
 Extract ZIP folder contents to a new folder.
 
-Under extracted bin folder, find the file named 'FileDuplicateFinderUI.bat' if your OS is Windows or 'FileDuplicateFinderUI' if you are on Linux or Mac OS X.
+Under extracted bin folder, find the file named 'gduplicatefinder.bat' if your OS is Windows or 'gduplicatefinder' if you are on Linux or Mac OS X.
 
 Double-click on this to run the file. It will open a Command Prompt, and then open the main application screen from where you can customize your search.
 

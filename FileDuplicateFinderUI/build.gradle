@@ -3,6 +3,8 @@ loadConfiguration()
 apply plugin: 'groovy'
 apply plugin: 'application'
 mainClassName = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
+applicationName = "gduplicatefinder"
+
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'

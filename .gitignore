@@ -11,7 +11,7 @@ FileDuplicateFinderUI/.classpath
 FileDuplicateFinderUI/.project
 FileDuplicateFinderUI/.settings/
 FileDuplicateFinderUI/bin/
-FileDuplicateFinderUI/gduplicatefinder.properties
+gduplicatefinder.properties
 forWiki
 docs
 prodData
