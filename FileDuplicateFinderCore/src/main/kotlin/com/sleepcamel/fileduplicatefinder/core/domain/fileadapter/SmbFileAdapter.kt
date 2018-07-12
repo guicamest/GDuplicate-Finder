@@ -9,11 +9,15 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 class SmbFileAdapter : FileAdapter<SmbFile> {
+    override fun lastModifiedDate(file: SmbFile): Long = file.lastModified()
+
     override fun getName(file: SmbFile): String {
         return if (file.name.endsWith("/")) file.name.substring(0, file.name.length - 1) else file.name
     }
 
     override fun getAbsolutePath(file: SmbFile): String {
+        //file.lastModified() =  file.date
+        //file.createTime()
         return file.path
     }
 
@@ -51,8 +55,9 @@ class SmbFileAdapter : FileAdapter<SmbFile> {
         return getAbsolutePath(file).count { it == '/' }
     }
 
-    override fun files(file: SmbFile): Array<Any> {
-        return if (isDir(file)) file.listFiles().map { it as Any }.toTypedArray() else emptyArray()
+    override fun files(file: SmbFile): List<Any> {
+        // isDir necessary, listFiles on file causes Exception to be thrown
+        return if (isDir(file)) file.listFiles().map { it as Any } else emptyList()
     }
 
     override fun getParentFile(file: SmbFile): SmbFile {

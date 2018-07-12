@@ -17,7 +17,7 @@ class UpdateFinder {
 	def props = new Properties()
 	def currentVersion
 
-	private UpdateFinder(){
+	{
 		props.load(UpdateFinder.class.getResourceAsStream('app.properties'))
 		currentVersion = props.getProperty('FDFUI.app.version')
 	}

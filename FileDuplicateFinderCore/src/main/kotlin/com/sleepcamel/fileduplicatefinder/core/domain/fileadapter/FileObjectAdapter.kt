@@ -11,10 +11,13 @@ import java.io.ObjectOutputStream
 import java.util.regex.Pattern
 
 class FileObjectAdapter : FileAdapter<FileObject> {
+    override fun lastModifiedDate(file: FileObject): Long = file.content.lastModifiedTime
 
     override fun getName(file: FileObject): String = file.name.baseName ?: file.name.friendlyURI
 
     override fun getAbsolutePath(file: FileObject): String {
+        //file.content.lastModifiedTime
+        //file.content.getAttribute()
         return file.url.toString()
     }
 
@@ -44,7 +47,7 @@ class FileObjectAdapter : FileAdapter<FileObject> {
         return MD5Utils.generateMD5(BufferedInputStream(inputStream(file)))
     }
 
-    override fun files(file: FileObject): Array<Any> = file.children.map { it as Any }.toTypedArray()
+    override fun files(file: FileObject): List<Any> = file.children.map { it as Any }
 
     override fun inputStream(file: FileObject): InputStream {
         return file.content.inputStream

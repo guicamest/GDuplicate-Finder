@@ -3,14 +3,15 @@ package com.sleepcamel.fileduplicatefinder.ui.components
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.FileWrapperFilter
 import groovy.beans.Bindable
 import groovy.lang.Closure
-
-
+import groovy.util.logging.Slf4j
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport
 import org.eclipse.core.databinding.DataBindingContext
 import org.eclipse.core.databinding.UpdateValueStrategy
 import org.eclipse.core.databinding.beans.BeansObservables
 import org.eclipse.core.databinding.observable.value.IObservableValue
 import org.eclipse.jface.databinding.swt.WidgetProperties
+import org.eclipse.swt.events.ShellEvent
+import org.eclipse.swt.events.ShellListener
 import org.eclipse.swt.widgets.Display
 
 import org.apache.commons.lang3.time.StopWatch
@@ -34,7 +35,8 @@ import com.sleepcamel.fileduplicatefinder.ui.utils.FDFUIResources
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils
 
 @Bindable
-public class ScanProgress extends Composite {
+@Slf4j
+public class ScanProgress extends Composite implements ShellListener {
 	
 	Label label
 	ProgressBar progressBar
@@ -49,6 +51,7 @@ public class ScanProgress extends Composite {
 	Closure cancelFindingDuplicates
 	
 	boolean suspended = false
+	boolean shellClosed = false
 	
 	FDFUIResources i18n = FDFUIResources.instance
 	
@@ -113,7 +116,9 @@ public class ScanProgress extends Composite {
 		bindingContext.bindValue(WidgetProperties.enabled().observe(btnResume), modelSuspendValue)
 		bindingContext.bindValue(WidgetProperties.enabled().observe(btnSaveProgress), modelSuspendValue)
 	}
-	
+
+	def scanner
+
 	def scanAndSearch(filters, directories, autodelete = false){
 		AnalyticsTracker.instance.trackPageView("/scanAndSearchDuplicates?filters=${filters}&directories=${directories.length}")
 		suspended = false
@@ -121,17 +126,18 @@ public class ScanProgress extends Composite {
 
 		def duplicateFinder = new SequentialDuplicateFinder(directories as List, filter)
 
-		Thread.start { thread ->
+		Thread.start {
 			Display.getDefault().syncExec(new Runnable() { public void run() {
 				btnComposite.visible = false
 			}})
 			
 			def progress = duplicateFinder.findProgress
-			duplicateFinder.scan()
+			scanner = duplicateFinder.scan()
 			def stopWatch = new StopWatch()
 			stopWatch.start()
 
-			while ( !progress.finishedScanning ){
+			// https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.experimental/-job/
+			while ( scanner.isActive() ){
 				def elapsedTime = stopWatch.getTime()
 				double currentFiles = progress.totalFiles
 				def filesPerSec = currentFiles / (elapsedTime / 1000.0)
@@ -140,7 +146,16 @@ public class ScanProgress extends Composite {
 				}})
 				Thread.sleep(1000L)
 			}
-			findDuplicates(progress, autodelete)
+			log.info("Scanning took ${Utils.formatInterval(stopWatch.time)}")
+			stopWatch.stop()
+			Display.getDefault().syncExec(new Runnable() { public void run() {
+				def elapsedTime = stopWatch.getTime()
+				double currentFiles = progress.totalFiles
+				def filesPerSec = currentFiles / (elapsedTime / 1000.0)
+				label.text = i18n.msg('FDFUI.scanProgressScanningLbl', currentFiles, Utils.formatBytes(progress.totalFileSize.get()), Utils.formatInterval(elapsedTime), filesPerSec)
+			}})
+
+			if ( !scanner.cancelled ) findDuplicates(progress, autodelete, duplicateFinder)
 		}
 	}
 	
@@ -157,22 +172,22 @@ public class ScanProgress extends Composite {
 	
 	def reportingThread
 	
-	def findDuplicates(findProgress, autodelete = false){
+	def findDuplicates(findProgress, autodelete = false, duplicateFinder = null){
 		AnalyticsTracker.instance.trackPageView("/findDuplicates")
-		search(findProgress, 'findDuplicates', autodelete)
+		search(findProgress, 'findDuplicates', autodelete, duplicateFinder)
 	}
 	
 	def resumeSearch(findProgress){
 		AnalyticsTracker.instance.trackPageView("/findDuplicates?file")
-		search(findProgress, 'resume')
+		search(findProgress, 'resume', null)
 	}
 
-	def search(findProgress, methodName, autodelete = false){
+	def search(findProgress, methodName, autodelete = false, duplicateFinderFromScan){
 		currentProgress = findProgress
 		suspended = false
 		reportingThread = Thread.start { thread ->
 			try{
-			duplicateFinder = new SequentialDuplicateFinder()
+			duplicateFinder = duplicateFinderFromScan ?: new SequentialDuplicateFinder([], null)
 			duplicateFinder.findProgress = findProgress
 			
 			def progressDone = findProgress.getProgressData().percentDone
@@ -201,7 +216,7 @@ public class ScanProgress extends Composite {
 				AnalyticsTracker.instance.trackPageView("/seeDuplicates")
 				finishedFindingDuplicates.call(findProgress.duplicatedEntries(), autodelete)
 			}})
-			}catch(Exception e){}
+			}catch(Exception e){e.printStackTrace()}
 		}
 	}
 	
@@ -243,4 +258,13 @@ public class ScanProgress extends Composite {
 			}
 		}
 	}
+
+	void shellClosed(ShellEvent shellEvent) {
+		scanner?.cancel()
+	}
+
+	void shellActivated(ShellEvent shellEvent) {}
+	void shellDeactivated(ShellEvent shellEvent) {}
+	void shellDeiconified(ShellEvent shellEvent) {}
+	void shellIconified(ShellEvent shellEvent) {}
 }

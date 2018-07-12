@@ -1,6 +1,8 @@
 package com.sleepcamel.fileduplicatefinder.core.domain.filefilters
 
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
+import org.apache.commons.lang3.time.StopWatch
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 
 interface FileWrapperFilter {
@@ -71,6 +73,13 @@ class SizeFilter : FileWrapperFilter {
 
 class DirectoryFilter : FileWrapperFilter {
     override fun accept(arg0: FileWrapper<*>): Boolean {
+        //val sw = StopWatch().apply { start() }
+        //val dir = arg0.isDir
+        //sw.stop()
+        //println("So far: ${soFar.addAndGet(sw.time)}ms")
         return arg0.isDir
+    }
+    companion object {
+        val soFar = AtomicLong()
     }
 }

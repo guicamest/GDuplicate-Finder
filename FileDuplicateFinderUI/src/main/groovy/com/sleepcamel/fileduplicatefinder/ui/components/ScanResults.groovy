@@ -1,5 +1,7 @@
 package com.sleepcamel.fileduplicatefinder.ui.components
 
+import com.sleepcamel.fileduplicatefinder.core.domain.LocalPathWithAttributes
+import com.sleepcamel.fileduplicatefinder.core.domain.fileadapter.LocalPathAdapter
 import groovy.beans.Bindable
 
 import java.awt.Desktop
@@ -122,7 +124,7 @@ public class ScanResults extends Composite {
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider()
 		checkboxTableViewer.setContentProvider(contentProvider)
 
-		def modelProperties = ['name', 'friendlyPath', 'size', 'md5']
+		def modelProperties = ['name', 'friendlyPath', 'size', 'lastModified', 'md5']
 		IObservableMap[] attributes = BeansObservables.observeMaps(contentProvider.getKnownElements(), FileWrapper.class, modelProperties as String[])
 		checkboxTableViewer.setLabelProvider(new TableLabelProvider(attributes, observableFileList))
 
@@ -205,12 +207,14 @@ public class ScanResults extends Composite {
 	    layout.addColumnData(new ColumnWeightData(25, 180, true))
 	    layout.addColumnData(new ColumnWeightData(25, 190, true))
 	    layout.addColumnData(new ColumnWeightData(1, 80, true))
+		layout.addColumnData(new ColumnWeightData(1, 180, true))
 	    layout.addColumnData(new ColumnWeightData(25, 220, true))
 	    table.setLayout(layout)
 
 		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderName'))
 		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderPath'))
 		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderSize'))
+		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderLastModified'))
 		createColumn(checkboxTableViewer, i18n.msg('FDFUI.scanResultsTableHeaderHash'))
 		
 		sashForm.setWeights([2, 5] as int[])
@@ -411,6 +415,9 @@ public class ScanResults extends Composite {
 			switch (selectedFile.adapterToUse.class){
 				case LocalFileAdapter:
 					file = selectedFile.file
+					break
+				case LocalPathAdapter:
+					file = selectedFile.file.path.toFile()
 					break
 				default:
 					file = PreviewFilesCache.instance.get(selectedFile.md5())

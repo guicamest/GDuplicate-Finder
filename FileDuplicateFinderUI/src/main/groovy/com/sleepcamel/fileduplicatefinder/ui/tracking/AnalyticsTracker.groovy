@@ -15,13 +15,7 @@ import com.sleepcamel.fileduplicatefinder.ui.utils.Settings
 @Slf4j
 class AnalyticsTracker {
 
-	JGoogleAnalyticsTracker tracker
-	AnalyticsConfigData configData
-	
-	private static final String ACCOUNT_FILE = 'analytics.properties'
-	private static final String ACCOUNT_PROPERTY = 'analytics.account'
-	
-	private AnalyticsTracker(){
+	{
 		try{
 		def props = new Properties()
 		props.load(AnalyticsTracker.getResourceAsStream(ACCOUNT_FILE))
@@ -37,6 +31,12 @@ class AnalyticsTracker {
 			log.error(e.getMessage())
 		}
 	}
+
+	JGoogleAnalyticsTracker tracker
+	AnalyticsConfigData configData
+
+	private static final String ACCOUNT_FILE = 'analytics.properties'
+	private static final String ACCOUNT_PROPERTY = 'analytics.account'
 	
 	public trackStarted(){
 		trackPageView('/')

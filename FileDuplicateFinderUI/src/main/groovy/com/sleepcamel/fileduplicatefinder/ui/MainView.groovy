@@ -1,6 +1,7 @@
 package com.sleepcamel.fileduplicatefinder.ui
 
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
+import com.sleepcamel.fileduplicatefinder.core.domain.LocalPathWithAttributes
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.ExtensionFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.NameFilter
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.OrWrapperFilter
@@ -40,12 +41,19 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.custom.ScrolledComposite
 import org.eclipse.swt.custom.StackLayout
+import org.eclipse.swt.events.ShellAdapter
+import org.eclipse.swt.events.ShellEvent
+import org.eclipse.swt.events.ShellListener
 import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 
 import java.awt.Desktop
+import java.nio.file.FileSystemException
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
 @Slf4j
 public class MainView {
@@ -152,8 +160,10 @@ public class MainView {
 			}
 			sw.stop()
 			Settings.instance.save()
+
 			tracker.trackLastEvent('AppClosed','Normal',Utils.formatInterval(sw.getTime()))
 		}catch(Exception e){
+			log.error("Damn it", e)
 			tracker.trackLastEvent('AppClosed','Exception',e.getMessage())
 		}
 		ps.setValue(PropertyConsts.TS_LAST, tracker.getCurrentTS())
@@ -173,6 +183,7 @@ public class MainView {
 	 */
 	protected void createContents() {
 		shlFileDuplicateFinder = new Shell()
+
 		shlFileDuplicateFinder.setSize(800, 500)
 		shlFileDuplicateFinder.setText(i18n.msg('FDFUI.appTitle'))
 		stackLayout = new StackLayout()
@@ -262,16 +273,10 @@ public class MainView {
 		//TODO ILazyTreePathContentProvider y ILazyTreeContentProvider
 		Realm realm = SWTObservables.getRealm(checkboxTreeViewer.getControl().getDisplay());
         ObservableListTreeContentProvider contentProvider = new ObservableListTreeContentProvider(decorator.listFactory(realm), (TreeStructureAdvisor)null);
-        if (checkboxTreeViewer.getInput() != null) {
-			checkboxTreeViewer.setInput((Object)null);
-        }
 
 		checkboxTreeViewer.setContentProvider(contentProvider);
         checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
-		//checkboxTreeViewer.setInput(treeInput)
 
-		//checkboxTreeViewer.setLabelProvider(new FileWrapperTreeLabelProvider())
-		
 		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(sashForm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL)
 		scrolledComposite_1.setExpandHorizontal(true)
 		scrolledComposite_1.setExpandVertical(true)
@@ -315,6 +320,7 @@ public class MainView {
 		scanProgress = new ScanProgress(shlFileDuplicateFinder, SWT.FILL | SWT.VERTICAL | SWT.HORIZONTAL )
 		scanProgress.finishedFindingDuplicates = showDuplicates
 		scanProgress.cancelFindingDuplicates = searchAgain
+		shlFileDuplicateFinder.addShellListener(scanProgress)
 		
 		scanResults = new ScanResults(shlFileDuplicateFinder, SWT.NONE)
 		scanResults.btnSearchAgain.addSelectionListener(new ClosureSelectionAdapter(c: searchAgain))
@@ -540,16 +546,20 @@ public class MainView {
 		// Done in main thread... do async and show progress bar
 		def status = syncDrivesWithTree(umount)
 		checkboxTreeViewer.setInput(treeInput)
-		//checkboxTreeViewer.refresh()
 		status
 	}
 
 	def syncDrivesWithTree(umountAtErrors = false){
 		syncedDrives = true
 		def successfullSync = true
+
 		def fileRoots = []
-		File.listRoots().each { root ->
-			fileRoots << new FileWrapper(root)
+		FileSystems.getDefault().rootDirectories.each { root ->
+			try{
+				fileRoots << new FileWrapper(new LocalPathWithAttributes(root, Files.readAttributes(root, BasicFileAttributes.class)))
+			}catch (FileSystemException e){
+				log.debug("Failed to list root => ${e.message}")
+			}
 		}
 
 		try{

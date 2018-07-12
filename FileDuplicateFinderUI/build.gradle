@@ -4,8 +4,8 @@ apply plugin: 'groovy'
 apply plugin: 'application'
 mainClassName = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 version = "${GDuplicateFinderVersion}"
 
@@ -20,7 +20,7 @@ repositories {
 dependencies {
 	compile project(':FileDuplicateFinderCore')
 	
-	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+	compile "org.codehaus.groovy:groovy-all:$groovyVersion:indy"
 	
 	compile("commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"){
 		exclude group: 'commons-logging', module: 'commons-logging'
@@ -32,6 +32,32 @@ dependencies {
 	compile fileTree(dir: "${project.ext.config.swtLibs}", include: '*.jar')
 	compile fileTree(dir: "${project.ext.config.swtOsJars}", include: '*.jar')
 }
+
+sourceSets {
+	// https://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing/
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integration-test/java')
+		}
+		resources.srcDir file('src/integration-test/resources')
+	}
+}
+
+configurations {
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test) {
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	group = 'verification'
+	//outputs.upToDateWhen { false }
+}
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
 
 task "create-dirs" {
 	doLast {

@@ -22,7 +22,6 @@ public class FileWrapperBeanListProperty extends BeanListProperty {
 	@Override
 	protected List<?> doGetList(Object source) {
 		String sour = source != null ? ((FileWrapper)source).getPath() : "root";
-		System.out.println("------------- "+sour+"\n");
 		RuntimeException runtimeException = new RuntimeException("");
 		StackTraceElement[] stackTrace = runtimeException.getStackTrace();
 		List<StackTraceElement> backup = new ArrayList<StackTraceElement>();
@@ -33,8 +32,9 @@ public class FileWrapperBeanListProperty extends BeanListProperty {
 			}
 		}
 		runtimeException.setStackTrace(backup.toArray(new StackTraceElement[]{}));
+		/*System.out.println("------------- "+sour+"\n");
 		System.out.println(Thread.currentThread().getThreadGroup()+Thread.currentThread().getName());
-		runtimeException.printStackTrace();
+		runtimeException.printStackTrace();*/
 		if ( source != null ){
 			((FileWrapper)source).dirs();
 		}

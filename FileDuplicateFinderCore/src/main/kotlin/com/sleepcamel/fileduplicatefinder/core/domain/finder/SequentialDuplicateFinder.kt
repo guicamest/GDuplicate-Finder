@@ -3,44 +3,23 @@ package com.sleepcamel.fileduplicatefinder.core.domain.finder
 import com.sleepcamel.fileduplicatefinder.core.domain.DuplicateFinderProgress
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper
 import com.sleepcamel.fileduplicatefinder.core.domain.filefilters.FileWrapperFilter
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.*
+import org.apache.commons.lang3.time.StopWatch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.beans.PropertyChangeListener
+import kotlin.coroutines.experimental.CoroutineContext
 
-//@Bindable
 class SequentialDuplicateFinder(var directories: MutableList<FileWrapper<*>>, val filter: FileWrapperFilter? = null) : DuplicateFinder {
     val log: Logger = LoggerFactory.getLogger(javaClass)
 
-    var poolSize = Runtime.getRuntime().availableProcessors()
     var findProgress = DuplicateFinderProgress()
-    var duplicatesThread: Deferred<Any>? = null
+    var duplicatesThread: Job? = null
 
-    private fun pd(dirs: List<FileWrapper<*>>){
-        runBlocking {
-            dirs.forEach { async(coroutineContext) {
-                if (it.isDir) {
-                    pd(it.filterFiles(filter))
-                } else {
-                    findProgress.fileFound(it)
-                }
-            }}
-        }
-    }
-
-    override fun scan() {
+    override fun scan(): Job {
         filteredDirectories()
         findProgress.startScan()
-        pd(directories)
-    }
-
-    fun filteredDirectories() {
-        val backup = directories.toList()
-        for (directory in backup) {
-            directories.removeAll { directory.isFatherOrGrandFatherOf(it) }
-        }
+        val context = newFixedThreadPoolContext(poolSize, "scanners")
+        return launch(context) { pd(directories, context) }
     }
 
     override fun findDuplicates() {
@@ -54,24 +33,19 @@ class SequentialDuplicateFinder(var directories: MutableList<FileWrapper<*>>, va
     }
 
     override fun resume() {
-        duplicatesThread = async {
+        duplicatesThread = launch(newSingleThreadContext("finder")) {
             while (findProgress.hasPhasesLeft() && isActive ) {
+                val stopWatch = StopWatch()
+                stopWatch.start()
                 val current = findProgress.currentPhase as DuplicateFinderPhase
-                val dfs = current.initialFiles.map { f ->
-                    async(parent = duplicatesThread){
-                        if ( isActive ){ findProgress.processFile(f) }
-                    }
-                }
-
-                /*
                 // TODO group files by disk? that way we can parallelize
-                files.each {
-                    if ( Thread.interrupted() ){
-                        throw new InterruptedException()
-                    }
-                    findProgress.processFile(it)
-                }*/
-                findProgress.nextPhase()
+                // toList => prevent concurrent modification by iterating over an immutable copy
+                current.initialFiles.toList().forEach { f ->
+                    if ( isActive ){ findProgress.processFile(f) }
+                }
+                log.info("Phase ${current.name} took ${stopWatch.time}ms")
+                stopWatch.stop()
+                if ( isActive ) findProgress.nextPhase()
             }
             if ( !isActive ) log.info("Suspended search")
 
@@ -81,27 +55,26 @@ class SequentialDuplicateFinder(var directories: MutableList<FileWrapper<*>>, va
         }
     }
 
-    fun addPropertyChangeListener(listener: PropertyChangeListener) {//todo
+    private fun pd(dirs: List<FileWrapper<*>>, job: CoroutineContext){
+        dirs.forEach { fod ->
+            if (fod.isDir) {
+                launch(job) {
+                    pd(fod.filterFiles(filter), job)
+                }
+            } else {
+                findProgress.fileFound(fod)
+            }
+        }
     }
 
-    fun addPropertyChangeListener(name: String, listener: PropertyChangeListener) {//todo
+    private fun filteredDirectories() {
+        val backup = directories.toList()
+        for (directory in backup) {
+            directories.removeAll { directory.isFatherOrGrandFatherOf(it) }
+        }
     }
 
-    fun removePropertyChangeListener(listener: PropertyChangeListener) {//todo
+    companion object {
+        private val poolSize = Runtime.getRuntime().availableProcessors()
     }
-
-    fun removePropertyChangeListener(name: String, listener: PropertyChangeListener) {//todo
-    }
-
-    fun firePropertyChange(name: String, oldValue: Any, newValue: Any) {//todo
-    }
-
-    /*
-    //todo
-    val propertyChangeListeners: Array<PropertyChangeListener>
-        get() {}
-
-    fun getPropertyChangeListeners(name: String): Array<PropertyChangeListener> {//todo
-    }*/
-
 }

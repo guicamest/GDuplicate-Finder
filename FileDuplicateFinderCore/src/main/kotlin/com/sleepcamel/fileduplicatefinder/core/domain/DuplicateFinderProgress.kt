@@ -1,29 +1,44 @@
 package com.sleepcamel.fileduplicatefinder.core.domain
 
 import com.sleepcamel.fileduplicatefinder.core.domain.finder.DuplicateFinderPhase
-import java.beans.PropertyChangeListener
+import com.sleepcamel.fileduplicatefinder.core.util.MD5Utils
+import com.sleepcamel.fileduplicatefinder.core.util.toHex
 import java.io.Serializable
+import java.math.BigInteger
+import java.nio.ByteBuffer
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-//@Bindable
 class DuplicateFinderProgress : Serializable {
     val phases: MutableList<DuplicateFinderPhase> = ArrayList()
 
     var totalFiles = AtomicInteger()
     var totalFileSize = AtomicLong()
-    var finishedScanning = false
     var finishedFindingDuplicates = false
 
     lateinit var foundFiles: List<FileWrapper<*>>
     /*@Synchronized*/ var currentPhase: DuplicateFinderPhase? = null
     /*@Synchronized*/ var progressData = ConcurrentHashMap<String, Any>()
-    var duplicatedEntries: MutableList<DuplicateEntry> = mutableListOf()
+    private var duplicatedEntries: MutableList<DuplicateEntry> = mutableListOf()
+
+    // TODO Read from config(?)
+    // TODO FileSize util here...
+    val MIN_SIZE_FOR_SHORT_COMPARE: Int = 1024 * 1024// 1M
+    val SHORT_COMPARE_BYTES: Int = 1024 // 1K
 
     fun initPhases() {
         phases.add(DuplicateFinderPhase("Size Phase", { it.size }))
+        phases.add(DuplicateFinderPhase("Size/Hash Phase", {
+            if ( it.size > MIN_SIZE_FOR_SHORT_COMPARE ){
+                it.inputStream().use { iss ->
+                    val buffer = ByteArray(SHORT_COMPARE_BYTES)
+                    iss.read(buffer)
+                    buffer.toHex()
+                }
+            } else null
+        }, true))
         phases.add(DuplicateFinderPhase("Hash Phase", { it.md5 }))
     }
 
@@ -37,7 +52,6 @@ class DuplicateFinderProgress : Serializable {
         totalFiles.set(0)
         totalFileSize.set(0)
         foundFiles = mutableListOf()//DefaultGroovyMethods.asSynchronized(ArrayList())
-        finishedScanning = false
         finishedFindingDuplicates = false
     }
 
@@ -46,10 +60,6 @@ class DuplicateFinderProgress : Serializable {
         foundFiles += file
         totalFiles.incrementAndGet()
         totalFileSize.addAndGet(file.size.toLong())
-    }
-
-    fun scanFinished() {
-        finishedScanning = true
     }
 
     fun startFindingDuplicates() {
@@ -74,10 +84,9 @@ class DuplicateFinderProgress : Serializable {
             currentPhase = phases[currentPhaseIdx + 1]
             currentPhase!!.start(lastPhaseOutput)
         }
-
     }
 
-    suspend fun processFile(file: FileWrapper<*>) {
+    fun processFile(file: FileWrapper<*>) {
         currentPhase!!.processFile(file)
         updateProgressData()
     }
@@ -87,10 +96,10 @@ class DuplicateFinderProgress : Serializable {
         synchronized(cPhase!!) {
             progressData["phaseNumber"] = phaseNumber()
             progressData["percentDone"] = cPhase.percentDone()
-            progressData["processedFilesQty"] = cPhase.processedFilesQty
-            progressData["processedFileSize"] = cPhase.processedFileSize
-            progressData["totalFiles"] = cPhase.totalFiles
-            progressData["totalFileSize"] = cPhase.totalFileSize
+            progressData["processedFilesQty"] = cPhase.processedFilesQty.toInt()
+            progressData["processedFileSize"] = cPhase.processedFileSize.toLong()
+            progressData["totalFiles"] = cPhase.totalFiles.toInt()
+            progressData["totalFileSize"] = cPhase.totalFileSize.toLong()
         }
     }
 
@@ -99,29 +108,6 @@ class DuplicateFinderProgress : Serializable {
     fun phaseNumber(): Int = phases.indexOf(currentPhase)
 
     fun duplicatedEntries()= duplicatedEntries
-
-    fun addPropertyChangeListener(listener: PropertyChangeListener) {//todo
-    }
-
-    fun addPropertyChangeListener(name: String, listener: PropertyChangeListener) {//todo
-    }
-
-    fun removePropertyChangeListener(listener: PropertyChangeListener) {//todo
-    }
-
-    fun removePropertyChangeListener(name: String, listener: PropertyChangeListener) {//todo
-    }
-
-    fun firePropertyChange(name: String, oldValue: Any, newValue: Any) {//todo
-    }
-
-    /*
-    //todo
-    val propertyChangeListeners: Array<PropertyChangeListener>
-        get() {}
-
-    fun getPropertyChangeListeners(name: String): Array<PropertyChangeListener> {//todo
-    }*/
 
     companion object {
         private const val serialVersionUID = 6444577992643698844L

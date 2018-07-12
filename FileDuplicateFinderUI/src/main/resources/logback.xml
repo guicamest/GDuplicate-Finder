@@ -15,10 +15,10 @@
                 INFO, WARN, ERROR, ALL or OFF. Using root logger, you can handle level of
                 APPENDER by just adding appender-ref into root as below: In root, There can
                 be zero appender-ref. -->
-        <root level="ERROR">
+        <root level="INFO">
                 <appender-ref ref="STDOUT" />
         </root>
         
-        <logger name="com.sleepcamel.fileduplicatefinder" level="INFO"/>
+        <logger name="com.sleepcamel.fileduplicatefinder" level="DEBUG"/>
 
 </configuration>

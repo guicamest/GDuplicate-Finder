@@ -36,6 +36,32 @@ object MD5Utils {
         return BigInteger(1, digest.digest()).toString(16)
     }
     */
-    fun generateMD5(`is`: InputStream): String = TODO("tokt")
+    val HEX_CHARS = "0123456789ABCDEF"
+    fun generateMD5(iss: InputStream, bufferSize: Int = DEFAULT_BUFFER_SIZE): String {
+        val algo = MessageDigest.getInstance("MD5")
+        iss.use {
+            val buffer = ByteArray(bufferSize)
+            var bytes = it.read(buffer)
+            while (bytes >= 0) {
+                algo.update(buffer, 0, bytes)
+                bytes = it.read(buffer)
+            }
+        }
 
+        return algo.digest().toHex()
+    }
+
+}
+fun ByteArray.toHex() : String{
+    val result = StringBuffer(size * 2)
+
+    forEach {
+        val octet = it.toInt()
+        val firstIndex = (octet and 0xF0).ushr(4)
+        val secondIndex = octet and 0x0F
+        result.append(MD5Utils.HEX_CHARS[firstIndex])
+        result.append(MD5Utils.HEX_CHARS[secondIndex])
+    }
+
+    return result.toString()
 }

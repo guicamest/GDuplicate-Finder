@@ -23,9 +23,11 @@ interface FileAdapter<E> : Serializable {
 
     fun md5(file: E): String
 
-    fun files(file: E): Array<Any>
+    fun files(file: E): List<Any>
 
     fun inputStream(file: E): InputStream
+
+    fun lastModifiedDate(file: E): Long
 
     fun depth(file: E): Int
 

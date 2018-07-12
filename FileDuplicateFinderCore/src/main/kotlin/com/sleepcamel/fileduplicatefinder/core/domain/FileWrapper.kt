@@ -7,6 +7,7 @@ import com.sleepcamel.fileduplicatefinder.core.domain.s3.S3ObjectWrapper
 import jcifs.smb.SmbFile
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
+import org.apache.commons.lang3.time.StopWatch
 import org.apache.commons.vfs.FileObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,17 +27,18 @@ open class FileWrapper<E: Any> @JvmOverloads constructor(@Transient val file: E,
     var filesLoaded = false
 
     val size: Int by lazy { adapterToUse?.size(file)?.toInt() ?: 0 }
-    val md5: String by lazy { adapterToUse!!.md5(file) }
+    val md5: String by lazy { if (isDir) "" else adapterToUse!!.md5(file) }
     val depth by lazy { adapterToUse?.depth(file) ?: -1 }
 
     val path: String? by lazy {adapterToUse?.getAbsolutePath(file)}
     val name: String? by lazy {adapterToUse?.getName(file) ?: path}
     val friendlyPath: String? by lazy { adapterToUse?.getFriendlyPath(file) }
+    val lastModified: Long? by lazy { adapterToUse?.lastModifiedDate(file) }
 
     val isLocal: Boolean
         get() {
             val use = adapterToUse
-            return use?.javaClass == LocalFileAdapter::class.java
+            return use?.javaClass == LocalPathAdapter::class.java || use?.javaClass == LocalFileAdapter::class.java
         }
 
     init {
@@ -63,13 +65,14 @@ open class FileWrapper<E: Any> @JvmOverloads constructor(@Transient val file: E,
     fun loadFiles(forceUpdate: Boolean = false) {
         if ((!filesLoaded || forceUpdate) && adapterToUse != null) {
             files.clear()
+
             val asWrappers = adapterToUse.files(file).map { async { FileWrapper(it as E, file) } }
             runBlocking {
                 asWrappers.forEach {
                     files.add(it.await())
-                    println("File ${files.last()} added")
                 }
             }
+
             // https://stackoverflow.com/a/5700969
             filesLoaded = true
         }
@@ -89,11 +92,12 @@ open class FileWrapper<E: Any> @JvmOverloads constructor(@Transient val file: E,
 
     fun filterFiles(fileWrapperFilter: FileWrapperFilter?): List<FileWrapper<E>> {
         loadFiles(false)
+        val view = files.toList()
 
         return fileWrapperFilter?.let { filter ->
             // TODO Parallelize?
-            return files.filter(filter::accept)
-        } ?: files
+            return view.filter(filter::accept)
+        } ?: view
     }
 
     fun dirs(): List<FileWrapper<E>> {
@@ -173,6 +177,7 @@ open class FileWrapper<E: Any> @JvmOverloads constructor(@Transient val file: E,
         }
 
         private val adapters: MutableMap<Class<*>, FileAdapter<*>> = mutableMapOf(
+                LocalPathWithAttributes::class.java to LocalPathAdapter(),
                 FileObject::class.java to FileObjectAdapter(),
                 SmbFile::class.java to SmbFileAdapter(),
                 File::class.java to LocalFileAdapter(),

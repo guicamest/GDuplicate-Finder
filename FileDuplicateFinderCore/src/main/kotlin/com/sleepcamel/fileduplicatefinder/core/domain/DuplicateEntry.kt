@@ -5,7 +5,7 @@ import java.util.ArrayList
 
 class DuplicateEntry(val hash: Any, val first: FileWrapper<*>) : Serializable {
 
-    val files: MutableList<FileWrapper<*>> = mutableListOf<FileWrapper<*>>(first)
+    val files: MutableList<FileWrapper<*>> = mutableListOf(first)
 
     fun hasDuplicates(): Boolean = files.size > 1
 

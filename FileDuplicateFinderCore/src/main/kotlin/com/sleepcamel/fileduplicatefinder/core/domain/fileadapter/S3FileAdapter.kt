@@ -14,9 +14,12 @@ import java.io.ObjectOutputStream
 import java.util.ArrayList
 
 class S3FileAdapter : FileAdapter<S3ObjectWrapper> {
+    override fun lastModifiedDate(file: S3ObjectWrapper): Long = file.metadata.lastModified.time
+
     val log: Logger = LoggerFactory.getLogger(javaClass)
 
     fun isRoot(file: S3ObjectWrapper): Boolean {
+        //file.metadata.lastModified
         return file.key.isEmpty()
     }
 
@@ -55,12 +58,12 @@ class S3FileAdapter : FileAdapter<S3ObjectWrapper> {
         return StringUtils.leftPad(file.summary.eTag, MD5_STRING_LENGTH, "0")
     }
 
-    override fun files(file: S3ObjectWrapper): Array<Any> = getFiles(file,
+    override fun files(file: S3ObjectWrapper): List<Any> = getFiles(file,
                 file.s3.listObjects(
                         ListObjectsRequest().withBucketName(file.bucketName).withPrefix(file.key)
                                 .withDelimiter(FOLDER_DELIMITER).withMaxKeys(MAX_KEYS_PER_REQUEST)
                 )
-        ).map { it as Any }.toTypedArray()
+        ).map { it as Any }
 
     private fun getFiles(file: S3ObjectWrapper, objectListing: ObjectListing): List<S3ObjectWrapper> {
         val files = ArrayList<S3ObjectWrapper>()

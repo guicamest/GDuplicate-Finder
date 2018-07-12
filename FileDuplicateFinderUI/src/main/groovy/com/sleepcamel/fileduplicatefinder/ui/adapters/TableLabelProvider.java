@@ -10,6 +10,8 @@ import org.eclipse.swt.widgets.Display;
 import com.sleepcamel.fileduplicatefinder.core.domain.FileWrapper;
 import com.sleepcamel.fileduplicatefinder.ui.utils.Utils;
 
+import java.util.Date;
+
 public class TableLabelProvider extends ObservableMapLabelProvider implements ITableColorProvider{
 
 	private IObservableList source;
@@ -29,8 +31,13 @@ public class TableLabelProvider extends ObservableMapLabelProvider implements IT
 
 	public String getColumnText(Object element, int columnIndex) {
 		String columnText = super.getColumnText(element, columnIndex);
-		if ( columnIndex == 2 ){
-			columnText = Utils.formatBytes(Long.parseLong(columnText));
+		switch (columnIndex) {
+			case 2:
+				columnText = Utils.formatBytes(Long.parseLong(columnText));
+				break;
+			case 3:
+				columnText = new Date(Long.parseLong(columnText)).toString();
+				break;
 		}
 		return columnText;
 	}

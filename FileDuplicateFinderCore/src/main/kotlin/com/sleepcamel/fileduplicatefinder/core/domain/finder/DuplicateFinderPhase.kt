@@ -17,7 +17,7 @@ https://blog.simon-wirtz.de/kotlin-coroutines-guide/
 https://kotlinlang.org/docs/reference/coroutines.html
  */
 
-class DuplicateFinderPhase(val name: String, val hashClosure: suspend (FileWrapper<*>) -> Any) : Serializable {
+class DuplicateFinderPhase(val name: String, val hashClosure: (FileWrapper<*>) -> Any?, val byPassNullHash: Boolean = false) : Serializable {
     lateinit var initialFiles: MutableList<FileWrapper<*>>
     private val processedFiles = mutableListOf<FileWrapper<*>>()
     private val filesMap: ConcurrentHashMap<Any, DuplicateEntry> = ConcurrentHashMap()
@@ -28,6 +28,7 @@ class DuplicateFinderPhase(val name: String, val hashClosure: suspend (FileWrapp
     val totalFileSize = AtomicLong()
     var duplicatedEntries = mutableListOf<DuplicateEntry>()
     var possibleDuplicateFiles = mutableListOf<FileWrapper<*>>()
+    var bypassed = mutableListOf<FileWrapper<*>>()
 
     fun start(firstFiles: List<FileWrapper<*>>) {
         synchronized(this) {
@@ -43,16 +44,20 @@ class DuplicateFinderPhase(val name: String, val hashClosure: suspend (FileWrapp
         }
     }
 
-    suspend fun processFile(file: FileWrapper<*>) {
+    fun processFile(file: FileWrapper<*>) {
         val hash = hashClosure(file)
         synchronized(this) {
-            val duplicateEntry = filesMap.getOrPut(hash){DuplicateEntry(hash, file)}
-            duplicateEntry.addFile(file)
+            if ( hash != null ){
+                val duplicateEntry = filesMap.getOrPut(hash){DuplicateEntry(hash, file)}
+                duplicateEntry.addFile(file)
+            }else if ( byPassNullHash ){
+                bypassed.add(file)
+            }
             fileProcessed(file)
         }
     }
 
-    fun fileProcessed(file: FileWrapper<*>) {
+    private fun fileProcessed(file: FileWrapper<*>) {
         if (!processedFiles.contains(file)) {
             processedFiles += file
             processedFilesQty.incrementAndGet()
@@ -62,31 +67,20 @@ class DuplicateFinderPhase(val name: String, val hashClosure: suspend (FileWrapp
         initialFiles.remove(file)
     }
 
-    fun syncProgress() {
-        if (processedFilesQty.get() < processedFiles.size) {
-            processedFilesQty.incrementAndGet() // tokot Why ++ only?
-        }
-
-        processedFileSize.set(processedFiles.fold(0L, { a, b -> a + b.size}))
-
-        val iterator = processedFiles.asReversed().iterator()
-        var matches: Boolean = true
-        while (iterator.hasNext() && matches) {
-            val next = iterator.next()
-            matches = initialFiles.contains(next)
-            if (matches) {
-                initialFiles.remove(next)
-            }
-        }
+    fun percentDone(): Double {
+        val all = totalFiles.get() * totalFileSize.toDouble()
+        return if (all != 0.0) (processedFilesQty.get() * processedFileSize.toDouble()) / all else 0.0
     }
-
-    fun percentDone(): Double = (processedFilesQty.get() * processedFileSize.toDouble())/( totalFiles.get() * totalFileSize.toDouble())
 
     fun finished() {
         possibleDuplicateFiles.clear()
         duplicatedEntries.clear()
         filesMap.forEach{ (_, duplicateEntry) ->
             if ( duplicateEntry.hasDuplicates() ) duplicatedEntries.add(duplicateEntry)
+        }
+        if ( byPassNullHash ) {
+            possibleDuplicateFiles.addAll(bypassed)
+            println("${filesMap.filter { !it.value.hasDuplicates() }.flatMap { it.value.files }.fold(0L) { s, f -> s+(f.size-1024L) }} bytes saved")
         }
         possibleDuplicateFiles.addAll(duplicatedEntries.flatMap { it.files })
     }
@@ -101,32 +95,5 @@ class DuplicateFinderPhase(val name: String, val hashClosure: suspend (FileWrapp
 
         return name == other.name
     }
-
-
-    /*
-    fun getProcessedFiles(): List<*> {
-        return processedFiles
-    }
-
-    fun setProcessedFiles(processedFiles: MutableList<*>) {
-        this.processedFiles = processedFiles
-    }
-
-    fun getDuplicatedEntries(): List<*> {
-        return duplicatedEntries
-    }
-
-    fun setDuplicatedEntries(duplicatedEntries: MutableList<*>) {
-        this.duplicatedEntries = duplicatedEntries
-    }
-
-    fun getPossibleDuplicateFiles(): List<*> {
-        return possibleDuplicateFiles
-    }
-
-    fun setPossibleDuplicateFiles(possibleDuplicateFiles: MutableList<*>) {
-        this.possibleDuplicateFiles = possibleDuplicateFiles
-    }
-    */
 
 }
