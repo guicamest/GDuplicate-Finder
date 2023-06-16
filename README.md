@@ -1,4 +1,4 @@
-#GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
+# GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
 
 Unlike other duplicate finders such as Easy Duplicate File Finder,
 Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,
@@ -54,7 +54,7 @@ On windows run: `bin/FileDuplicateFinderUI.bat`
 
 If you are on Mac or linux, run: `bin/FileDuplicateFinderUI`
 
-##Troubleshooting
+## Troubleshooting
 
 ### Linux
 
@@ -70,7 +70,7 @@ it means your default java installation is 32-bit. You can verify it opening a c
 To fix it, either install 64-bit java and set it as default or download the 32-bit version of GDuplicateFinder.
 For more info, follow [this thread](http://sourceforge.net/p/gdupfinder/discussion/general/thread/a1a82607/)
 
-##ChangeLog
+## ChangeLog
 
 ### Version 2.0.3
 
