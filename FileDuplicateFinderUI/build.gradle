@@ -24,7 +24,7 @@ buildscript {
 }
  
 dependencies {
-	compile project(':FileDuplicateFinderCore')
+	compile project(':core')
 	
 	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
 	
