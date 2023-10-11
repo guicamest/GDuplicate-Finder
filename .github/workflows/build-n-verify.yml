@@ -1,0 +1,46 @@
+name: Build and verify
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job
+        os: [ ubuntu-22.04, windows-2022, macos-12 ]
+        jvm: [ 11, 17, 21 ]
+
+    # https://github.com/actions
+    # https://github.com/marketplace?type=actions
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup JVM ${{ matrix.jvm }}
+        uses: actions/setup-java@v3.13.0
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jvm }}
+
+      # https://github.com/marketplace/actions/gradle-build-action
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2.9.0
+        with:
+          # The Gradle wrapper's version (already the default, putting it here to clarity)
+          cache-write-only: true
+          gradle-home-cache-cleanup: true
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-version: wrapper
+
+      - name: Build
+        run: ./gradlew build
