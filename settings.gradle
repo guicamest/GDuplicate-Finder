@@ -1,1 +1,1 @@
-include 'FileDuplicateFinderUI', 'FileDuplicateFinderCore'
+include 'FileDuplicateFinderCore'
