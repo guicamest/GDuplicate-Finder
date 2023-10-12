@@ -10,8 +10,7 @@ interface FindDuplicatesExecution {
 
 class CoroutinesFindDuplicatesExecution: FindDuplicatesExecution {
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
-
 
 }
