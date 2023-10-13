@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
+import java.security.MessageDigest
 import kotlin.io.path.*
 import kotlin.test.Test
 
@@ -99,4 +100,42 @@ class DuplicateFinderTest {
         }
     }
 
+    @DisplayName("detect duplicates when")
+    @Nested
+    inner class Duplicates {
+
+        @Test
+        fun `directory has two files with same content hash`() {
+            val directoryWith2FilesSameHash = createTempDirectory("directoryWith2FilesSameHash")
+            val fileNames = (0 .. 1).map {
+                createTempFile(directory = directoryWith2FilesSameHash).apply {
+                    writeText("hi")
+                }.fileName
+            }
+            val expectedDuplicateEntries = listOf(DuplicateGroup(
+                hash = "hi".contentHash(), paths = fileNames)
+            )
+
+            val execution = duplicateFinder.find(listOf(directoryWith2FilesSameHash))
+            runTest {
+                val duplicateEntries = execution.duplicateEntries()
+                assertThat(duplicateEntries).isEqualTo(expectedDuplicateEntries)
+            }
+        }
+    }
+
+}
+
+fun String.contentHash(type: String = "MD5"): String {
+    val bytes = MessageDigest.getInstance(type).digest(toByteArray())
+    fun printHexBinary(data: ByteArray): String =
+        buildString(data.size*2) {
+            val HEX_CHARS = "0123456789ABCDEF".toCharArray()
+            data.forEach { b ->
+                val i = b.toInt()
+                append(HEX_CHARS[i shr 4 and 0xF])
+                append(HEX_CHARS[i and 0xF])
+            }
+        }
+    return printHexBinary(bytes)
 }
