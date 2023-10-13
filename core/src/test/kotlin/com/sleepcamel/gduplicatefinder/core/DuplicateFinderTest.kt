@@ -1,13 +1,14 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Condition
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import java.nio.file.Paths
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
-import kotlin.io.path.writeText
+import java.nio.file.attribute.PosixFilePermissions
+import kotlin.io.path.*
 import kotlin.test.Test
 
 @DisplayName("DuplicateFinder should")
@@ -64,6 +65,25 @@ class DuplicateFinderTest {
             }
         }
 
+        @Test
+        fun `directory exists but is not readable`() {
+            MemoryFileSystemBuilder.newLinux().build().use { fs ->
+                val notReadableDirectory = fs.getPath("/notReadable").createDirectory()
+                repeat(2) {
+                    createTempFile(directory = notReadableDirectory).writeText("hi")
+                }
+                val notReadablePermissions = PosixFilePermissions.fromString("-".repeat(9))
+                notReadableDirectory.setPosixFilePermissions(notReadablePermissions)
+                assertThat(notReadableDirectory).isNot(
+                    Condition({ file -> file.isReadable() }, "not readable")
+                )
+
+                val execution = duplicateFinder.find(listOf(notReadableDirectory))
+                runTest {
+                    assertThat(execution.duplicateEntries()).isEmpty()
+                }
+            }
+        }
     }
 
 }
