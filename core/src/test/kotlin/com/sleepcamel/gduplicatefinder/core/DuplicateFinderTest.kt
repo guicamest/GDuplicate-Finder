@@ -66,6 +66,19 @@ class DuplicateFinderTest {
         }
 
         @Test
+        fun `directory exists and has two files with same size and different content`(){
+            val directoryWith2DifferentFiles = createTempDirectory("directoryWith2DifferentFiles")
+            val hiFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("hi") }
+            val byFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("by") }
+            assertThat(hiFile).hasSize(byFile.fileSize())
+
+            val execution = duplicateFinder.find(listOf(directoryWith2DifferentFiles))
+            runTest {
+                assertThat(execution.duplicateEntries()).isEmpty()
+            }
+        }
+
+        @Test
         fun `directory exists and is not readable`() {
             MemoryFileSystemBuilder.newLinux().build().use { fs ->
                 val notReadableDirectory = fs.getPath("/notReadable").createDirectory()
