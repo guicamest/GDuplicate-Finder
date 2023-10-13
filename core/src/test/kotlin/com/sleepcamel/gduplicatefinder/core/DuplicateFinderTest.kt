@@ -32,7 +32,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists but has no files`(){
+        fun `directory exists and has no files`(){
             val emptyDirectory = createTempDirectory("emptyDirectory")
             assertThat(emptyDirectory).isEmptyDirectory()
 
@@ -43,7 +43,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists but has only one file`(){
+        fun `directory exists and has only one file`(){
             val directoryWithOneFile = createTempDirectory("directoryWithOneFile")
             assertThat(createTempFile(directory = directoryWithOneFile)).exists().isRegularFile()
 
@@ -54,7 +54,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists but has two different files`(){
+        fun `directory exists and has two different files`(){
             val directoryWith2DifferentFiles = createTempDirectory("directoryWith2DifferentFiles")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("hi")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("bye")
@@ -66,7 +66,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists but is not readable`() {
+        fun `directory exists and is not readable`() {
             MemoryFileSystemBuilder.newLinux().build().use { fs ->
                 val notReadableDirectory = fs.getPath("/notReadable").createDirectory()
                 repeat(2) {
