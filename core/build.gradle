@@ -2,6 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.10'
     id 'java-library'
     id 'jvm-test-suite'
+    id "org.jlleitschuh.gradle.ktlint" version "11.6.1"
 }
 
 kotlin {
@@ -12,6 +13,10 @@ version = "$GDuplicateFinderVersion"
 
 dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+}
+
+ktlint {
+    version = "1.0.1"
 }
 
 testing {
