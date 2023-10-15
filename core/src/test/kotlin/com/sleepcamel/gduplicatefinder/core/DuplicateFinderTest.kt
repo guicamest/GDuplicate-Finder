@@ -22,15 +22,13 @@ import kotlin.test.Test
 
 @DisplayName("DuplicateFinder should")
 class DuplicateFinderTest {
-
     val duplicateFinder: DuplicateFinder = SequentialDuplicateFinder(GlobalScope)
 
     @DisplayName("not detect duplicates when")
     @Nested
     inner class NoDuplicates {
-
         @Test
-        fun `directory does not exist`(){
+        fun `directory does not exist`()  {
             val nonExistentDirectory = Paths.get("nonExistentDirectory")
             assertThat(nonExistentDirectory).doesNotExist()
 
@@ -41,7 +39,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has no files`(){
+        fun `directory exists and has no files`()  {
             val emptyDirectory = createTempDirectory("emptyDirectory")
             assertThat(emptyDirectory).isEmptyDirectory()
 
@@ -52,7 +50,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has only one file`(){
+        fun `directory exists and has only one file`()  {
             val directoryWithOneFile = createTempDirectory("directoryWithOneFile")
             assertThat(createTempFile(directory = directoryWithOneFile)).exists().isRegularFile()
 
@@ -63,7 +61,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has two different files`(){
+        fun `directory exists and has two different files`()  {
             val directoryWith2DifferentFiles = createTempDirectory("directoryWith2DifferentFiles")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("hi")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("bye")
@@ -75,7 +73,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has two files with same size and different content`(){
+        fun `directory exists and has two files with same size and different content`()  {
             val directoryWith2DifferentFiles = createTempDirectory("directoryWith2FilesSameSizeDifContent")
             val hiFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("hi") }
             val byFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("by") }
@@ -97,7 +95,7 @@ class DuplicateFinderTest {
                 val notReadablePermissions = PosixFilePermissions.fromString("-".repeat(9))
                 notReadableDirectory.setPosixFilePermissions(notReadablePermissions)
                 assertThat(notReadableDirectory).isNot(
-                    Condition({ file -> file.isReadable() }, "not readable")
+                    Condition({ file -> file.isReadable() }, "not readable"),
                 )
 
                 val execution = duplicateFinder.find(listOf(notReadableDirectory))
@@ -111,18 +109,20 @@ class DuplicateFinderTest {
     @DisplayName("detect duplicates when")
     @Nested
     inner class Duplicates {
-
         @Test
         fun `directory has two files with same content hash`() {
             val directoryWith2FilesSameHash = createTempDirectory("directoryWith2FilesSameHash")
-            val fileNames = (0 .. 1).map {
-                createTempFile(directory = directoryWith2FilesSameHash).apply {
-                    writeText("hi")
-                }.absolute()
-            }
-            val expectedDuplicateGroup = DuplicateGroup(
-                hash = "hi".contentHash(), paths = fileNames
-            )
+            val fileNames =
+                (0..1).map {
+                    createTempFile(directory = directoryWith2FilesSameHash).apply {
+                        writeText("hi")
+                    }.absolute()
+                }
+            val expectedDuplicateGroup =
+                DuplicateGroup(
+                    hash = "hi".contentHash(),
+                    paths = fileNames,
+                )
 
             runTest {
                 val duplicateFinder = SequentialDuplicateFinder(this)
@@ -137,13 +137,13 @@ class DuplicateFinderTest {
             }
         }
     }
-
 }
 
 fun String.contentHash(type: String = "MD5"): String {
     val bytes = MessageDigest.getInstance(type).digest(toByteArray())
+
     fun printHexBinary(data: ByteArray): String =
-        buildString(data.size*2) {
+        buildString(data.size * 2) {
             val HEX_CHARS = "0123456789ABCDEF".toCharArray()
             data.forEach { b ->
                 val i = b.toInt()
