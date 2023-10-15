@@ -1,6 +1,7 @@
 package com.sleepcamel.gduplicatefinder.core
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Condition
@@ -9,13 +10,20 @@ import org.junit.jupiter.api.Nested
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
-import kotlin.io.path.*
+import kotlin.io.path.absolute
+import kotlin.io.path.createDirectory
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
+import kotlin.io.path.fileSize
+import kotlin.io.path.isReadable
+import kotlin.io.path.setPosixFilePermissions
+import kotlin.io.path.writeText
 import kotlin.test.Test
 
 @DisplayName("DuplicateFinder should")
 class DuplicateFinderTest {
 
-    val duplicateFinder = SequentialDuplicateFinder()
+    val duplicateFinder: DuplicateFinder = SequentialDuplicateFinder(GlobalScope)
 
     @DisplayName("not detect duplicates when")
     @Nested
@@ -110,16 +118,22 @@ class DuplicateFinderTest {
             val fileNames = (0 .. 1).map {
                 createTempFile(directory = directoryWith2FilesSameHash).apply {
                     writeText("hi")
-                }.fileName
+                }.absolute()
             }
-            val expectedDuplicateEntries = listOf(DuplicateGroup(
-                hash = "hi".contentHash(), paths = fileNames)
+            val expectedDuplicateGroup = DuplicateGroup(
+                hash = "hi".contentHash(), paths = fileNames
             )
 
-            val execution = duplicateFinder.find(listOf(directoryWith2FilesSameHash))
             runTest {
+                val duplicateFinder = SequentialDuplicateFinder(this)
+                val execution = duplicateFinder.find(listOf(directoryWith2FilesSameHash))
+
                 val duplicateEntries = execution.duplicateEntries()
-                assertThat(duplicateEntries).isEqualTo(expectedDuplicateEntries)
+                assertThat(duplicateEntries).hasSize(1)
+                duplicateEntries.first().also { group ->
+                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
+                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
+                }
             }
         }
     }
