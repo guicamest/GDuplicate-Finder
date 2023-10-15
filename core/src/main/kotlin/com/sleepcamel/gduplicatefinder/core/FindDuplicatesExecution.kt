@@ -56,7 +56,7 @@ class CoroutinesFindDuplicatesExecution(
 
     private fun List<Path>.withSameContent() = groupBy { it.contentHash() }.filter { (_, paths) -> paths.size > 1 }
 
-    private fun List<Path>.withSameSize(): Map<Long, List<Path>> = groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
+    private fun List<Path>.withSameSize() = groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
 }
 
 private fun Path.contentHash(type: String = "MD5"): String = readBytes().contentHash(type)
