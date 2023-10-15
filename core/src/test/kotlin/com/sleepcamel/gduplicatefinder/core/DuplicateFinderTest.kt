@@ -28,7 +28,7 @@ class DuplicateFinderTest {
     @Nested
     inner class NoDuplicates {
         @Test
-        fun `directory does not exist`()  {
+        fun `directory does not exist`() {
             val nonExistentDirectory = Paths.get("nonExistentDirectory")
             assertThat(nonExistentDirectory).doesNotExist()
 
@@ -39,7 +39,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has no files`()  {
+        fun `directory exists and has no files`() {
             val emptyDirectory = createTempDirectory("emptyDirectory")
             assertThat(emptyDirectory).isEmptyDirectory()
 
@@ -50,7 +50,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has only one file`()  {
+        fun `directory exists and has only one file`() {
             val directoryWithOneFile = createTempDirectory("directoryWithOneFile")
             assertThat(createTempFile(directory = directoryWithOneFile)).exists().isRegularFile()
 
@@ -61,7 +61,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has two different files`()  {
+        fun `directory exists and has two different files`() {
             val directoryWith2DifferentFiles = createTempDirectory("directoryWith2DifferentFiles")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("hi")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("bye")
@@ -73,7 +73,7 @@ class DuplicateFinderTest {
         }
 
         @Test
-        fun `directory exists and has two files with same size and different content`()  {
+        fun `directory exists and has two files with same size and different content`() {
             val directoryWith2DifferentFiles = createTempDirectory("directoryWith2FilesSameSizeDifContent")
             val hiFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("hi") }
             val byFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("by") }
@@ -139,12 +139,13 @@ class DuplicateFinderTest {
     }
 }
 
+private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
+
 fun String.contentHash(type: String = "MD5"): String {
     val bytes = MessageDigest.getInstance(type).digest(toByteArray())
 
     fun printHexBinary(data: ByteArray): String =
         buildString(data.size * 2) {
-            val HEX_CHARS = "0123456789ABCDEF".toCharArray()
             data.forEach { b ->
                 val i = b.toInt()
                 append(HEX_CHARS[i shr 4 and 0xF])
