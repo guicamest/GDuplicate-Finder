@@ -54,7 +54,10 @@ class CoroutinesFindDuplicatesExecution(
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
-    private fun List<Path>.withSameContent() = groupBy { it.contentHash() }.filter { (_, paths) -> paths.size > 1 }
+    private fun List<Path>.withSameContent() =
+        groupBy {
+            it.contentHash()
+        }.filter { (_, paths) -> paths.size > 1 }
 
     private fun List<Path>.withSameSize() = groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
 }
