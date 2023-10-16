@@ -11,7 +11,6 @@ import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
 import kotlin.io.path.absolute
-import kotlin.io.path.createDirectory
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.fileSize
@@ -88,7 +87,7 @@ class DuplicateFinderTest {
         @Test
         fun `directory exists and is not readable`() {
             MemoryFileSystemBuilder.newLinux().build().use { fs ->
-                val notReadableDirectory = fs.getPath("/notReadable").createDirectory()
+                val notReadableDirectory = createTempDirectory(fs.rootDirectories.first())
                 repeat(2) {
                     createTempFile(directory = notReadableDirectory).writeText("hi")
                 }
