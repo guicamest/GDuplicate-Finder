@@ -1,0 +1,22 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
+    id "org.jlleitschuh.gradle.ktlint" version "11.6.1"
+}
+
+dependencies {
+    implementation "com.pinterest.ktlint:ktlint-cli-ruleset-core:1.0.1"
+    implementation "com.pinterest.ktlint:ktlint-rule-engine-core:1.0.1"
+}
+
+testing {
+    suites {
+        withType(JvmTestSuite).configureEach {
+            useJUnitJupiter('5.10.0')
+            dependencies {
+                // https://github.com/pinterest/ktlint/blob/master/ktlint-ruleset-template
+                implementation "com.pinterest.ktlint:ktlint-test:1.0.1"
+                runtimeOnly "org.slf4j:slf4j-api:2.0.7"
+            }
+        }
+    }
+}
