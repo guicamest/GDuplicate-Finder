@@ -12,12 +12,12 @@ class ForbiddenImportsRuleTest {
         val fileContent = """
             import java.io.File
         """.trimIndent()
-        System.setProperty("ktlintDebug", "ast")
+
         wrappingRuleAssertThat(fileContent)
             .hasLintViolationWithoutAutoCorrect(
                 line = 1,
                 col = 1,
-                detail = "no-java-io-file-import"
+                detail = "File has a forbidden import: java.io.File"
             )
     }
 }
