@@ -20,4 +20,27 @@ class ForbiddenImportsRuleTest {
                 detail = "File has a forbidden import: java.io.File"
             )
     }
+
+    @Test
+    fun `import of java-io-File with alias should report a violation`() {
+        val fileContent = """
+            import java.io.File as MyFile
+        """.trimIndent()
+
+        wrappingRuleAssertThat(fileContent)
+            .hasLintViolationWithoutAutoCorrect(
+                line = 1,
+                col = 1,
+                detail = "File has a forbidden import: java.io.File"
+            )
+    }
+
+    @Test
+    fun `import of java-nio-file should not report a violation`() {
+        val fileContent = """
+            import java.nio.file.*
+        """.trimIndent()
+
+        wrappingRuleAssertThat(fileContent).hasNoLintViolations()
+    }
 }
