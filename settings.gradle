@@ -1,1 +1,1 @@
-include 'core', 'ktlintForbiddenImports'
+include 'core', 'custom-ktlint-rules'
