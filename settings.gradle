@@ -4,6 +4,7 @@ plugins {
 
 include 'core', 'custom-ktlint-rules'
 
+// See https://github.com/DanySK/gradle-pre-commit-git-hooks
 gitHooks { extension ->
     extension.with {
         commitMsg { context ->
@@ -19,6 +20,9 @@ gitHooks { extension ->
             context.with {
                 from(settingsDir.toPath().resolve(".hooks").resolve("pre-commit-ktlint-format").toFile())
                 tasks("clean", ["build"] as String[], false)
+                appendScript {
+                    'docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:1.6.26 -color'
+                }
             }
         }
         createHooks(true)
