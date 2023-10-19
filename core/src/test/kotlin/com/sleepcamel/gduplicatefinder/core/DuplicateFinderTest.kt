@@ -11,8 +11,10 @@ import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
 import kotlin.io.path.absolute
+import kotlin.io.path.createDirectory
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
+import kotlin.io.path.div
 import kotlin.io.path.fileSize
 import kotlin.io.path.isReadable
 import kotlin.io.path.setPosixFilePermissions
@@ -126,6 +128,42 @@ class DuplicateFinderTest {
             runTest {
                 val duplicateFinder = SequentialDuplicateFinder(this)
                 val execution = duplicateFinder.find(listOf(directoryWith2FilesSameHash))
+
+                val duplicateEntries = execution.duplicateEntries()
+                assertThat(duplicateEntries).hasSize(1)
+                duplicateEntries.first().also { group ->
+                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
+                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
+                }
+            }
+        }
+
+        @Test
+        @DisplayName(
+            """
+            finding in tempdir and tempdir/somedir/somefile and tempdir/otherdir/otherfile have same content
+        """,
+        )
+        fun `two files in different subdirectories have same content hash`() {
+            val root = createTempDirectory()
+            val oneFile =
+                ((root / Paths.get("somedir")).createDirectory() / Paths.get("somefile")).apply {
+                    writeText("hi")
+                }
+            val otherFile =
+                ((root / Paths.get("otherdir")).createDirectory() / Paths.get("otherfile")).apply {
+                    writeText("hi")
+                }
+
+            val expectedDuplicateGroup =
+                DuplicateGroup(
+                    hash = "hi".contentHash(),
+                    paths = listOf(oneFile, otherFile).map { it.absolute() },
+                )
+
+            runTest {
+                val duplicateFinder = SequentialDuplicateFinder(this)
+                val execution = duplicateFinder.find(listOf(root))
 
                 val duplicateEntries = execution.duplicateEntries()
                 assertThat(duplicateEntries).hasSize(1)
