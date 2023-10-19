@@ -3,6 +3,10 @@ plugins {
     id "org.jlleitschuh.gradle.ktlint" version "11.6.1"
 }
 
+kotlin {
+    jvmToolchain(11)
+}
+
 dependencies {
     implementation "com.pinterest.ktlint:ktlint-cli-ruleset-core:1.0.1"
     implementation "com.pinterest.ktlint:ktlint-rule-engine-core:1.0.1"
