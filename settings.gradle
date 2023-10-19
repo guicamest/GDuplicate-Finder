@@ -15,6 +15,12 @@ gitHooks { extension ->
                 }
             }
         }
+        preCommit { context ->
+            context.with {
+                from(settingsDir.toPath().resolve(".hooks").resolve("pre-commit-ktlint-format").toFile())
+                tasks("clean", ["build"] as String[], false)
+            }
+        }
         createHooks(true)
     }
 }
