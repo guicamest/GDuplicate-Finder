@@ -173,6 +173,42 @@ class DuplicateFinderTest {
                 }
             }
         }
+
+        @Test
+        @DisplayName(
+            """
+            finding in somedir and otherdir and tempdir/somedir/somefile and tempdir/otherdir/otherfile
+            have the same content
+        """,
+        )
+        fun `two files in different directories have same content hash`() {
+            val subdirectories =
+                createTempDirectory().let { root ->
+                    listOf("somedir", "otherdir").map { dirname ->
+                        (root / Paths.get(dirname)).createDirectory()
+                    }
+                }
+            val oneFile = (subdirectories[0] / Paths.get("somefile")).apply { writeText("hi") }
+            val otherFile = (subdirectories[1] / Paths.get("otherfile")).apply { writeText("hi") }
+
+            val expectedDuplicateGroup =
+                DuplicateGroup(
+                    hash = "hi".contentHash(),
+                    paths = listOf(oneFile, otherFile).map { it.absolute() },
+                )
+
+            runTest {
+                val duplicateFinder = SequentialDuplicateFinder(this)
+                val execution = duplicateFinder.find(subdirectories)
+
+                val duplicateEntries = execution.duplicateEntries()
+                assertThat(duplicateEntries).hasSize(1)
+                duplicateEntries.first().also { group ->
+                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
+                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
+                }
+            }
+        }
     }
 }
 
