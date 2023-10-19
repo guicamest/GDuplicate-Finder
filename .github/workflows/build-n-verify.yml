@@ -34,6 +34,7 @@ jobs:
         uses: gradle/gradle-build-action@v2.9.0
         with:
           # The Gradle wrapper's version (already the default, putting it here to clarity)
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/v3' }}
           gradle-home-cache-cleanup: true
           gradle-home-cache-includes: |
             caches
