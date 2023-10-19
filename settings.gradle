@@ -1,1 +1,20 @@
+plugins {
+    id("org.danilopianini.gradle-pre-commit-git-hooks") version "1.1.11"
+}
+
 include 'core', 'custom-ktlint-rules'
+
+gitHooks { extension ->
+    extension.with {
+        commitMsg { context ->
+            context.with {
+                conventionalCommits { conventionalCommits ->
+                    conventionalCommits.with {
+                        defaultTypes()
+                    }
+                }
+            }
+        }
+        createHooks(true)
+    }
+}
