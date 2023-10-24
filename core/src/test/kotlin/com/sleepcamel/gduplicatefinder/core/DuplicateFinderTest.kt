@@ -29,6 +29,14 @@ class DuplicateFinderTest {
     @Nested
     inner class NoDuplicates {
         @Test
+        fun `collection of directories is empty`() {
+            val execution = duplicateFinder.find(emptyList())
+            runTest {
+                assertThat(execution.duplicateEntries()).isEmpty()
+            }
+        }
+
+        @Test
         fun `directory does not exist`() {
             val nonExistentDirectory = Paths.get("nonExistentDirectory")
             assertThat(nonExistentDirectory).doesNotExist()
