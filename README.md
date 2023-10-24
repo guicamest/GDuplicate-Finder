@@ -1,17 +1,18 @@
-# GDuplicateFinder - A **FREE** Groovy way to find file duplicates!
+# GDuplicateFinder - A **FREE** way to find file duplicates!
 
 Unlike other duplicate finders such as Easy Duplicate File Finder,
 Auslogics Duplicate File Finder, MindGems Fast Duplicate File Finder,
 Duplicate Cleaner, DupFiles and others, GDuplicateFinder is a FREE cross-platform
-application, with the ability to search among not just local files, but files on
-the network, such as a Windows or a Linux share using VFS library.
+application, with the ability to search among not just local files, but also among
+_different types_ of [Network Shares](#supported-network-shares)
 
-Taking advantage of Groovy facilities and GPars power to process in parallel,
+Taking advantage of Kotlin facilities and coroutines power to process concurrently,
 GDuplicateFinder will help you get rid of those duplicates you always
-wanted to dispose in an easy and friendly way.
+wanted to dispose in an _easy_, __fast__ and ___friendly___ way.
 
-If you feel like contributing with code, you can always fork this [repo](https://github.com/guicamest/GDuplicate-Finder). Gradle will help
-you configure the Eclipse project for you. You can also suggest improvements.
+If you feel like contributing with code, you can always fork this [repo](https://github.com/guicamest/GDuplicate-Finder).
+If you'd like to suggest improvements, create a `New issue` in the [Issues](https://github.com/guicamest/GDuplicate-Finder/issues) section.
+If you'd like to report a bug, create a `New issue` in the [Issues](https://github.com/guicamest/GDuplicate-Finder/issues) section.
 
 If you don't feel like coding but want to donate some money, you can do that using [paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y).
 
@@ -25,7 +26,7 @@ If you don't feel like coding but want to donate some money, you can do that usi
 - Internationalization
 - Update checker
 
-## Network Shares supported
+## Supported Network Shares
 
 - SMB (Samba)
 - SFTP / SCP (Connection via Ssh)
@@ -33,22 +34,21 @@ If you don't feel like coding but want to donate some money, you can do that usi
 - Amazon S3
 
 ## How to build
-Required gradle version >= 1.0-rc-1
 
-Requires Java >= 1.6
+_Requires Java >= 11_
 
-On root folder *GDuplicateFinder* run `gradle distZip`.
-Script will automatically detect your system's os.
-You can change the os by running `gradle -Pos=$osname`
+On root folder *GDuplicateFinder* run `./gradlew distZip`.
+The script will automatically detect your system's os.
+You can change the os by running `./gradlew -Pos=$osname`
 where $osname can be one of the following:
-windows32, windows64, linux32, linux64, maccocoa32 or maccocoa64.
+`windows32`, `windows64`, `linux32`, `linux64`, `maccocoa32` or `maccocoa64`.
 
 ## How to run
 
-Requires Java >= 1.6
+_Requires Java >= 11_
 
-Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/ 
-and unzip GDuplicateFinder-2.0.3.zip
+Get the build corresponding to your system from https://sourceforge.net/projects/gdupfinder/files/
+and `unzip GDuplicateFinder-2.0.3.zip`
 
 On windows run: `bin/FileDuplicateFinderUI.bat`
 
@@ -73,6 +73,6 @@ For more info, follow [this thread](http://sourceforge.net/p/gdupfinder/discussi
 ## Donations
 
 Thanks a lot to the following people for their donations to keep GDuplicateFinder alive!
-- Prezzy card holder from New Zealand
-- Risto Ronkka from Finland
+- *Prezzy card holder* from New Zealand
+- *Risto Ronkka* from Finland
 
