@@ -12,6 +12,7 @@ gitHooks { extension ->
                 conventionalCommits { conventionalCommits ->
                     conventionalCommits.with {
                         defaultTypes()
+                        types("deps")
                     }
                 }
             }
