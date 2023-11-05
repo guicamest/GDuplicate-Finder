@@ -44,13 +44,16 @@ class CoroutinesFindDuplicatesExecution(
                 val withSameSize = allFiles.withSameSize()
                 val withSameContent =
                     withSameSize.mapNotNull { (_, groupWithSameSize) ->
-                        groupWithSameSize.withSameContent().map { (hash, paths) ->
-                            DuplicateGroup(hash = hash, paths = paths)
-                        }
+                        groupWithSameSize.withSameContent().duplicateGroups()
                     }
                 result.complete(withSameContent.flatten())
             }
     }
+
+    private fun Map<String, Collection<Path>>.duplicateGroups(): Collection<DuplicateGroup> =
+        map { (hash, paths) ->
+            DuplicateGroup(hash = hash, paths = paths)
+        }
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
