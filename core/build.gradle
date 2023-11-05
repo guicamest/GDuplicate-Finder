@@ -2,6 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.10'
     id 'java-library'
     id 'jvm-test-suite'
+    id 'jacoco'
     id "org.jlleitschuh.gradle.ktlint" version "11.6.1"
 }
 
@@ -15,6 +16,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
 
     ktlintRuleset project(":custom-ktlint-rules")
+}
+
+jacoco {
+    toolVersion = "0.8.11"
 }
 
 ktlint {
@@ -52,6 +57,10 @@ testing {
 
 tasks.named('check') {
     dependsOn(testing.suites.integrationTest)
+}
+
+jacocoTestReport {
+    dependsOn test
 }
 
 java {
