@@ -23,11 +23,11 @@ import kotlin.test.Test
 
 @DisplayName("DuplicateFinder should")
 class DuplicateFinderTest {
-    val duplicateFinder: DuplicateFinder = SequentialDuplicateFinder(GlobalScope)
-
     @DisplayName("not detect duplicates when")
     @Nested
     inner class NoDuplicates {
+        private val duplicateFinder: DuplicateFinder = SequentialDuplicateFinder(GlobalScope)
+
         @Test
         fun `collection of directories is empty`() {
             val execution = duplicateFinder.find(emptyList())
