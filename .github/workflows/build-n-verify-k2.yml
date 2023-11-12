@@ -43,4 +43,4 @@ jobs:
           gradle-version: wrapper
 
       - name: Build
-        run: ./gradlew build -P kotlin.experimental.tryK2=true # windows needs a space between -P and the parameter :|
+        run: ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }} -P kotlin.experimental.tryK2=true # windows needs a space between -P and the parameter :|
