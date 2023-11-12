@@ -25,9 +25,9 @@ class FilterSizeTest {
             }
 
             runTest {
-                val duplicateFinder = SequentialDuplicateFinder(this)
                 val execution =
-                    duplicateFinder.find(
+                    findDuplicates(
+                        parentScope = this,
                         directories = listOf(directoryWith2FilesSameHash),
                         filter = MinSizeFilter(3L),
                     )

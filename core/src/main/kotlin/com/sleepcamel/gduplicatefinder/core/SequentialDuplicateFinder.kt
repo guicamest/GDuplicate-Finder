@@ -8,5 +8,5 @@ class SequentialDuplicateFinder(private val parentScope: CoroutineScope) : Dupli
     override fun find(
         directories: Collection<Path>,
         filter: MinSizeFilter,
-    ): FindDuplicatesExecution = CoroutinesFindDuplicatesExecution(directories, parentScope)
+    ): FindDuplicatesExecution = CoroutinesFindDuplicatesExecution(directories, filter, parentScope)
 }
