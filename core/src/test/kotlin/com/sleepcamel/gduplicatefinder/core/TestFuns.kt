@@ -1,5 +1,8 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import com.sleepcamel.gduplicatefinder.core.pathfilter.MinSizeFilter
+import kotlinx.coroutines.CoroutineScope
+import java.nio.file.Path
 import java.security.MessageDigest
 
 private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
@@ -17,3 +20,29 @@ fun String.contentHash(type: String = "MD5"): String {
         }
     return printHexBinary(bytes)
 }
+
+fun findDuplicates(
+    finder: DuplicateFinder,
+    directories: Collection<Path>,
+    filter: MinSizeFilter = MinSizeFilter(0),
+) = finder.find(directories, filter)
+
+fun findDuplicates(
+    parentScope: CoroutineScope,
+    newFinderInstance: (CoroutineScope) -> DuplicateFinder = { scope -> SequentialDuplicateFinder(scope) },
+    directories: Collection<Path>,
+    filter: MinSizeFilter = MinSizeFilter(0),
+) = findDuplicates(newFinderInstance(parentScope), directories, filter)
+
+fun findDuplicates(
+    finder: DuplicateFinder,
+    directory: Path,
+    filter: MinSizeFilter = MinSizeFilter(0),
+) = findDuplicates(finder, listOf(directory), filter)
+
+fun findDuplicates(
+    parentScope: CoroutineScope,
+    newFinderInstance: (CoroutineScope) -> DuplicateFinder = { scope -> SequentialDuplicateFinder(scope) },
+    directory: Path,
+    filter: MinSizeFilter = MinSizeFilter(0),
+) = findDuplicates(parentScope, newFinderInstance, listOf(directory), filter)
