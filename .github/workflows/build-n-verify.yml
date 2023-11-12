@@ -43,4 +43,4 @@ jobs:
           gradle-version: wrapper
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }}
