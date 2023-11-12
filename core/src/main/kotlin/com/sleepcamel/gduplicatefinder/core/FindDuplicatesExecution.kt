@@ -1,5 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import com.sleepcamel.gduplicatefinder.core.pathfilter.MinSizeFilter
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -20,7 +21,8 @@ interface FindDuplicatesExecution {
 
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
-    private val directories: Collection<Path>,
+    directories: Collection<Path>,
+    filter: MinSizeFilter,
     coroutineScope: CoroutineScope,
 ) : FindDuplicatesExecution {
     private val result = CompletableDeferred<Collection<DuplicateGroup>>()
@@ -33,8 +35,8 @@ class CoroutinesFindDuplicatesExecution(
                     directories.flatMap { directory ->
                         buildList {
                             directory.visitFileTree {
-                                onVisitFile { file, _ ->
-                                    add(file)
+                                onVisitFile { file, attributes ->
+                                    if (filter.accept(file, attributes)) add(file)
                                     FileVisitResult.CONTINUE
                                 }
                                 onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
