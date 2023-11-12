@@ -29,7 +29,7 @@ class DuplicateFinderTest {
 
         @Test
         fun `collection of directories is empty`() {
-            val execution = duplicateFinder.find(emptyList())
+            val execution = findDuplicates(duplicateFinder, directories = emptyList())
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -40,7 +40,7 @@ class DuplicateFinderTest {
             val nonExistentDirectory = Paths.get("nonExistentDirectory")
             assertThat(nonExistentDirectory).doesNotExist()
 
-            val execution = duplicateFinder.find(listOf(nonExistentDirectory))
+            val execution = findDuplicates(duplicateFinder, directory = nonExistentDirectory)
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -51,7 +51,7 @@ class DuplicateFinderTest {
             val emptyDirectory = createTempDirectory("emptyDirectory")
             assertThat(emptyDirectory).isEmptyDirectory()
 
-            val execution = duplicateFinder.find(listOf(emptyDirectory))
+            val execution = findDuplicates(duplicateFinder, directory = emptyDirectory)
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -62,7 +62,7 @@ class DuplicateFinderTest {
             val directoryWithOneFile = createTempDirectory("directoryWithOneFile")
             assertThat(createTempFile(directory = directoryWithOneFile)).exists().isRegularFile()
 
-            val execution = duplicateFinder.find(listOf(directoryWithOneFile))
+            val execution = findDuplicates(duplicateFinder, directory = directoryWithOneFile)
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -74,7 +74,7 @@ class DuplicateFinderTest {
             createTempFile(directory = directoryWith2DifferentFiles).writeText("hi")
             createTempFile(directory = directoryWith2DifferentFiles).writeText("bye")
 
-            val execution = duplicateFinder.find(listOf(directoryWith2DifferentFiles))
+            val execution = findDuplicates(duplicateFinder, directory = directoryWith2DifferentFiles)
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -87,7 +87,7 @@ class DuplicateFinderTest {
             val byFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("by") }
             assertThat(hiFile).hasSize(byFile.fileSize())
 
-            val execution = duplicateFinder.find(listOf(directoryWith2DifferentFiles))
+            val execution = findDuplicates(duplicateFinder, directory = directoryWith2DifferentFiles)
             runTest {
                 assertThat(execution.duplicateEntries()).isEmpty()
             }
@@ -106,7 +106,7 @@ class DuplicateFinderTest {
                     Condition({ file -> file.isReadable() }, "not readable"),
                 )
 
-                val execution = duplicateFinder.find(listOf(notReadableDirectory))
+                val execution = findDuplicates(duplicateFinder, directory = notReadableDirectory)
                 runTest {
                     assertThat(execution.duplicateEntries()).isEmpty()
                 }
@@ -133,8 +133,7 @@ class DuplicateFinderTest {
                 )
 
             runTest {
-                val duplicateFinder = SequentialDuplicateFinder(this)
-                val execution = duplicateFinder.find(listOf(directoryWith2FilesSameHash))
+                val execution = findDuplicates(this, directory = directoryWith2FilesSameHash)
 
                 val duplicateEntries = execution.duplicateEntries()
                 assertThat(duplicateEntries).hasSize(1)
@@ -169,8 +168,7 @@ class DuplicateFinderTest {
                 )
 
             runTest {
-                val duplicateFinder = SequentialDuplicateFinder(this)
-                val execution = duplicateFinder.find(listOf(root))
+                val execution = findDuplicates(this, directory = root)
 
                 val duplicateEntries = execution.duplicateEntries()
                 assertThat(duplicateEntries).hasSize(1)
@@ -205,8 +203,7 @@ class DuplicateFinderTest {
                 )
 
             runTest {
-                val duplicateFinder = SequentialDuplicateFinder(this)
-                val execution = duplicateFinder.find(subdirectories)
+                val execution = findDuplicates(this, directories = subdirectories)
 
                 val duplicateEntries = execution.duplicateEntries()
                 assertThat(duplicateEntries).hasSize(1)
@@ -243,8 +240,11 @@ class DuplicateFinderTest {
                 )
 
             runTest {
-                val duplicateFinder = SequentialDuplicateFinder(this)
-                val execution = duplicateFinder.find(listOf(subdirectories.first().parent))
+                val execution =
+                    findDuplicates(
+                        parentScope = this,
+                        directory = subdirectories.first().parent,
+                    )
 
                 val duplicateEntries = execution.duplicateEntries()
                 assertThat(duplicateEntries).hasSize(1)
