@@ -4,6 +4,9 @@ import com.sleepcamel.gduplicatefinder.core.pathfilter.MinSizeFilter
 import kotlinx.coroutines.CoroutineScope
 import java.nio.file.Path
 import java.security.MessageDigest
+import kotlin.io.path.absolute
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.writeText
 
 private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
 
@@ -19,6 +22,21 @@ fun String.contentHash(type: String = "MD5"): String {
             }
         }
     return printHexBinary(bytes)
+}
+
+fun createDuplicates(
+    directoryPrefix: String = "test",
+    directory: Path = createTempDirectory(directoryPrefix),
+    content: String = "hi",
+): Pair<Path, DuplicateGroup> {
+    val fileNames =
+        (0..1).map {
+            kotlin.io.path.createTempFile(directory = directory).apply {
+                writeText(content)
+            }.absolute()
+        }
+    val group = DuplicateGroup(hash = content.contentHash(), paths = fileNames)
+    return Pair(directory, group)
 }
 
 fun findDuplicates(
