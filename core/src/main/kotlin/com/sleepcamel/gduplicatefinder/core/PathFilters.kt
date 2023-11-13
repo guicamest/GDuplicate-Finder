@@ -12,7 +12,7 @@ interface PathFilter {
     ): Boolean
 }
 
-class MinSizeFilter(private val size: Long) : PathFilter {
+data class MinSizeFilter(private val size: Long) : PathFilter {
     @Throws(IOException::class)
     override fun accept(
         entry: Path,
@@ -20,7 +20,7 @@ class MinSizeFilter(private val size: Long) : PathFilter {
     ) = attributes.size() > size
 }
 
-class MaxSizeFilter(private val size: Long) : PathFilter {
+data class MaxSizeFilter(private val size: Long) : PathFilter {
     @Throws(IOException::class)
     override fun accept(
         entry: Path,
