@@ -65,5 +65,22 @@ class FilterSizeTest {
                 assertThat(duplicateEntries).hasSize(1)
             }
         }
+
+        @Test
+        fun `duplicate files size is less than maxSize`() {
+            val (directory, _) = createDuplicates(content = "some content")
+
+            runTest {
+                val execution =
+                    findDuplicates(
+                        parentScope = this,
+                        directory = directory,
+                        filter = MaxSizeFilter(100L),
+                    )
+
+                val duplicateEntries = execution.duplicateEntries()
+                assertThat(duplicateEntries).hasSize(1)
+            }
+        }
     }
 }
