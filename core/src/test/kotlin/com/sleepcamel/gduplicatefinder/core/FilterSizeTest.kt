@@ -1,6 +1,5 @@
 package com.sleepcamel.gduplicatefinder.core
 
-import com.sleepcamel.gduplicatefinder.core.pathfilter.MinSizeFilter
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -22,6 +21,23 @@ class FilterSizeTest {
                         parentScope = this,
                         directory = directory,
                         filter = MinSizeFilter(100L),
+                    )
+
+                val duplicateEntries = execution.duplicateEntries()
+                assertThat(duplicateEntries).isEmpty()
+            }
+        }
+
+        @Test
+        fun `duplicate files size is more than maxSize`() {
+            val (directory, _) = createDuplicates(content = "some content")
+
+            runTest {
+                val execution =
+                    findDuplicates(
+                        parentScope = this,
+                        directory = directory,
+                        filter = MaxSizeFilter(5L),
                     )
 
                 val duplicateEntries = execution.duplicateEntries()
