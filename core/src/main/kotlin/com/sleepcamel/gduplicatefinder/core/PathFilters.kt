@@ -34,25 +34,30 @@ data class MaxSizeFilter(private val size: Long) : PathFilter {
  * Filename without extension filter
  * If file is /some/path/somefile.txt => applies only to "somefile"
  */
-data class FilenameFilter(private val name: String, private val exact: Boolean) : PathFilter {
-    private val regex = Regex(if (exact) name else ".*$name.*$")
-
-    override fun accept(
-        entry: Path,
-        attributes: BasicFileAttributes,
-    ): Boolean = entry.nameWithoutExtension.matches(regex)
-}
+data class FilenameFilter(
+    private val name: String,
+    private val exact: Boolean,
+) : PathFilter by StringFilter(name, exact, { p -> p.nameWithoutExtension })
 
 /**
  * Extension only filter
  * If file is /some/path/somefile.txt => applies only to "txt"
  * If file doesn't have extension => applies to "" (empty string)
  */
-data class ExtensionFilter(private val extension: String, private val exact: Boolean) : PathFilter {
-    private val regex = Regex(if (exact) extension else ".*$extension.*$")
+data class ExtensionFilter(
+    private val extension: String,
+    private val exact: Boolean,
+) : PathFilter by StringFilter(extension, exact, { p -> p.extension })
+
+private class StringFilter(
+    needle: String,
+    exact: Boolean,
+    private val stringProperty: (Path) -> String,
+) : PathFilter {
+    private val regex = Regex(if (exact) needle else ".*$needle.*$")
 
     override fun accept(
         entry: Path,
         attributes: BasicFileAttributes,
-    ): Boolean = entry.extension.matches(regex)
+    ): Boolean = stringProperty(entry).matches(regex)
 }
