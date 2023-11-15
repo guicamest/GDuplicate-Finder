@@ -4,6 +4,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.extension
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 interface PathFilter {
@@ -33,6 +34,8 @@ data class MaxSizeFilter(private val size: Long) : PathFilter {
 /**
  * Filename without extension filter
  * If file is /some/path/somefile.txt => applies only to "somefile"
+ * If file is /some/path/somefile.txt.doc => applies only to "somefile.txt"
+ * If file is /some/path/somefile => applies only to "somefile"
  */
 data class FilenameFilter(
     private val name: String,
@@ -40,8 +43,18 @@ data class FilenameFilter(
 ) : PathFilter by StringFilter(name, exact, { p -> p.nameWithoutExtension })
 
 /**
+ * Full filename filter
+ * If file is /some/path/somefile.txt => applies to "somefile.txt"
+ */
+data class FullFilenameFilter(
+    private val name: String,
+    private val exact: Boolean,
+) : PathFilter by StringFilter(name, exact, { p -> p.name })
+
+/**
  * Extension only filter
  * If file is /some/path/somefile.txt => applies only to "txt"
+ * If file is /some/path/somefile.txt.doc => applies only to "doc"
  * If file doesn't have extension => applies to "" (empty string)
  */
 data class ExtensionFilter(

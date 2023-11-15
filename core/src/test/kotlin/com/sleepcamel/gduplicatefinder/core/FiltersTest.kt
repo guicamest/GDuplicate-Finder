@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
+import kotlin.io.path.listDirectoryEntries
 
 @DisplayName("DuplicateFinder should")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -60,7 +61,11 @@ class FiltersTest {
                 )
 
             val duplicateEntries = execution.duplicateEntries()
-            assertThat(duplicateEntries).hasSize(expectedDuplicateGroups)
+            assertThat(duplicateEntries)
+                .withRepresentation {
+                    "$it\nFiles in directory: ${directory.listDirectoryEntries().joinToString()}"
+                }
+                .hasSize(expectedDuplicateGroups)
         }
     }
 
@@ -77,5 +82,15 @@ class FiltersTest {
             arguments(ExtensionFilter(extension = "txtx", exact = false), 0),
             arguments(ExtensionFilter(extension = "txt", exact = true), 1),
             arguments(ExtensionFilter(extension = "tx", exact = true), 0),
+            arguments(FullFilenameFilter(name = "somefile", exact = false), 1),
+            arguments(FullFilenameFilter(name = "donotfind", exact = false), 0),
+            arguments(FullFilenameFilter(name = "somefile.txt", exact = false), 0),
+            arguments(FullFilenameFilter(name = "somefile.*TXT", exact = false), 0),
+            arguments(FullFilenameFilter(name = "somefile.*(TXT|txt)", exact = false), 1),
+            arguments(FullFilenameFilter(name = "somefile.*.txt", exact = false), 1),
+            arguments(FullFilenameFilter(name = "somefile.*\\.txt", exact = false), 1),
+            arguments(FullFilenameFilter(name = "somefile.*.txt", exact = true), 1),
+            arguments(FullFilenameFilter(name = "somefile.*\\.txt", exact = true), 1),
+            arguments(FullFilenameFilter(name = "e.*\\.t", exact = false), 1),
         )
 }
