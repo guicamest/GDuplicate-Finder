@@ -66,9 +66,10 @@ class FiltersTest {
 
     private fun nameFilters() =
         Stream.of(
-            arguments(FilenameFilter("somefile"), 1),
-            arguments(FilenameFilter("donotfind"), 0),
-            arguments(FilenameFilter("somefile.txt"), 0),
+            arguments(FilenameFilter(name = "somefile", exact = false), 1),
+            arguments(FilenameFilter(name = "donotfind", exact = false), 0),
+            arguments(FilenameFilter(name = "somefile.txt", exact = false), 0),
+            arguments(FilenameFilter(name = "somefile", exact = true), 0),
             arguments(ExtensionFilter(extension = "txt", exact = false), 1),
             arguments(ExtensionFilter(extension = "(exe|txt|bin)", exact = false), 1),
             arguments(ExtensionFilter(extension = "tx", exact = false), 1),
