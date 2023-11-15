@@ -69,5 +69,10 @@ class FiltersTest {
             arguments(FilenameFilter("somefile"), 1),
             arguments(FilenameFilter("donotfind"), 0),
             arguments(FilenameFilter("somefile.txt"), 0),
+            arguments(ExtensionFilter("txt"), 1),
+            arguments(ExtensionFilter("(exe|txt|bin)"), 1),
+            arguments(ExtensionFilter("tx"), 1),
+            arguments(ExtensionFilter("(exe|bin)"), 0),
+            arguments(ExtensionFilter("txtx"), 0),
         )
 }
