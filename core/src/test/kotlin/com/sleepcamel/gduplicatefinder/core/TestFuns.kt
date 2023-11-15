@@ -5,6 +5,7 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.absolute
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 
 private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
@@ -27,10 +28,15 @@ fun createDuplicates(
     directoryPrefix: String = "test",
     directory: Path = createTempDirectory(directoryPrefix),
     content: String = "hi",
+    filenamePrefixAndSuffix: Pair<String, String>? = null,
 ): Pair<Path, DuplicateGroup> {
     val fileNames =
         (0..1).map {
-            kotlin.io.path.createTempFile(directory = directory).apply {
+            createTempFile(
+                directory = directory,
+                prefix = filenamePrefixAndSuffix?.first,
+                suffix = filenamePrefixAndSuffix?.second,
+            ).apply {
                 writeText(content)
             }.absolute()
         }
