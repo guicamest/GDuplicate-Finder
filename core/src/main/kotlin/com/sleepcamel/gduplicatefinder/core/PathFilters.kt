@@ -3,6 +3,7 @@ package com.sleepcamel.gduplicatefinder.core
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 
 interface PathFilter {
@@ -40,4 +41,18 @@ data class FilenameFilter(private val name: String) : PathFilter {
         entry: Path,
         attributes: BasicFileAttributes,
     ): Boolean = entry.nameWithoutExtension.matches(regex)
+}
+
+/**
+ * Extension only filter
+ * If file is /some/path/somefile.txt => applies only to "txt"
+ * If file doesn't have extension => applies to "" (empty string)
+ */
+data class ExtensionFilter(private val ext: String) : PathFilter {
+    private val regex = Regex(".*$ext.*$")
+
+    override fun accept(
+        entry: Path,
+        attributes: BasicFileAttributes,
+    ): Boolean = entry.extension.matches(regex)
 }
