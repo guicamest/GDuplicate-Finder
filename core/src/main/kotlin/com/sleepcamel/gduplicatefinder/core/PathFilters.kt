@@ -48,8 +48,8 @@ data class FilenameFilter(private val name: String) : PathFilter {
  * If file is /some/path/somefile.txt => applies only to "txt"
  * If file doesn't have extension => applies to "" (empty string)
  */
-data class ExtensionFilter(private val ext: String) : PathFilter {
-    private val regex = Regex(".*$ext.*$")
+data class ExtensionFilter(private val extension: String, private val exact: Boolean) : PathFilter {
+    private val regex = Regex(if (exact) extension else ".*$extension.*$")
 
     override fun accept(
         entry: Path,

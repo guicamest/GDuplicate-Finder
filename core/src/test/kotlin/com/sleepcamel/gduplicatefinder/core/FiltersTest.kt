@@ -69,10 +69,12 @@ class FiltersTest {
             arguments(FilenameFilter("somefile"), 1),
             arguments(FilenameFilter("donotfind"), 0),
             arguments(FilenameFilter("somefile.txt"), 0),
-            arguments(ExtensionFilter("txt"), 1),
-            arguments(ExtensionFilter("(exe|txt|bin)"), 1),
-            arguments(ExtensionFilter("tx"), 1),
-            arguments(ExtensionFilter("(exe|bin)"), 0),
-            arguments(ExtensionFilter("txtx"), 0),
+            arguments(ExtensionFilter(extension = "txt", exact = false), 1),
+            arguments(ExtensionFilter(extension = "(exe|txt|bin)", exact = false), 1),
+            arguments(ExtensionFilter(extension = "tx", exact = false), 1),
+            arguments(ExtensionFilter(extension = "(exe|bin)", exact = false), 0),
+            arguments(ExtensionFilter(extension = "txtx", exact = false), 0),
+            arguments(ExtensionFilter(extension = "txt", exact = true), 1),
+            arguments(ExtensionFilter(extension = "tx", exact = true), 0),
         )
 }
