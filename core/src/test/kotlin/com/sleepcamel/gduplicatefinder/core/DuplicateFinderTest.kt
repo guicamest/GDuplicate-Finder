@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Condition
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
+import java.nio.file.FileSystem
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.absolute
@@ -254,5 +255,49 @@ class DuplicateFinderTest {
                 }
             }
         }
+
+        @Test
+        @DisplayName(
+            """
+            finding in two different filesystems and somefile and otherfile
+            have the same content
+        """,
+        )
+        fun `two files in different filesystems have same content hash`() =
+            inLinux { lfs ->
+                inWindows { wfs ->
+                    val oneFile = lfs.getPath("somefile").apply { writeText("hi") }
+                    val otherFile = wfs.getPath("otherfile").apply { writeText("hi") }
+
+                    val expectedDuplicateGroup =
+                        DuplicateGroup(
+                            hash = "hi".contentHash(),
+                            paths = listOf(oneFile, otherFile).map { it.absolute() },
+                        )
+
+                    runTest {
+                        val execution =
+                            findDuplicates(
+                                this,
+                                directories = listOf(lfs, wfs).map { it.getPath(".").toRealPath() },
+                            )
+
+                        val duplicateEntries = execution.duplicateEntries()
+                        assertThat(duplicateEntries).hasSize(1)
+                        duplicateEntries.first().also { group ->
+                            assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
+                            assertThat(
+                                group.paths,
+                            ).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
+                        }
+                    }
+                }
+            }
+
+        private fun <R> inLinux(block: (FileSystem) -> R): R =
+            MemoryFileSystemBuilder.newLinux().build().use(block)
+
+        private fun <R> inWindows(block: (FileSystem) -> R): R =
+            MemoryFileSystemBuilder.newWindows().build().use(block)
     }
 }
