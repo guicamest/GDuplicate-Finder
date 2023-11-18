@@ -97,7 +97,7 @@ class DuplicateFinderTest {
 
         @Test
         fun `directory exists and is not readable`() {
-            MemoryFileSystemBuilder.newLinux().build().use { fs ->
+            inLinux { fs ->
                 val notReadableDirectory = createTempDirectory(fs.rootDirectories.first())
                 repeat(2) {
                     createTempFile(directory = notReadableDirectory).writeText("hi")
@@ -332,10 +332,10 @@ class DuplicateFinderTest {
                 }
             }
 
-        private fun <R> inLinux(block: (FileSystem) -> R): R =
-            MemoryFileSystemBuilder.newLinux().build().use(block)
-
         private fun <R> inWindows(block: (FileSystem) -> R): R =
             MemoryFileSystemBuilder.newWindows().build().use(block)
     }
+
+    private fun <R> inLinux(block: (FileSystem) -> R): R =
+        MemoryFileSystemBuilder.newLinux().build().use(block)
 }
