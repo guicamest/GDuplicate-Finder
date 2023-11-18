@@ -33,7 +33,7 @@ class CoroutinesFindDuplicatesExecution(
                 val allFiles =
                     directories.flatMap { directory ->
                         buildList {
-                            directory.visitFileTree {
+                            directory.visitFileTree(followLinks = true) {
                                 onVisitFile { file, attributes ->
                                     if (filter.accept(file, attributes)) add(file)
                                     FileVisitResult.CONTINUE
