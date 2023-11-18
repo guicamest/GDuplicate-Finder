@@ -1,7 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
-import com.google.common.jimfs.Jimfs
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -298,7 +297,7 @@ class DuplicateFinderTest {
 
         @Test
         fun `two files in directories of symbolic link have same content hash`(): Unit =
-            Jimfs.newFileSystem().use { fs ->
+            inLinux { fs ->
                 val root = fs.rootDirectories.first()
                 val volumes = (root / fs.getPath("Volumes")).createDirectory()
 
@@ -327,7 +326,7 @@ class DuplicateFinderTest {
                     duplicateEntries.first().also { group ->
                         assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
                         assertThat(
-                            group.paths,
+                            group.paths.map { it.toRealPath() },
                         ).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
                     }
                 }
