@@ -114,6 +114,27 @@ class DuplicateFinderTest {
                 }
             }
         }
+
+        @Test
+        fun `same file is detected as one is found via symbolic link`(): Unit =
+            inLinux { fs ->
+                val root = fs.rootDirectories.first()
+                val volumes = (root / fs.getPath("Volumes")).createDirectory()
+
+                val linkedToRoot = (volumes / fs.getPath("Macintosh HD")).createSymbolicLinkPointingTo(root)
+                (root / fs.getPath("abc.txt")).writeText("hi")
+
+                runTest {
+                    val execution =
+                        findDuplicates(
+                            parentScope = this,
+                            directories = listOf(root, linkedToRoot),
+                        )
+
+                    val duplicateEntries = execution.duplicateEntries()
+                    assertThat(duplicateEntries).isEmpty()
+                }
+            }
     }
 
     @DisplayName("detect duplicates when")
