@@ -6,10 +6,17 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Condition
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Named
+import org.junit.jupiter.api.Named.named
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.FileSystem
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
+import java.util.stream.Stream
 import kotlin.io.path.absolute
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createSymbolicLinkPointingTo
@@ -26,6 +33,7 @@ import kotlin.test.Test
 class DuplicateFinderTest {
     @DisplayName("not detect duplicates when")
     @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class NoDuplicates {
         private val duplicateFinder: DuplicateFinder = SequentialDuplicateFinder(GlobalScope)
 
@@ -115,8 +123,11 @@ class DuplicateFinderTest {
             }
         }
 
-        @Test
-        fun `same file is detected as one is found via symbolic link`(): Unit =
+        @ParameterizedTest
+        @MethodSource("symbolicLinkTests")
+        fun `same file is detected as one is found via symbolic link`(
+            directoriesFn: (SymbolicTestDirectories) -> List<Path>,
+        ): Unit =
             inLinux { fs ->
                 val root = fs.rootDirectories.first()
                 val volumes = (root / fs.getPath("Volumes")).createDirectory()
@@ -128,14 +139,22 @@ class DuplicateFinderTest {
                     val execution =
                         findDuplicates(
                             parentScope = this,
-                            directories = listOf(root, linkedToRoot),
+                            directories = directoriesFn(SymbolicTestDirectories(root, volumes, linkedToRoot)),
                         )
 
                     val duplicateEntries = execution.duplicateEntries()
                     assertThat(duplicateEntries).isEmpty()
                 }
             }
+
+        private fun symbolicLinkTests(): Stream<Named<(SymbolicTestDirectories) -> List<Path>>> =
+            Stream.of(
+                named("root / link") { d: SymbolicTestDirectories -> listOf(d.root, d.link) },
+                named("duplicate directory") { d: SymbolicTestDirectories -> listOf(d.root, d.root) },
+            )
     }
+
+    data class SymbolicTestDirectories(val root: Path, val volumes: Path, val link: Path)
 
     @DisplayName("detect duplicates when")
     @Nested
