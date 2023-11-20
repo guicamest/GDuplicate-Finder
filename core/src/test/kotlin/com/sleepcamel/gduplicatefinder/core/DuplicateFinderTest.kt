@@ -147,7 +147,7 @@ class DuplicateFinderTest {
                 (0..1).map {
                     createTempFile(directory = directoryWith2FilesSameHash).apply {
                         writeText("hi")
-                    }.absolute()
+                    }.toRealPath()
                 }
             val expectedDuplicateGroup =
                 DuplicateGroup(
@@ -187,7 +187,7 @@ class DuplicateFinderTest {
             val expectedDuplicateGroup =
                 DuplicateGroup(
                     hash = "hi".contentHash(),
-                    paths = listOf(oneFile, otherFile).map { it.absolute() },
+                    paths = listOf(oneFile, otherFile).map { it.toRealPath() },
                 )
 
             runTest {
@@ -222,7 +222,7 @@ class DuplicateFinderTest {
             val expectedDuplicateGroup =
                 DuplicateGroup(
                     hash = "hi".contentHash(),
-                    paths = listOf(oneFile, otherFile).map { it.absolute() },
+                    paths = listOf(oneFile, otherFile).map { it.toRealPath() },
                 )
 
             runTest {
@@ -259,7 +259,7 @@ class DuplicateFinderTest {
             val expectedDuplicateGroup =
                 DuplicateGroup(
                     hash = "hi".contentHash(),
-                    paths = files.map { it.absolute() },
+                    paths = files.map { it.toRealPath() },
                 )
 
             runTest {
