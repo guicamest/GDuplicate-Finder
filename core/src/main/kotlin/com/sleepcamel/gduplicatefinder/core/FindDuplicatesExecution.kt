@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
@@ -31,7 +32,7 @@ class CoroutinesFindDuplicatesExecution(
         job =
             coroutineScope.launch {
                 val allFiles =
-                    directories.flatMap { directory ->
+                    directories.uniqueAndReal.flatMap { directory ->
                         buildList {
                             directory.visitFileTree(followLinks = true) {
                                 onVisitFile { file, attributes ->
@@ -42,6 +43,7 @@ class CoroutinesFindDuplicatesExecution(
                             }
                         }
                     }
+
                 val withSameSize = allFiles.withSameSize()
                 val withSameContent =
                     withSameSize.mapNotNull { (_, groupWithSameSize) ->
@@ -67,6 +69,16 @@ class CoroutinesFindDuplicatesExecution(
 }
 
 private fun Path.contentHash(type: String = "MD5"): String = readBytes().contentHash(type)
+
+private val Collection<Path>.uniqueAndReal: Collection<Path>
+    get() =
+        mapNotNull {
+            try {
+                it.toRealPath()
+            } catch (e: NoSuchFileException) {
+                null
+            }
+        }.distinct()
 
 private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
 
