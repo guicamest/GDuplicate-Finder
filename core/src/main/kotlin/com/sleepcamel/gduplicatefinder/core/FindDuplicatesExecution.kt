@@ -32,11 +32,11 @@ class CoroutinesFindDuplicatesExecution(
         job =
             coroutineScope.launch {
                 val allFiles =
-                    directories.uniqueAndReal.flatMap { directory ->
-                        buildList {
+                    buildSet {
+                        directories.uniqueAndReal.forEach { directory ->
                             directory.visitFileTree(followLinks = true) {
                                 onVisitFile { file, attributes ->
-                                    if (filter.accept(file, attributes)) add(file)
+                                    if (filter.accept(file, attributes)) add(file.toRealPath())
                                     FileVisitResult.CONTINUE
                                 }
                                 onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
@@ -45,6 +45,7 @@ class CoroutinesFindDuplicatesExecution(
                     }
 
                 val withSameSize = allFiles.withSameSize()
+
                 val withSameContent =
                     withSameSize.mapNotNull { (_, groupWithSameSize) ->
                         groupWithSameSize.withSameContent().duplicateGroups()
@@ -65,7 +66,8 @@ class CoroutinesFindDuplicatesExecution(
             it.contentHash()
         }.filter { (_, paths) -> paths.size > 1 }
 
-    private fun List<Path>.withSameSize() = groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
+    private fun Collection<Path>.withSameSize() =
+        groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
 }
 
 private fun Path.contentHash(type: String = "MD5"): String = readBytes().contentHash(type)
