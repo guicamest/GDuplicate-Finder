@@ -152,6 +152,7 @@ class DuplicateFinderTest {
                 named("root / link") { d: SymbolicTestDirectories -> listOf(d.root, d.link) },
                 named("duplicate directory") { d: SymbolicTestDirectories -> listOf(d.root, d.root) },
                 named("root / volumes") { d: SymbolicTestDirectories -> listOf(d.root, d.volumes) },
+                named("volumes / link") { d: SymbolicTestDirectories -> listOf(d.volumes, d.link) },
             )
     }
 
