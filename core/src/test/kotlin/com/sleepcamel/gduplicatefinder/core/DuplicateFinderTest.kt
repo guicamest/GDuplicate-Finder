@@ -154,6 +154,18 @@ class DuplicateFinderTest {
                 named("root / volumes") { d: SymbolicTestDirectories -> listOf(d.root, d.volumes) },
                 named("volumes / link") { d: SymbolicTestDirectories -> listOf(d.volumes, d.link) },
             )
+
+        @Test
+        fun `there is a symbolic link to a file`() {
+            val testDirectory = createTempDirectory("withSymlinks")
+            val target = createTempFile(directory = testDirectory).apply { writeText("hi") }
+            testDirectory.resolve("pointToTarget").createSymbolicLinkPointingTo(target)
+
+            val execution = findDuplicates(duplicateFinder, directory = testDirectory)
+            runTest {
+                assertThat(execution.duplicateEntries()).isEmpty()
+            }
+        }
     }
 
     data class SymbolicTestDirectories(val root: Path, val volumes: Path, val link: Path)
