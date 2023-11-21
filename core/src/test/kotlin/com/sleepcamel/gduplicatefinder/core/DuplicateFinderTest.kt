@@ -151,6 +151,7 @@ class DuplicateFinderTest {
             Stream.of(
                 named("root / link") { d: SymbolicTestDirectories -> listOf(d.root, d.link) },
                 named("duplicate directory") { d: SymbolicTestDirectories -> listOf(d.root, d.root) },
+                named("root / volumes") { d: SymbolicTestDirectories -> listOf(d.root, d.volumes) },
             )
     }
 
