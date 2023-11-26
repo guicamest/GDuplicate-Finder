@@ -1,5 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core;
 
+import org.apache.commons.codec.digest.Blake3;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -13,22 +14,38 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 @Warmup(iterations = 2)
 @Measurement(iterations = 3)
-@Threads(3)
 public class DigestBench {
 
     private MessageDigest digestInstance;
+    private Blake3 blake3;
 
     @Param({"1024", "1048576", "536870912"})
     public int size;
 
+    private byte[] bytes;
+    private final byte[] outBytes = new byte[32];
+
     @Setup
     public void prepare() throws NoSuchAlgorithmException {
         digestInstance = MessageDigest.getInstance("MD5");
+        blake3 = Blake3.initHash();
+        bytes = new byte[size];
+    }
+
+    @Setup(Level.Iteration)
+    public void reset() {
+        digestInstance.reset();
+        blake3.reset();
     }
 
     @Benchmark
-    public void digestMD5OneInstance(Blackhole bh) {
-        bh.consume(digestInstance.digest(new byte[size]));
+    public void digestMD5(Blackhole bh) {
+        bh.consume(digestInstance.digest(bytes));
     }
 
+    @Benchmark
+    public void digestBlake(Blackhole bh) {
+        blake3.update(bytes);
+        bh.consume(blake3.doFinalize(outBytes));
+    }
 }
