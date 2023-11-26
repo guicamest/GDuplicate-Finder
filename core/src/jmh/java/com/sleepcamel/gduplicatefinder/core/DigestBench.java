@@ -4,9 +4,14 @@ import org.apache.commons.codec.digest.Blake3;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -47,5 +52,28 @@ public class DigestBench {
     public void digestBlake(Blackhole bh) {
         blake3.update(bytes);
         bh.consume(blake3.doFinalize(outBytes));
+    }
+
+    @Benchmark
+    public void digestMD5_inc(Blackhole bh) throws IOException {
+        forEachBufferIn(bytes, (buffer, len) -> digestInstance.update(bytes, 0, len));
+        bh.consume(digestInstance.digest());
+    }
+
+    @Benchmark
+    public void digestBlake_inc(Blackhole bh) throws IOException {
+        forEachBufferIn(bytes, (buffer, len) -> blake3.update(bytes, 0, len));
+        bh.consume(blake3.doFinalize(outBytes));
+    }
+
+    private void forEachBufferIn(byte[] bytes, BiConsumer<byte[], Integer> consumer) throws IOException {
+        try(var reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)))){
+            final int TRANSFER_BUFFER_SIZE = 8192;
+            char[] buffer = new char[TRANSFER_BUFFER_SIZE];
+            int nRead;
+            while ((nRead = reader.read(buffer, 0, TRANSFER_BUFFER_SIZE)) >= 0) {
+                consumer.accept(bytes, nRead);
+            }
+        }
     }
 }
