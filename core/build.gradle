@@ -78,3 +78,9 @@ tasks.withType(Jar) {
          )
     }
 }
+
+jmh {
+    def buildDir = project.layout.buildDirectory.get()
+    def jfrReports = buildDir.dir('reports').file('jfr')
+    profilers = ["jfr:dir=${jfrReports}"]
+}
