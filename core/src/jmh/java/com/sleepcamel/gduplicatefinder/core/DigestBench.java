@@ -66,10 +66,10 @@ public class DigestBench {
         bh.consume(blake3.doFinalize(outBytes));
     }
 
+    final int TRANSFER_BUFFER_SIZE = 16 * 1024;
+    char[] buffer = new char[TRANSFER_BUFFER_SIZE];
     private void forEachBufferIn(byte[] bytes, BiConsumer<byte[], Integer> consumer) throws IOException {
-        try(var reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)))){
-            final int TRANSFER_BUFFER_SIZE = 8192;
-            char[] buffer = new char[TRANSFER_BUFFER_SIZE];
+        try(var reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)), TRANSFER_BUFFER_SIZE)){
             int nRead;
             while ((nRead = reader.read(buffer, 0, TRANSFER_BUFFER_SIZE)) >= 0) {
                 consumer.accept(bytes, nRead);
