@@ -56,13 +56,13 @@ public class DigestBench {
 
     @Benchmark
     public void digestMD5_inc(Blackhole bh) throws IOException {
-        forEachBufferIn(bytes, (buffer, len) -> digestInstance.update(bytes, 0, len));
+        forEachBufferIn(bytes, (buffer, len) -> digestInstance.update(buffer, 0, len));
         bh.consume(digestInstance.digest());
     }
 
     @Benchmark
     public void digestBlake_inc(Blackhole bh) throws IOException {
-        forEachBufferIn(bytes, (buffer, len) -> blake3.update(bytes, 0, len));
+        forEachBufferIn(bytes, (buffer, len) -> blake3.update(buffer, 0, len));
         bh.consume(blake3.doFinalize(outBytes));
     }
 
