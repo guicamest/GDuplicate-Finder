@@ -75,14 +75,4 @@ private class StringFilter(
     ): Boolean = stringProperty(entry).matches(regex)
 }
 
-data class DirectoryFilter(
-    val name: String,
-    val exact: Boolean,
-) : PathFilter {
-    override fun accept(
-        entry: Path,
-        attributes: BasicFileAttributes,
-    ): Boolean {
-        TODO("Not yet implemented")
-    }
-}
+typealias DirectoryFilter = FullFilenameFilter
