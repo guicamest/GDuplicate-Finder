@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
+import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -87,7 +88,7 @@ class CoroutinesFindDuplicatesExecution(
         filter: PathFilter,
         file: Path,
         attributes: BasicFileAttributes,
-    ) = filter is DirectoryFilter || filter.accept(file, attributes)
+    ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
 }
 
 private fun Path.contentHash(type: String = "MD5"): String = readBytes().contentHash(type)
