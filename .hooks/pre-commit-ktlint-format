@@ -34,6 +34,8 @@ else
   unset diff
 
   echo "Completed ktlint hook."
-  exit $gradle_command_exit_code
+  if [ $gradle_command_exit_code -ne 0 ]; then
+    exit $gradle_command_exit_code
+  fi
 fi;
 ######## KTLINT-GRADLE HOOK END ########
