@@ -123,6 +123,24 @@ class DuplicateFinderTest {
             }
         }
 
+        @Test
+        fun `files are not readable`() {
+            inLinux { fs ->
+                val notReadablePermissions = PosixFilePermissions.fromString("-".repeat(9))
+                val directory = createTempDirectory(fs.rootDirectories.first())
+                repeat(2) {
+                    createTempFile(directory = directory).apply {
+                        writeText("hi")
+                        setPosixFilePermissions(notReadablePermissions)
+                    }
+                }
+                val execution = findDuplicates(duplicateFinder, directory = directory)
+                runTest {
+                    assertThat(execution.duplicateEntries()).isEmpty()
+                }
+            }
+        }
+
         @ParameterizedTest
         @MethodSource("symbolicLinkTests")
         fun `same file is detected as one is found via symbolic link`(
