@@ -8,9 +8,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
+import kotlin.io.path.absolute
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.writeText
 
 @DisplayName("DuplicateFinder should")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -131,5 +133,41 @@ class FiltersTest {
             arguments(DirectoryFilter(name = "ramDi", exact = false), 1),
             arguments(DirectoryFilter(name = "(build|paramDir|test)", exact = false), 1),
             arguments(DirectoryFilter(name = "(?!paramDir)", exact = true), 0),
+        )
+
+    @DisplayName("detect when pathmatcher matches file path")
+    @ParameterizedTest(name = "{1} duplicate groups with filter {0}")
+    @MethodSource("pathMatcherFilters")
+    fun `parametrized pathmatcher filter test`(
+        filter: PathFilter,
+        expectedDuplicateGroups: Int,
+    ) {
+        val directory = createTempDirectory().resolve("someDirectory").createDirectory()
+        listOf("atextfile.txt", "aclassfile.class").map {
+            directory.resolve(it).apply {
+                writeText("content of the file")
+            }.absolute()
+        }
+
+        runTest {
+            val execution =
+                findDuplicates(
+                    parentScope = this,
+                    directory = directory,
+                    filter = filter,
+                )
+
+            val duplicateEntries = execution.duplicateEntries()
+            assertThat(duplicateEntries)
+                .withRepresentation {
+                    "$it\nFiles in directory: ${directory.listDirectoryEntries().joinToString()}"
+                }
+                .hasSize(expectedDuplicateGroups)
+        }
+    }
+
+    private fun pathMatcherFilters() =
+        Stream.of(
+            arguments(PathMatcherFilter, 0),
         )
 }
