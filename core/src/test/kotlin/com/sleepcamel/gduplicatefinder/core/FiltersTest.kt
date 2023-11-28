@@ -169,5 +169,13 @@ class FiltersTest {
     private fun pathMatcherFilters() =
         Stream.of(
             arguments(PathMatcherFilter("glob:**/*.{txt,class}"), 1),
+            arguments(PathMatcherFilter("glob:*.{txt,class}"), 0),
+            arguments(PathMatcherFilter("glob:**/b*.{txt,class}"), 0),
+            arguments(PathMatcherFilter("glob:**/*.{class}"), 0),
+            arguments(PathMatcherFilter("glob:**/*.{txt}"), 0),
+            arguments(PathMatcherFilter("regex:.*(txt|class)"), 1),
+            arguments(PathMatcherFilter("regex:.*a\\w+file\\..*"), 1),
+            arguments(PathMatcherFilter("regex:.*someDirectory.*"), 1),
+            arguments(PathMatcherFilter("regex:.*anotherdir.*"), 0),
         )
 }
