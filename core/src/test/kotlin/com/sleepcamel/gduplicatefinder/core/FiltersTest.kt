@@ -97,7 +97,7 @@ class FiltersTest {
             arguments(FullFilenameFilter(name = "e.*\\.t", exact = true), 0),
         )
 
-    @DisplayName("detect when file is inside directory named paramDir")
+    @DisplayName("detect when files are inside directory named paramDir")
     @ParameterizedTest(name = "{1} duplicate groups with filter {0}")
     @MethodSource("directoryFilters")
     fun `parametrized directory name with extension filter test`(
