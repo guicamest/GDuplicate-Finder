@@ -75,4 +75,7 @@ private class StringFilter(
     ): Boolean = stringProperty(entry).matches(regex)
 }
 
-typealias DirectoryFilter = FullFilenameFilter
+data class DirectoryFilter(
+    private val name: String,
+    private val exact: Boolean,
+) : PathFilter by StringFilter(name, exact, { p -> p.name })
