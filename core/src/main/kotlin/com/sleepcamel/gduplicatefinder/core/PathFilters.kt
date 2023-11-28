@@ -79,3 +79,12 @@ data class DirectoryFilter(
     private val name: String,
     private val exact: Boolean,
 ) : PathFilter by StringFilter(name, exact, { p -> p.name })
+
+object PathMatcherFilter : PathFilter {
+    override fun accept(
+        entry: Path,
+        attributes: BasicFileAttributes,
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+}
