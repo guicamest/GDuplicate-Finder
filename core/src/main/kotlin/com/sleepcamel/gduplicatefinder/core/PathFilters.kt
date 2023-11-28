@@ -1,7 +1,9 @@
 package com.sleepcamel.gduplicatefinder.core
 
 import java.io.IOException
+import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.nio.file.PathMatcher
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -80,11 +82,11 @@ data class DirectoryFilter(
     private val exact: Boolean,
 ) : PathFilter by StringFilter(name, exact, { p -> p.name })
 
-object PathMatcherFilter : PathFilter {
+data class PathMatcherFilter(val pattern: String) : PathFilter {
+    private val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher(pattern)
+
     override fun accept(
         entry: Path,
         attributes: BasicFileAttributes,
-    ): Boolean {
-        TODO("Not yet implemented")
-    }
+    ): Boolean = matcher.matches(entry)
 }
