@@ -100,7 +100,7 @@ class FiltersTest {
     @DisplayName("detect when files are inside directory named paramDir")
     @ParameterizedTest(name = "{1} duplicate groups with filter {0}")
     @MethodSource("directoryFilters")
-    fun `parametrized directory name with extension filter test`(
+    fun `parametrized directory name filter test`(
         filter: PathFilter,
         expectedDuplicateGroups: Int,
     ) {
