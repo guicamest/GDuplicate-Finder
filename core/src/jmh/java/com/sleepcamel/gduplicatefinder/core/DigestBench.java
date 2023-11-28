@@ -4,10 +4,9 @@ import org.apache.commons.codec.digest.Blake3;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.BufferedInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
@@ -67,12 +66,12 @@ public class DigestBench {
     }
 
     final int TRANSFER_BUFFER_SIZE = 16 * 1024;
-    char[] buffer = new char[TRANSFER_BUFFER_SIZE];
+    byte[] buffer = new byte[TRANSFER_BUFFER_SIZE];
     private void forEachBufferIn(byte[] bytes, BiConsumer<byte[], Integer> consumer) throws IOException {
-        try(var reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)), TRANSFER_BUFFER_SIZE)){
+        try(var reader = new BufferedInputStream(new ByteArrayInputStream(bytes), TRANSFER_BUFFER_SIZE)){
             int nRead;
             while ((nRead = reader.read(buffer, 0, TRANSFER_BUFFER_SIZE)) >= 0) {
-                consumer.accept(bytes, nRead);
+                consumer.accept(buffer, nRead);
             }
         }
     }
