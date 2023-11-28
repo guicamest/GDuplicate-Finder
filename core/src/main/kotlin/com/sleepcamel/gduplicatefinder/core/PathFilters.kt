@@ -67,7 +67,7 @@ private class StringFilter(
     exact: Boolean,
     private val stringProperty: (Path) -> String,
 ) : PathFilter {
-    private val regex = Regex(if (exact) needle else ".*$needle.*$")
+    private val regex = Regex(if (exact) "^$needle\$" else ".*$needle.*")
 
     override fun accept(
         entry: Path,
