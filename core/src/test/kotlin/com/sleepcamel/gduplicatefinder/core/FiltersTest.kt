@@ -128,5 +128,8 @@ class FiltersTest {
         Stream.of(
             arguments(DirectoryFilter(name = "somefile", exact = false), 0),
             arguments(DirectoryFilter(name = "paramDir", exact = true), 1),
+            arguments(DirectoryFilter(name = "ramDi", exact = false), 1),
+            arguments(DirectoryFilter(name = "(build|paramDir|test)", exact = false), 1),
+            arguments(DirectoryFilter(name = "(?!paramDir)", exact = true), 0),
         )
 }
