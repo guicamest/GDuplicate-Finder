@@ -168,6 +168,6 @@ class FiltersTest {
 
     private fun pathMatcherFilters() =
         Stream.of(
-            arguments(PathMatcherFilter, 0),
+            arguments(PathMatcherFilter("glob:**/*.{txt,class}"), 1),
         )
 }
