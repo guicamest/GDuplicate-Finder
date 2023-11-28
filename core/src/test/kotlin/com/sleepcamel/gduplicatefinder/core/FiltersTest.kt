@@ -127,5 +127,6 @@ class FiltersTest {
     private fun directoryFilters() =
         Stream.of(
             arguments(DirectoryFilter(name = "somefile", exact = false), 0),
+            arguments(DirectoryFilter(name = "paramDir", exact = true), 1),
         )
 }
