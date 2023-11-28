@@ -92,5 +92,6 @@ class FiltersTest {
             arguments(FullFilenameFilter(name = "somefile.*.txt", exact = true), 1),
             arguments(FullFilenameFilter(name = "somefile.*\\.txt", exact = true), 1),
             arguments(FullFilenameFilter(name = "e.*\\.t", exact = false), 1),
+            arguments(FullFilenameFilter(name = "e.*\\.t", exact = true), 0),
         )
 }
