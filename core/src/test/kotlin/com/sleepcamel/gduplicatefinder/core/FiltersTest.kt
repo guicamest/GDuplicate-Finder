@@ -135,7 +135,7 @@ class FiltersTest {
             arguments(DirectoryFilter(name = "(?!paramDir)", exact = true), 0),
         )
 
-    @DisplayName("detect when pathmatcher matches file path")
+    @DisplayName("detect when file paths are **/someDirectory/atextfile.txt and aclassfile.class")
     @ParameterizedTest(name = "{1} duplicate groups with filter {0}")
     @MethodSource("pathMatcherFilters")
     fun `parametrized pathmatcher filter test`(
