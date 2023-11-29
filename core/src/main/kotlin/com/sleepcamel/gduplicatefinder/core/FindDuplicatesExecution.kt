@@ -33,25 +33,7 @@ class CoroutinesFindDuplicatesExecution(
     init {
         job =
             coroutineScope.launch {
-                val allFiles =
-                    buildSet {
-                        directories.uniqueAndReal.forEach { directory ->
-                            directory.visitFileTree(followLinks = true) {
-                                onPreVisitDirectory { directory, attributes ->
-                                    if (shouldVisitDirectory(directory, filter, attributes)) {
-                                        FileVisitResult.CONTINUE
-                                    } else {
-                                        FileVisitResult.SKIP_SUBTREE
-                                    }
-                                }
-                                onVisitFile { file, attributes ->
-                                    if (shouldAddFile(filter, file, attributes)) add(file.toRealPath())
-                                    FileVisitResult.CONTINUE
-                                }
-                                onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
-                            }
-                        }
-                    }
+                val allFiles = collectFiles(directories, filter)
 
                 val withSameSize = allFiles.withSameSize()
 
@@ -63,12 +45,35 @@ class CoroutinesFindDuplicatesExecution(
             }
     }
 
+    override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
+
+    private fun collectFiles(
+        directories: Collection<Path>,
+        filter: PathFilter,
+    ): Collection<Path> =
+        buildSet {
+            directories.uniqueAndReal.forEach { directory ->
+                directory.visitFileTree(followLinks = true) {
+                    onPreVisitDirectory { directory, attributes ->
+                        if (shouldVisitDirectory(directory, filter, attributes)) {
+                            FileVisitResult.CONTINUE
+                        } else {
+                            FileVisitResult.SKIP_SUBTREE
+                        }
+                    }
+                    onVisitFile { file, attributes ->
+                        if (shouldAddFile(filter, file, attributes)) add(file.toRealPath())
+                        FileVisitResult.CONTINUE
+                    }
+                    onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
+                }
+            }
+        }
+
     private fun Map<String, Collection<Path>>.duplicateGroups(): Collection<DuplicateGroup> =
         map { (hash, paths) ->
             DuplicateGroup(hash = hash, paths = paths)
         }
-
-    override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
     private fun List<Path>.withSameContent() =
         groupBy {
