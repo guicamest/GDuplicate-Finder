@@ -24,7 +24,7 @@ class FiltersTest {
         filter: PathFilter,
         expectedDuplicateGroups: Int,
     ) {
-        val (directory, _) = createDuplicates(content = "some content")
+        val directory = createDuplicates(content = "some content")
 
         runTest {
             val execution =
@@ -54,7 +54,7 @@ class FiltersTest {
         filter: PathFilter,
         expectedDuplicateGroups: Int,
     ) {
-        val (directory, _) = createDuplicates(filenamePrefixAndSuffix = "somefile" to ".txt")
+        val directory = createDuplicates(filenamePrefixAndSuffix = "somefile" to ".txt")
 
         runTest {
             val execution =
@@ -107,7 +107,7 @@ class FiltersTest {
         expectedDuplicateGroups: Int,
     ) {
         val temp = createTempDirectory()
-        val (directory, _) = createDuplicates(directory = temp.resolve("paramDir").createDirectory())
+        val directory = createDuplicates(directory = temp.resolve("paramDir").createDirectory())
 
         runTest {
             val execution =

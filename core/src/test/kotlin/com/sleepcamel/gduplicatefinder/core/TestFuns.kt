@@ -29,19 +29,18 @@ fun createDuplicates(
     directory: Path = createTempDirectory(directoryPrefix),
     content: String = "hi",
     filenamePrefixAndSuffix: Pair<String, String>? = null,
-): Pair<Path, String> {
-    (0..1).map {
-        createTempFile(
-            directory = directory,
-            prefix = filenamePrefixAndSuffix?.first,
-            suffix = filenamePrefixAndSuffix?.second,
-        ).apply {
-            writeText(content)
-        }.absolute()
+): Path =
+    directory.also { dir ->
+        repeat(2) {
+            createTempFile(
+                directory = dir,
+                prefix = filenamePrefixAndSuffix?.first,
+                suffix = filenamePrefixAndSuffix?.second,
+            ).apply {
+                writeText(content)
+            }.absolute()
+        }
     }
-
-    return Pair(directory, "")
-}
 
 fun findDuplicates(
     finder: DuplicateFinder,
