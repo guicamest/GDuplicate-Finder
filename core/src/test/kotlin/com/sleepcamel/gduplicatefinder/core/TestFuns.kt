@@ -29,19 +29,18 @@ fun createDuplicates(
     directory: Path = createTempDirectory(directoryPrefix),
     content: String = "hi",
     filenamePrefixAndSuffix: Pair<String, String>? = null,
-): Pair<Path, DuplicateGroup> {
-    val fileNames =
-        (0..1).map {
-            createTempFile(
-                directory = directory,
-                prefix = filenamePrefixAndSuffix?.first,
-                suffix = filenamePrefixAndSuffix?.second,
-            ).apply {
-                writeText(content)
-            }.absolute()
-        }
-    val group = DuplicateGroup(hash = content.contentHash(), paths = fileNames)
-    return Pair(directory, group)
+): Pair<Path, String> {
+    (0..1).map {
+        createTempFile(
+            directory = directory,
+            prefix = filenamePrefixAndSuffix?.first,
+            suffix = filenamePrefixAndSuffix?.second,
+        ).apply {
+            writeText(content)
+        }.absolute()
+    }
+
+    return Pair(directory, "")
 }
 
 fun findDuplicates(

@@ -11,11 +11,10 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.fileSize
 import kotlin.io.path.readBytes
 import kotlin.io.path.visitFileTree
 
-data class DuplicateGroup(val hash: String, val paths: Collection<Path>)
+data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttributes>)
 
 interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
@@ -50,7 +49,7 @@ class CoroutinesFindDuplicatesExecution(
     private fun collectFiles(
         directories: Collection<Path>,
         filter: PathFilter,
-    ): Collection<Path> =
+    ): Collection<PathWithAttributes> =
         buildSet {
             directories.uniqueAndReal.forEach { directory ->
                 directory.visitFileTree(followLinks = true) {
@@ -62,7 +61,14 @@ class CoroutinesFindDuplicatesExecution(
                         }
                     }
                     onVisitFile { file, attributes ->
-                        if (shouldAddFile(filter, file, attributes)) add(file.toRealPath())
+                        if (shouldAddFile(
+                                filter,
+                                file,
+                                attributes,
+                            )
+                        ) {
+                            add(PathWithAttributes(file.toRealPath(), attributes))
+                        }
                         FileVisitResult.CONTINUE
                     }
                     onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
@@ -70,18 +76,18 @@ class CoroutinesFindDuplicatesExecution(
             }
         }
 
-    private fun Map<String, Collection<Path>>.duplicateGroups(): Collection<DuplicateGroup> =
+    private fun Map<String, Collection<PathWithAttributes>>.duplicateGroups(): Collection<DuplicateGroup> =
         map { (hash, paths) ->
             DuplicateGroup(hash = hash, paths = paths)
         }
 
-    private fun List<Path>.withSameContent() =
+    private fun List<PathWithAttributes>.withSameContent() =
         groupBy {
             it.contentHash()
         }.filter { (_, paths) -> paths.size > 1 }
 
-    private fun Collection<Path>.withSameSize() =
-        groupBy { it.fileSize() }.filter { (_, paths) -> paths.size > 1 }
+    private fun Collection<PathWithAttributes>.withSameSize() =
+        groupBy { it.size() }.filter { (_, paths) -> paths.size > 1 }
 
     private fun shouldVisitDirectory(
         directory: Path,
@@ -122,4 +128,22 @@ private fun ByteArray.contentHash(type: String = "MD5"): String {
             }
         }
     return printHexBinary(bytes)
+}
+
+data class PathWithAttributes(
+    val path: Path,
+    val attributes: BasicFileAttributes,
+) : BasicFileAttributes by attributes {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PathWithAttributes
+
+        return path == other.path
+    }
+
+    override fun hashCode(): Int = path.hashCode()
+
+    fun contentHash(type: String = "MD5"): String = path.contentHash(type)
 }

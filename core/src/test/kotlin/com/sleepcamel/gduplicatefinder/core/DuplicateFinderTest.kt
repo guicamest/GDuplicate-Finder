@@ -198,23 +198,14 @@ class DuplicateFinderTest {
                 (0..1).map {
                     createTempFile(directory = directoryWith2FilesSameHash).apply {
                         writeText("hi")
-                    }.toRealPath()
+                    }
                 }
-            val expectedDuplicateGroup =
-                DuplicateGroup(
-                    hash = "hi".contentHash(),
-                    paths = fileNames,
-                )
 
             runTest {
                 val execution = findDuplicates(this, directory = directoryWith2FilesSameHash)
 
                 val duplicateEntries = execution.duplicateEntries()
-                assertThat(duplicateEntries).hasSize(1)
-                duplicateEntries.first().also { group ->
-                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                }
+                duplicateEntries.assertOneDuplicateGroupWith(paths = fileNames, content = "hi")
             }
         }
 
@@ -235,21 +226,14 @@ class DuplicateFinderTest {
                     writeText("hi")
                 }
 
-            val expectedDuplicateGroup =
-                DuplicateGroup(
-                    hash = "hi".contentHash(),
-                    paths = listOf(oneFile, otherFile).map { it.toRealPath() },
-                )
-
             runTest {
                 val execution = findDuplicates(this, directory = root)
 
                 val duplicateEntries = execution.duplicateEntries()
-                assertThat(duplicateEntries).hasSize(1)
-                duplicateEntries.first().also { group ->
-                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                }
+                duplicateEntries.assertOneDuplicateGroupWith(
+                    paths = listOf(oneFile, otherFile),
+                    content = "hi",
+                )
             }
         }
 
@@ -270,21 +254,14 @@ class DuplicateFinderTest {
             val oneFile = (subdirectories[0] / Paths.get("somefile")).apply { writeText("hi") }
             val otherFile = (subdirectories[1] / Paths.get("otherfile")).apply { writeText("hi") }
 
-            val expectedDuplicateGroup =
-                DuplicateGroup(
-                    hash = "hi".contentHash(),
-                    paths = listOf(oneFile, otherFile).map { it.toRealPath() },
-                )
-
             runTest {
                 val execution = findDuplicates(this, directories = subdirectories)
 
                 val duplicateEntries = execution.duplicateEntries()
-                assertThat(duplicateEntries).hasSize(1)
-                duplicateEntries.first().also { group ->
-                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                }
+                duplicateEntries.assertOneDuplicateGroupWith(
+                    paths = listOf(oneFile, otherFile),
+                    content = "hi",
+                )
             }
         }
 
@@ -307,12 +284,6 @@ class DuplicateFinderTest {
                     (it / Paths.get("somefile")).apply { writeText("hi") }
                 }
 
-            val expectedDuplicateGroup =
-                DuplicateGroup(
-                    hash = "hi".contentHash(),
-                    paths = files.map { it.toRealPath() },
-                )
-
             runTest {
                 val execution =
                     findDuplicates(
@@ -321,11 +292,7 @@ class DuplicateFinderTest {
                     )
 
                 val duplicateEntries = execution.duplicateEntries()
-                assertThat(duplicateEntries).hasSize(1)
-                duplicateEntries.first().also { group ->
-                    assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                    assertThat(group.paths).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                }
+                duplicateEntries.assertOneDuplicateGroupWith(paths = files, content = "hi")
             }
         }
 
@@ -339,14 +306,8 @@ class DuplicateFinderTest {
         fun `two files in different filesystems have same content hash`() =
             inLinux { lfs ->
                 inWindows { wfs ->
-                    val oneFile = lfs.getPath("somefile").apply { writeText("hi") }
-                    val otherFile = wfs.getPath("otherfile").apply { writeText("hi") }
-
-                    val expectedDuplicateGroup =
-                        DuplicateGroup(
-                            hash = "hi".contentHash(),
-                            paths = listOf(oneFile, otherFile).map { it.absolute() },
-                        )
+                    val oneFile = lfs.getPath("somefile").apply { writeText("hi") }.absolute()
+                    val otherFile = wfs.getPath("otherfile").apply { writeText("hi") }.absolute()
 
                     runTest {
                         val execution =
@@ -356,13 +317,10 @@ class DuplicateFinderTest {
                             )
 
                         val duplicateEntries = execution.duplicateEntries()
-                        assertThat(duplicateEntries).hasSize(1)
-                        duplicateEntries.first().also { group ->
-                            assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                            assertThat(
-                                group.paths,
-                            ).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                        }
+                        duplicateEntries.assertOneDuplicateGroupWith(
+                            paths = listOf(oneFile, otherFile),
+                            content = "hi",
+                        )
                     }
                 }
             }
@@ -380,12 +338,6 @@ class DuplicateFinderTest {
                         volumes / fs.getPath("def.txt"),
                     ).map { it.apply { writeText("hi") } }
 
-                val expectedDuplicateGroup =
-                    DuplicateGroup(
-                        hash = "hi".contentHash(),
-                        paths = files.map { it.toRealPath() },
-                    )
-
                 runTest {
                     val execution =
                         findDuplicates(
@@ -394,13 +346,8 @@ class DuplicateFinderTest {
                         )
 
                     val duplicateEntries = execution.duplicateEntries()
-                    assertThat(duplicateEntries).withFailMessage { "Expected 1 duplicate group" }.hasSize(1)
-                    duplicateEntries.first().also { group ->
-                        assertThat(group.hash).isEqualTo(expectedDuplicateGroup.hash)
-                        assertThat(
-                            group.paths.map { it.toRealPath() },
-                        ).containsExactlyInAnyOrderElementsOf(expectedDuplicateGroup.paths)
-                    }
+
+                    duplicateEntries.assertOneDuplicateGroupWith(paths = files, content = "hi")
                 }
             }
 
