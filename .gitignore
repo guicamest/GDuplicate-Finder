@@ -5,6 +5,8 @@
 .project
 .settings
 
+.sdkmanrc
+
 build
 bin
 
