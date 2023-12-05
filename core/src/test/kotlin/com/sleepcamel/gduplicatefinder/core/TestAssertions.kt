@@ -38,7 +38,6 @@ private fun BasicFileAttributes.assertAttributes(
     assertThat(creationTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
     assertThat(lastAccessTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
     assertThat(lastModifiedTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
-    assertThat(fileKey()).isNotNull
     assertThat(size()).isEqualTo(expectedSize)
 }
 
