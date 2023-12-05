@@ -3,6 +3,7 @@ package com.sleepcamel.gduplicatefinder.core
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 import java.time.Instant
 import java.time.temporal.ChronoUnit.SECONDS
 
@@ -20,17 +21,25 @@ fun Collection<DuplicateGroup>.assertOneDuplicateGroupWith(
     ).containsExactlyInAnyOrderElementsOf(paths.realPaths())
 
     if (checkAttributes) {
+        val startOfAssertions = Instant.now()
         group.paths.forEach {
-            assertThat(it.isDirectory).isFalse()
-            assertThat(it.isSymbolicLink).isFalse()
-            assertThat(it.isRegularFile).isTrue()
-            assertThat(it.creationTime().toInstant()).isCloseTo(Instant.now(), within(30, SECONDS))
-            assertThat(it.lastAccessTime().toInstant()).isCloseTo(Instant.now(), within(30, SECONDS))
-            assertThat(it.lastModifiedTime().toInstant()).isCloseTo(Instant.now(), within(30, SECONDS))
-            assertThat(it.fileKey()).isNotNull
-            assertThat(it.size()).isEqualTo(content.length.toLong())
+            it.assertAttributes(timeReference = startOfAssertions, expectedSize = content.length.toLong())
         }
     }
+}
+
+private fun BasicFileAttributes.assertAttributes(
+    timeReference: Instant,
+    expectedSize: Long,
+) {
+    assertThat(isDirectory).isFalse()
+    assertThat(isSymbolicLink).isFalse()
+    assertThat(isRegularFile).isTrue()
+    assertThat(creationTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
+    assertThat(lastAccessTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
+    assertThat(lastModifiedTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
+    assertThat(fileKey()).isNotNull
+    assertThat(size()).isEqualTo(expectedSize)
 }
 
 private fun Collection<Path>.realPaths() = map { it.toRealPath() }
