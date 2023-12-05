@@ -11,7 +11,9 @@ fun Collection<DuplicateGroup>.assertOneDuplicateGroupWith(
     first().also { group ->
         Assertions.assertThat(group.hash).isEqualTo(content.contentHash())
         Assertions.assertThat(
-            group.paths.map { it.path.toRealPath() },
-        ).containsExactlyInAnyOrderElementsOf(paths)
+            group.paths.map { it.path }.realPaths(),
+        ).containsExactlyInAnyOrderElementsOf(paths.realPaths())
     }
 }
+
+private fun Collection<Path>.realPaths() = map { it.toRealPath() }
