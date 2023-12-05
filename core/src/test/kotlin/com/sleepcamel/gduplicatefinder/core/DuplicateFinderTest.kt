@@ -205,7 +205,11 @@ class DuplicateFinderTest {
                 val execution = findDuplicates(this, directory = directoryWith2FilesSameHash)
 
                 val duplicateEntries = execution.duplicateEntries()
-                duplicateEntries.assertOneDuplicateGroupWith(paths = fileNames, content = "hi")
+                duplicateEntries.assertOneDuplicateGroupWith(
+                    paths = fileNames,
+                    content = "hi",
+                    checkAttributes = true,
+                )
             }
         }
 
