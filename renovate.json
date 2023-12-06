@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "baseBranches": [
+    "v3"
+  ],
+  "ignorePaths": [
+    "**/FileDuplicateFinderUI/**"
+  ],
+  "assigneesFromCodeOwners": true,
+  "semanticCommitType": "deps",
+  "semanticCommitScope": "{{depName}}",
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitType": "ci",
+      "commitMessageTopic": "action"
+    },
+    {
+      "matchManagers": [
+        "gradle"
+      ],
+      "matchDepTypes": [
+        "plugin"
+      ],
+      "semanticCommitType": "build",
+      "commitMessageTopic": "plugin"
+    },
+    {
+      "matchManagers": [
+        "gradle"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
+      "semanticCommitType": "deps",
+      "commitMessageTopic": "dependency"
+    }
+  ]
+}
