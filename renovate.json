@@ -4,5 +4,6 @@
     "config:base"
   ],
   "baseBranches": ["v3"],
-  "ignorePaths": ["**/FileDuplicateFinderUI/**"]
+  "ignorePaths": ["**/FileDuplicateFinderUI/**"],
+  "assigneesFromCodeOwners": true
 }
