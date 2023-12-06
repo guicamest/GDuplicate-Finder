@@ -3,9 +3,21 @@
   "extends": [
     "config:base"
   ],
-  "baseBranches": ["v3"],
-  "ignorePaths": ["**/FileDuplicateFinderUI/**"],
+  "baseBranches": [
+    "v3"
+  ],
+  "ignorePaths": [
+    "**/FileDuplicateFinderUI/**"
+  ],
   "assigneesFromCodeOwners": true,
   "semanticCommitType": "deps",
-  "semanticCommitScope": "{{depName}}"
+  "semanticCommitScope": "{{depName}}",
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitType": "ci"
+    }
+  ]
 }
