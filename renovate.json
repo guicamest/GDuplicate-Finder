@@ -17,7 +17,8 @@
       "matchManagers": [
         "github-actions"
       ],
-      "semanticCommitType": "ci"
+      "semanticCommitType": "ci",
+      "commitMessageTopic": "action"
     }
   ]
 }
