@@ -5,5 +5,7 @@
   ],
   "baseBranches": ["v3"],
   "ignorePaths": ["**/FileDuplicateFinderUI/**"],
-  "assigneesFromCodeOwners": true
+  "assigneesFromCodeOwners": true,
+  "semanticCommitType": "deps",
+  "semanticCommitScope": ""
 }
