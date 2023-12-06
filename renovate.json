@@ -7,5 +7,5 @@
   "ignorePaths": ["**/FileDuplicateFinderUI/**"],
   "assigneesFromCodeOwners": true,
   "semanticCommitType": "deps",
-  "semanticCommitScope": ""
+  "semanticCommitScope": "{{depName}}"
 }
