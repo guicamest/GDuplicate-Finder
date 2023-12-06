@@ -19,7 +19,7 @@ testing {
             dependencies {
                 // https://github.com/pinterest/ktlint/blob/master/ktlint-ruleset-template
                 implementation "com.pinterest.ktlint:ktlint-test:1.0.1"
-                runtimeOnly "org.slf4j:slf4j-api:2.0.7"
+                runtimeOnly "org.slf4j:slf4j-api:2.0.9"
             }
         }
     }
