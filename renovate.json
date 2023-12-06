@@ -29,6 +29,16 @@
       ],
       "semanticCommitType": "build",
       "commitMessageTopic": "plugin"
+    },
+    {
+      "matchManagers": [
+        "gradle"
+      ],
+      "matchDepTypes": [
+        "dependencies"
+      ],
+      "semanticCommitType": "deps",
+      "commitMessageTopic": "dependency"
     }
   ]
 }
