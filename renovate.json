@@ -19,6 +19,16 @@
       ],
       "semanticCommitType": "ci",
       "commitMessageTopic": "action"
+    },
+    {
+      "matchManagers": [
+        "gradle"
+      ],
+      "matchDepTypes": [
+        "plugin"
+      ],
+      "semanticCommitType": "build",
+      "commitMessageTopic": "plugin"
     }
   ]
 }
