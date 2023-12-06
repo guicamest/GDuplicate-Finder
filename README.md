@@ -33,16 +33,6 @@ If you don't feel like coding but want to donate some money, you can do that usi
 - FTP
 - Amazon S3
 
-## How to build
-
-_Requires Java >= 11_
-
-On root folder *GDuplicateFinder* run `./gradlew distZip`.
-The script will automatically detect your system's os.
-You can change the os by running `./gradlew -Pos=$osname`
-where $osname can be one of the following:
-`windows32`, `windows64`, `linux32`, `linux64`, `maccocoa32` or `maccocoa64`.
-
 ## How to run
 
 _Requires Java >= 11_
@@ -69,6 +59,18 @@ If you are getting *Exception in thread "main" java.lang.UnsatisfiedLinkError: C
 it means your default java installation is 32-bit. You can verify it opening a console and typing *java -version*.
 To fix it, either install 64-bit java and set it as default or download the 32-bit version of GDuplicateFinder.
 For more info, follow [this thread](http://sourceforge.net/p/gdupfinder/discussion/general/thread/a1a82607/)
+
+## Development
+
+### How to build
+
+_Requires Java >= 11_
+
+On root folder *GDuplicateFinder* run `./gradlew distZip`.
+The script will automatically detect your system's os.
+You can change the os by running `./gradlew -Pos=$osname`
+where $osname can be one of the following:
+`windows32`, `windows64`, `linux32`, `linux64`, `maccocoa32` or `maccocoa64`.
 
 ## Donations
 
