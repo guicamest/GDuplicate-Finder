@@ -3,5 +3,6 @@
   "extends": [
     "config:base"
   ],
-  "baseBranches": ["v3"]
+  "baseBranches": ["v3"],
+  "ignorePaths": ["**/FileDuplicateFinderUI/**"]
 }
