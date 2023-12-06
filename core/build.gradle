@@ -51,7 +51,7 @@ testing {
                 implementation "ch.pontius.nio:smb-nio:0.11.0"
 
                 // Provides transitive vulnerable dependency maven:com.jcraft:jsch:0.1.53
-                implementation "com.pastdev:jsch-nio:0.1.7"
+                implementation "com.pastdev:jsch-nio:0.1.9"
                 implementation "com.jcraft:jsch:0.1.55"
             }
         }
