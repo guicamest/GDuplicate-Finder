@@ -72,6 +72,19 @@ You can change the os by running `./gradlew -Pos=$osname`
 where $osname can be one of the following:
 `windows32`, `windows64`, `linux32`, `linux64`, `maccocoa32` or `maccocoa64`.
 
+### Using SDKMAN!
+
+If you are using [SDKMAN!](https://sdkman.io/) to manage your sdks, you can add a `.sdkmanrc` file to the root
+(already added to .gitignore) with the following content:
+```
+java=11.0.20.1-tem # Version may mismatch, adjust to the sdk that you have installed
+#java=17.0.7-tem # Version may mismatch, adjust to the sdk that you have installed
+#java=21.0.1-tem # Version may mismatch, adjust to the sdk that you have installed
+
+# You can also enable auto-env setting `sdkman_auto_env=true` config
+# in [~/.sdkman/etc/config]. See https://sdkman.io/usage#config
+```
+
 ## Donations
 
 Thanks a lot to the following people for their donations to keep GDuplicateFinder alive!
