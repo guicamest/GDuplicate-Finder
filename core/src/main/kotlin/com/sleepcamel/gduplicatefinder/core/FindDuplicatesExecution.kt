@@ -18,6 +18,8 @@ data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttrib
 
 interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
+
+    fun stop()
 }
 
 @OptIn(ExperimentalPathApi::class)
@@ -45,6 +47,9 @@ class CoroutinesFindDuplicatesExecution(
     }
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
+
+    override fun stop() {
+    }
 
     private fun collectFiles(
         directories: Collection<Path>,
