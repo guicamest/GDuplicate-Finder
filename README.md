@@ -76,7 +76,7 @@ where $osname can be one of the following:
 
 If you are using [SDKMAN!](https://sdkman.io/) to manage your sdks, you can add a `.sdkmanrc` file to the root
 (already added to .gitignore) with the following content:
-```
+```properties
 java=11.0.20.1-tem # Version may mismatch, adjust to the sdk that you have installed
 #java=17.0.7-tem # Version may mismatch, adjust to the sdk that you have installed
 #java=21.0.1-tem # Version may mismatch, adjust to the sdk that you have installed
