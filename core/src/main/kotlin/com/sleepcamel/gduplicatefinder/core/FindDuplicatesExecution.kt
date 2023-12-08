@@ -1,6 +1,7 @@
 package com.sleepcamel.gduplicatefinder.core
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -33,7 +34,7 @@ class CoroutinesFindDuplicatesExecution(
 
     init {
         job =
-            coroutineScope.launch {
+            coroutineScope.launch(CoroutineName("findDuplicatesExecution")) {
                 val allFiles = collectFiles(directories, filter)
 
                 val withSameSize = allFiles.withSameSize()

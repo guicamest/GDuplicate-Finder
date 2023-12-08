@@ -1,6 +1,9 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.debug.DebugProbes.withDebugProbes
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -27,10 +30,16 @@ class StopResumeTest {
         }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun executionCanBeStopped() {
-        runTest {
-            findDuplicates(this, directory = searchDirectory).stop()
+    @DisplayName("stop should stop the finding execution")
+    fun executionCanBeStopped() =
+        withDebugProbes {
+            runTest {
+                findDuplicates(this, directory = searchDirectory).stop()
+                assertThat(findCoroutine("findDuplicatesExecution"))
+                    .withFailMessage { "Coroutine shouldn't be running" }
+                    .isNull()
+            }
         }
-    }
 }
