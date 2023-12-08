@@ -2,7 +2,11 @@ package com.sleepcamel.gduplicatefinder.core
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes.withDebugProbes
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
@@ -77,5 +81,27 @@ class StopResumeTest {
                     stop()
                 }
             assertThat(state).isInstanceOf(ContentFilterExecutionState::class.java)
+        }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    @DisplayName("return states in order scan / size / content")
+    fun statesAreInOrder() =
+        runTest {
+            val state = findDuplicates(this, directory = searchDirectory).state
+            val allStates = mutableListOf<FindDuplicatesExecutionState>()
+
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                state.toList(allStates)
+            }
+            advanceUntilIdle()
+
+            assertThat(allStates.first()).isInstanceOf(ScanExecutionState::class.java)
+
+            val withoutScans = allStates.dropWhile { it is ScanExecutionState }
+            assertThat(withoutScans.first()).isInstanceOf(SizeFilterExecutionState::class.java)
+
+            val withoutSizeFilter = withoutScans.dropWhile { it is SizeFilterExecutionState }
+            assertThat(withoutSizeFilter).isNotEmpty.allMatch { it is ContentFilterExecutionState }
         }
 }
