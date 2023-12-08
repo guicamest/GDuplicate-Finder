@@ -2,6 +2,7 @@ package com.sleepcamel.gduplicatefinder.core
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes.withDebugProbes
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
@@ -41,5 +42,40 @@ class StopResumeTest {
                     .withFailMessage { "Coroutine shouldn't be running" }
                     .isNull()
             }
+        }
+
+    @Test
+    @DisplayName("return scan state when `stop` is called")
+    fun stopReturnsStateWhileScanning() =
+        runTest {
+            val state = findDuplicates(this, directory = searchDirectory).stop()
+            assertThat(state).isInstanceOf(ScanExecutionState::class.java)
+        }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    @DisplayName("return size filter state when `stop` is called")
+    fun stopReturnsStateAfterScan() =
+        runTest {
+            val state =
+                findDuplicates(this, directory = searchDirectory).run {
+                    advanceTimeBy(1)
+                    stop()
+                }
+            assertThat(state).isInstanceOf(SizeFilterExecutionState::class.java)
+        }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    @DisplayName("return content filter state when `stop` is called")
+    fun stopReturnsStateAfterSizeFilter() =
+        runTest {
+            val state =
+                findDuplicates(this, directory = searchDirectory).run {
+                    advanceTimeBy(1)
+                    advanceTimeBy(1)
+                    stop()
+                }
+            assertThat(state).isInstanceOf(ContentFilterExecutionState::class.java)
         }
 }

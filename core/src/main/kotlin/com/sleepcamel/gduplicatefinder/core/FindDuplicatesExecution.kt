@@ -5,6 +5,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -21,10 +24,24 @@ data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttrib
 interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
 
-    suspend fun stop()
+    suspend fun stop(): FindDuplicatesExecutionState
 }
 
 class FindExecutionStopRequested : CancellationException()
+
+sealed interface FindDuplicatesExecutionState
+
+interface ScanExecutionState : FindDuplicatesExecutionState
+
+class ScanExecutionStateImpl : ScanExecutionState
+
+interface SizeFilterExecutionState : FindDuplicatesExecutionState
+
+class SizeFilterExecutionStateImpl : SizeFilterExecutionState
+
+interface ContentFilterExecutionState : FindDuplicatesExecutionState
+
+class ContentFilterExecutionStateImpl : ContentFilterExecutionState
 
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
@@ -32,6 +49,7 @@ class CoroutinesFindDuplicatesExecution(
     filter: PathFilter,
     coroutineScope: CoroutineScope,
 ) : FindDuplicatesExecution {
+    private val stateHolder: FindProgressStateHolder = FindProgressStateHolder(ScanExecutionStateImpl())
     private val result = CompletableDeferred<Collection<DuplicateGroup>>()
     private val job: Job
 
@@ -40,8 +58,13 @@ class CoroutinesFindDuplicatesExecution(
             coroutineScope.launch(CoroutineName("findDuplicatesExecution")) {
                 val allFiles = collectFiles(directories, filter)
 
+                stateHolder.update(SizeFilterExecutionStateImpl())
+                delay(1L)
+
                 val withSameSize = allFiles.withSameSize()
 
+                stateHolder.update(ContentFilterExecutionStateImpl())
+                delay(1)
                 val withSameContent =
                     withSameSize.mapNotNull { (_, groupWithSameSize) ->
                         groupWithSameSize.withSameContent().duplicateGroups()
@@ -52,9 +75,10 @@ class CoroutinesFindDuplicatesExecution(
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
-    override suspend fun stop() {
+    override suspend fun stop(): FindDuplicatesExecutionState {
         job.cancel(FindExecutionStopRequested())
         job.join()
+        return stateHolder.state.value
     }
 
     private fun collectFiles(
@@ -157,4 +181,13 @@ data class PathWithAttributes(
     override fun hashCode(): Int = path.hashCode()
 
     fun contentHash(type: String = "MD5"): String = path.contentHash(type)
+}
+
+internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
+    private val _state = MutableStateFlow(initial)
+    val state = _state.asStateFlow() // read-only public view
+
+    internal fun update(newValue: FindDuplicatesExecutionState) {
+        _state.value = newValue // NOT suspending
+    }
 }
