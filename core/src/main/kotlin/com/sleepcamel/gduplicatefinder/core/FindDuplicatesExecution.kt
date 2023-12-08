@@ -1,5 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -20,8 +21,10 @@ data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttrib
 interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
 
-    fun stop()
+    suspend fun stop()
 }
+
+class FindExecutionStopRequested : CancellationException()
 
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
@@ -49,7 +52,9 @@ class CoroutinesFindDuplicatesExecution(
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
-    override fun stop() {
+    override suspend fun stop() {
+        job.cancel(FindExecutionStopRequested())
+        job.join()
     }
 
     private fun collectFiles(

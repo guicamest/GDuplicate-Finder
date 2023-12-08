@@ -32,7 +32,7 @@ class StopResumeTest {
 
     @ExperimentalCoroutinesApi
     @Test
-    @DisplayName("stop should stop the finding execution")
+    @DisplayName("stop the finding execution when `stop` is called")
     fun executionCanBeStopped() =
         withDebugProbes {
             runTest {
