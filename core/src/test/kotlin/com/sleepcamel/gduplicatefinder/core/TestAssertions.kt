@@ -1,5 +1,8 @@
 package com.sleepcamel.gduplicatefinder.core
 
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.debug.DebugProbes
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import java.nio.file.Path
@@ -40,5 +43,9 @@ private fun BasicFileAttributes.assertAttributes(
     assertThat(lastModifiedTime().toInstant()).isCloseTo(timeReference, within(30, SECONDS))
     assertThat(size()).isEqualTo(expectedSize)
 }
+
+@ExperimentalCoroutinesApi
+fun findCoroutine(name: String) =
+    DebugProbes.dumpCoroutinesInfo().find { it.context[CoroutineName]?.name.equals(name) }
 
 private fun Collection<Path>.realPaths() = map { it.toRealPath() }
