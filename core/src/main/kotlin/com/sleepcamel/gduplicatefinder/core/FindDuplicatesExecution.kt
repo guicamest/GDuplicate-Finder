@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
@@ -25,6 +26,8 @@ interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
 
     suspend fun stop(): FindDuplicatesExecutionState
+
+    val state: StateFlow<FindDuplicatesExecutionState>
 }
 
 class FindExecutionStopRequested : CancellationException()
@@ -80,6 +83,8 @@ class CoroutinesFindDuplicatesExecution(
         job.join()
         return stateHolder.state.value
     }
+
+    override val state get() = stateHolder.state
 
     private fun collectFiles(
         directories: Collection<Path>,
