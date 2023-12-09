@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.io.TempDir
@@ -26,13 +27,16 @@ class StopResumeTest {
         lateinit var searchDirectory: Path
     }
 
+    lateinit var paths: List<Path>
+
     @BeforeAll
     fun setupFiles() {
-        (0..1).forEach {
-            (searchDirectory / Path.of("file $it.txt")).apply {
-                writeText("hi")
+        paths =
+            (0..1).map {
+                (searchDirectory / Path.of("file $it.txt")).apply {
+                    writeText("hi")
+                }
             }
-        }
     }
 
     @ExperimentalCoroutinesApi
@@ -104,4 +108,26 @@ class StopResumeTest {
             val withoutSizeFilter = withoutScans.dropWhile { it is SizeFilterExecutionState }
             assertThat(withoutSizeFilter).isNotEmpty.allMatch { it is ContentFilterExecutionState }
         }
+
+    @DisplayName("be able to resume")
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class Resume {
+        @ExperimentalCoroutinesApi
+        @Test
+        @DisplayName("from scan state")
+        fun canResumeFromScanState() {
+            runTest {
+                val state = findDuplicates(this, directory = searchDirectory).stop()
+
+                val execution = resumeFindDuplicates(this, fromState = state)
+                val duplicateEntries = execution.duplicateEntries()
+                duplicateEntries.assertOneDuplicateGroupWith(
+                    paths = paths,
+                    content = "hi",
+                    checkAttributes = false,
+                )
+            }
+        }
+    }
 }
