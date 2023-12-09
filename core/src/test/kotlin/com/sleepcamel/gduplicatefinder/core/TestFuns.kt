@@ -46,7 +46,7 @@ fun findDuplicates(
     finder: DuplicateFinder,
     directories: Collection<Path>,
     filter: PathFilter = MinSizeFilter(0),
-) = finder.find(directories, filter)
+): FindDuplicatesExecution = finder.find(directories, filter)
 
 fun findDuplicates(
     parentScope: CoroutineScope,
@@ -67,3 +67,9 @@ fun findDuplicates(
     directory: Path,
     filter: PathFilter = MinSizeFilter(0),
 ) = findDuplicates(parentScope, newFinderInstance, listOf(directory), filter)
+
+fun resumeFindDuplicates(
+    parentScope: CoroutineScope,
+    newFinderInstance: (CoroutineScope) -> DuplicateFinder = { scope -> SequentialDuplicateFinder(scope) },
+    fromState: FindDuplicatesExecutionState,
+): FindDuplicatesExecution = newFinderInstance(parentScope).find(fromState = fromState)

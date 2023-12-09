@@ -7,4 +7,6 @@ interface DuplicateFinder {
         directories: Collection<Path>,
         filter: PathFilter,
     ): FindDuplicatesExecution
+
+    fun find(fromState: FindDuplicatesExecutionState): FindDuplicatesExecution
 }
