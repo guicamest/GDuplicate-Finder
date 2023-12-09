@@ -63,6 +63,10 @@ tasks.named('check') {
     dependsOn(testing.suites.integrationTest)
 }
 
+tasks.withType(Test) {
+    jacoco.includes = ['com.sleepcamel.gduplicatefinder.*']
+}
+
 jacocoTestReport {
     dependsOn test
 }
