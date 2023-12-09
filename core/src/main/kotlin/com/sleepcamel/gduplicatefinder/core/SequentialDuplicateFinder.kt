@@ -8,4 +8,8 @@ class SequentialDuplicateFinder(private val parentScope: CoroutineScope) : Dupli
         directories: Collection<Path>,
         filter: PathFilter,
     ): FindDuplicatesExecution = CoroutinesFindDuplicatesExecution(directories, filter, parentScope)
+
+    override fun find(fromState: FindDuplicatesExecutionState): FindDuplicatesExecution {
+        TODO("Not yet implemented")
+    }
 }
