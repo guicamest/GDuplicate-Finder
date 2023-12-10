@@ -130,31 +130,33 @@ class CoroutinesFindDuplicatesExecution(
         }
     }
 
-    private fun shouldVisitDirectory(
-        directory: Path,
-        filter: PathFilter,
-        attributes: BasicFileAttributes,
-        visitedDirectories: List<Path>,
-    ): Boolean =
-        directory !in visitedDirectories &&
-            (filter !is DirectoryFilter || filter.accept(directory, attributes))
+    companion object {
+        private fun shouldVisitDirectory(
+            directory: Path,
+            filter: PathFilter,
+            attributes: BasicFileAttributes,
+            visitedDirectories: List<Path>,
+        ): Boolean =
+            directory !in visitedDirectories &&
+                (filter !is DirectoryFilter || filter.accept(directory, attributes))
 
-    private fun shouldAddFile(
-        file: Path,
-        filter: PathFilter,
-        attributes: BasicFileAttributes,
-    ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
+        private fun shouldAddFile(
+            file: Path,
+            filter: PathFilter,
+            attributes: BasicFileAttributes,
+        ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
+
+        private val Collection<Path>.uniqueAndReal: Collection<Path>
+            get() =
+                mapNotNull {
+                    try {
+                        it.toRealPath()
+                    } catch (e: NoSuchFileException) {
+                        null
+                    }
+                }.distinct()
+    }
 }
-
-private val Collection<Path>.uniqueAndReal: Collection<Path>
-    get() =
-        mapNotNull {
-            try {
-                it.toRealPath()
-            } catch (e: NoSuchFileException) {
-                null
-            }
-        }.distinct()
 
 data class PathWithAttributes(
     val path: Path,
