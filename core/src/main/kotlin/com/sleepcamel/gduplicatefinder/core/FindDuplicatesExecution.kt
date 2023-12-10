@@ -143,8 +143,8 @@ class CoroutinesFindDuplicatesExecution(
                     }
                     onVisitFile { file, attributes ->
                         if (shouldAddFile(
-                                filter,
                                 file,
+                                filter,
                                 attributes,
                             )
                         ) {
@@ -189,8 +189,8 @@ class CoroutinesFindDuplicatesExecution(
             (filter !is DirectoryFilter || filter.accept(directory, attributes))
 
     private fun shouldAddFile(
-        filter: PathFilter,
         file: Path,
+        filter: PathFilter,
         attributes: BasicFileAttributes,
     ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
 }
