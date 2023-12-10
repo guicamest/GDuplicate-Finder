@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -34,9 +35,32 @@ class FindExecutionStopRequested : CancellationException()
 
 sealed interface FindDuplicatesExecutionState
 
-interface ScanExecutionState : FindDuplicatesExecutionState
+interface ScanExecutionState : FindDuplicatesExecutionState {
+    val initialDirectories: Collection<Path>
+    val filter: PathFilter
+    val visitedDirectories: List<Path>
+    val filesToProcess: List<PathWithAttributes>
+}
 
-class ScanExecutionStateImpl : ScanExecutionState
+data class ScanExecutionStateImpl(
+    override val initialDirectories: Collection<Path>,
+    override val filter: PathFilter,
+    override val visitedDirectories: List<Path>,
+    override val filesToProcess: List<PathWithAttributes>,
+) : ScanExecutionState {
+    companion object {
+        fun empty(
+            initialDirectories: Collection<Path>,
+            filter: PathFilter,
+        ): ScanExecutionState =
+            ScanExecutionStateImpl(
+                initialDirectories = initialDirectories,
+                filter = filter,
+                visitedDirectories = emptyList(),
+                filesToProcess = emptyList(),
+            )
+    }
+}
 
 interface SizeFilterExecutionState : FindDuplicatesExecutionState
 
@@ -48,18 +72,27 @@ class ContentFilterExecutionStateImpl : ContentFilterExecutionState
 
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
-    directories: Collection<Path>,
-    filter: PathFilter,
-    coroutineScope: CoroutineScope,
+    scope: CoroutineScope,
+    state: FindDuplicatesExecutionState,
 ) : FindDuplicatesExecution {
-    private val stateHolder: FindProgressStateHolder = FindProgressStateHolder(ScanExecutionStateImpl())
+    private val stateHolder: FindProgressStateHolder = FindProgressStateHolder(state)
     private val result = CompletableDeferred<Collection<DuplicateGroup>>()
     private val job: Job
 
+    constructor(
+        scope: CoroutineScope,
+        directories: Collection<Path>,
+        filter: PathFilter,
+    ) : this(
+        scope = scope,
+        state = ScanExecutionStateImpl.empty(initialDirectories = directories, filter = filter),
+    )
+
     init {
         job =
-            coroutineScope.launch(CoroutineName("findDuplicatesExecution")) {
-                val allFiles = collectFiles(directories, filter)
+            scope.launch(CoroutineName("findDuplicatesExecution")) {
+                check(state is ScanExecutionState)
+                val allFiles = collectFiles(stateHolder)
 
                 stateHolder.update(SizeFilterExecutionStateImpl())
                 delay(1L)
@@ -86,15 +119,23 @@ class CoroutinesFindDuplicatesExecution(
 
     override val state get() = stateHolder.state
 
-    private fun collectFiles(
-        directories: Collection<Path>,
-        filter: PathFilter,
-    ): Collection<PathWithAttributes> =
+    private fun collectFiles(stateHolder: FindProgressStateHolder): Collection<PathWithAttributes> =
         buildSet {
-            directories.uniqueAndReal.forEach { directory ->
+            val (initialDirectories, filter) =
+                stateHolder.state.value.run {
+                    check(this is ScanExecutionState)
+                    initialDirectories to filter
+                }
+            initialDirectories.uniqueAndReal.forEach { directory ->
                 directory.visitFileTree(followLinks = true) {
                     onPreVisitDirectory { directory, attributes ->
-                        if (shouldVisitDirectory(directory, filter, attributes)) {
+                        if (shouldVisitDirectory(
+                                directory,
+                                filter,
+                                attributes,
+                                stateHolder.stateAs<ScanExecutionState>().visitedDirectories,
+                            )
+                        ) {
                             FileVisitResult.CONTINUE
                         } else {
                             FileVisitResult.SKIP_SUBTREE
@@ -112,6 +153,15 @@ class CoroutinesFindDuplicatesExecution(
                         FileVisitResult.CONTINUE
                     }
                     onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
+                    onPostVisitDirectory { directory, _ ->
+                        stateHolder.update { currentState ->
+                            check(currentState is ScanExecutionStateImpl)
+                            currentState.copy(
+                                visitedDirectories = currentState.visitedDirectories + directory,
+                            )
+                        }
+                        FileVisitResult.CONTINUE
+                    }
                 }
             }
         }
@@ -133,7 +183,10 @@ class CoroutinesFindDuplicatesExecution(
         directory: Path,
         filter: PathFilter,
         attributes: BasicFileAttributes,
-    ): Boolean = filter !is DirectoryFilter || filter.accept(directory, attributes)
+        visitedDirectories: List<Path>,
+    ): Boolean =
+        directory !in visitedDirectories &&
+            (filter !is DirectoryFilter || filter.accept(directory, attributes))
 
     private fun shouldAddFile(
         filter: PathFilter,
@@ -195,4 +248,14 @@ internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
     internal fun update(newValue: FindDuplicatesExecutionState) {
         _state.value = newValue // NOT suspending
     }
+
+    internal fun update(function: (FindDuplicatesExecutionState) -> FindDuplicatesExecutionState) {
+        _state.update(function)
+    }
+
+    inline fun <reified T : FindDuplicatesExecutionState> stateAs(): T =
+        with(state.value) {
+            check(this is T)
+            this
+        }
 }
