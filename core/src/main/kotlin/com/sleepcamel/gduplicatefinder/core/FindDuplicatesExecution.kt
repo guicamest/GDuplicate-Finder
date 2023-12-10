@@ -6,10 +6,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -30,45 +27,6 @@ interface FindDuplicatesExecution {
 
     val state: StateFlow<FindDuplicatesExecutionState>
 }
-
-class FindExecutionStopRequested : CancellationException()
-
-sealed interface FindDuplicatesExecutionState
-
-interface ScanExecutionState : FindDuplicatesExecutionState {
-    val initialDirectories: Collection<Path>
-    val filter: PathFilter
-    val visitedDirectories: List<Path>
-    val filesToProcess: List<PathWithAttributes>
-}
-
-data class ScanExecutionStateImpl(
-    override val initialDirectories: Collection<Path>,
-    override val filter: PathFilter,
-    override val visitedDirectories: List<Path>,
-    override val filesToProcess: List<PathWithAttributes>,
-) : ScanExecutionState {
-    companion object {
-        fun empty(
-            initialDirectories: Collection<Path>,
-            filter: PathFilter,
-        ): ScanExecutionState =
-            ScanExecutionStateImpl(
-                initialDirectories = initialDirectories,
-                filter = filter,
-                visitedDirectories = emptyList(),
-                filesToProcess = emptyList(),
-            )
-    }
-}
-
-interface SizeFilterExecutionState : FindDuplicatesExecutionState
-
-class SizeFilterExecutionStateImpl : SizeFilterExecutionState
-
-interface ContentFilterExecutionState : FindDuplicatesExecutionState
-
-class ContentFilterExecutionStateImpl : ContentFilterExecutionState
 
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
@@ -127,44 +85,52 @@ class CoroutinesFindDuplicatesExecution(
                     initialDirectories to filter
                 }
             initialDirectories.uniqueAndReal.forEach { directory ->
-                directory.visitFileTree(followLinks = true) {
-                    onPreVisitDirectory { directory, attributes ->
-                        if (shouldVisitDirectory(
-                                directory,
-                                filter,
-                                attributes,
-                                stateHolder.stateAs<ScanExecutionState>().visitedDirectories,
-                            )
-                        ) {
-                            FileVisitResult.CONTINUE
-                        } else {
-                            FileVisitResult.SKIP_SUBTREE
-                        }
-                    }
-                    onVisitFile { file, attributes ->
-                        if (shouldAddFile(
-                                file,
-                                filter,
-                                attributes,
-                            )
-                        ) {
-                            add(PathWithAttributes(file.toRealPath(), attributes))
-                        }
-                        FileVisitResult.CONTINUE
-                    }
-                    onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
-                    onPostVisitDirectory { directory, _ ->
-                        stateHolder.update { currentState ->
-                            check(currentState is ScanExecutionStateImpl)
-                            currentState.copy(
-                                visitedDirectories = currentState.visitedDirectories + directory,
-                            )
-                        }
-                        FileVisitResult.CONTINUE
-                    }
-                }
+                scanDirectoryRecursively(directory, filter, stateHolder)
             }
         }
+
+    private fun MutableSet<PathWithAttributes>.scanDirectoryRecursively(
+        directory: Path,
+        filter: PathFilter,
+        stateHolder: FindProgressStateHolder,
+    ) {
+        directory.visitFileTree(followLinks = true) {
+            onPreVisitDirectory { directory, attributes ->
+                if (shouldVisitDirectory(
+                        directory,
+                        filter,
+                        attributes,
+                        stateHolder.stateAs<ScanExecutionState>().visitedDirectories,
+                    )
+                ) {
+                    FileVisitResult.CONTINUE
+                } else {
+                    FileVisitResult.SKIP_SUBTREE
+                }
+            }
+            onVisitFile { file, attributes ->
+                if (shouldAddFile(
+                        file,
+                        filter,
+                        attributes,
+                    )
+                ) {
+                    add(PathWithAttributes(file.toRealPath(), attributes))
+                }
+                FileVisitResult.CONTINUE
+            }
+            onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
+            onPostVisitDirectory { directory, _ ->
+                stateHolder.update { currentState ->
+                    check(currentState is ScanExecutionStateImpl)
+                    currentState.copy(
+                        visitedDirectories = currentState.visitedDirectories + directory,
+                    )
+                }
+                FileVisitResult.CONTINUE
+            }
+        }
+    }
 
     private fun Map<String, Collection<PathWithAttributes>>.duplicateGroups(): Collection<DuplicateGroup> =
         map { (hash, paths) ->
@@ -241,21 +207,4 @@ data class PathWithAttributes(
     fun contentHash(type: String = "MD5"): String = path.contentHash(type)
 }
 
-internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
-    private val _state = MutableStateFlow(initial)
-    val state = _state.asStateFlow() // read-only public view
-
-    internal fun update(newValue: FindDuplicatesExecutionState) {
-        _state.value = newValue // NOT suspending
-    }
-
-    internal fun update(function: (FindDuplicatesExecutionState) -> FindDuplicatesExecutionState) {
-        _state.update(function)
-    }
-
-    inline fun <reified T : FindDuplicatesExecutionState> stateAs(): T =
-        with(state.value) {
-            check(this is T)
-            this
-        }
-}
+internal class FindExecutionStopRequested : CancellationException()
