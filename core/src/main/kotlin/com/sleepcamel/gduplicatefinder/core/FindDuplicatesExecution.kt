@@ -13,9 +13,7 @@ import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
-import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.readBytes
 import kotlin.io.path.visitFileTree
 
 data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttributes>)
@@ -132,19 +130,6 @@ class CoroutinesFindDuplicatesExecution(
         }
     }
 
-    private fun Map<String, Collection<PathWithAttributes>>.duplicateGroups(): Collection<DuplicateGroup> =
-        map { (hash, paths) ->
-            DuplicateGroup(hash = hash, paths = paths)
-        }
-
-    private fun List<PathWithAttributes>.withSameContent() =
-        groupBy {
-            it.contentHash()
-        }.filter { (_, paths) -> paths.size > 1 }
-
-    private fun Collection<PathWithAttributes>.withSameSize() =
-        groupBy { it.size() }.filter { (_, paths) -> paths.size > 1 }
-
     private fun shouldVisitDirectory(
         directory: Path,
         filter: PathFilter,
@@ -161,8 +146,6 @@ class CoroutinesFindDuplicatesExecution(
     ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
 }
 
-private fun Path.contentHash(type: String = "MD5"): String = readBytes().contentHash(type)
-
 private val Collection<Path>.uniqueAndReal: Collection<Path>
     get() =
         mapNotNull {
@@ -172,22 +155,6 @@ private val Collection<Path>.uniqueAndReal: Collection<Path>
                 null
             }
         }.distinct()
-
-private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
-
-private fun ByteArray.contentHash(type: String = "MD5"): String {
-    val bytes = MessageDigest.getInstance(type).digest(this)
-
-    fun printHexBinary(data: ByteArray): String =
-        buildString(data.size * 2) {
-            data.forEach { b ->
-                val i = b.toInt()
-                append(HEX_CHARS[i shr 4 and 0xF])
-                append(HEX_CHARS[i and 0xF])
-            }
-        }
-    return printHexBinary(bytes)
-}
 
 data class PathWithAttributes(
     val path: Path,
