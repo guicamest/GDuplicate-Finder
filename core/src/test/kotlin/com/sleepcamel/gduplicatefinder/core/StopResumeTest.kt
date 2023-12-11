@@ -109,10 +109,74 @@ class StopResumeTest {
             assertThat(withoutSizeFilter).isNotEmpty.allMatch { it is ContentFilterExecutionState }
         }
 
+    @DisplayName("update scan state as it visits files/directories")
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class ScanStateTest {
+        private lateinit var scanStates: List<ScanExecutionState>
+
+        @BeforeAll
+        @ExperimentalCoroutinesApi
+        fun findDuplicates() {
+            runTest {
+                val state = findDuplicates(this, directory = searchDirectory).state
+                val allStates = mutableListOf<FindDuplicatesExecutionState>()
+
+                backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                    state.toList(allStates)
+                }
+                advanceUntilIdle()
+                scanStates = allStates.takeWhile { it is ScanExecutionState }.map { it as ScanExecutionState }
+            }
+        }
+
+        @Test
+        fun thereShouldBeFourScanStates() {
+            assertThat(scanStates).hasSize(4)
+        }
+
+        @Test
+        fun allStatesShouldHaveCorrectInitialDirectoriesAndFilter() {
+            assertThat(scanStates).allSatisfy { state ->
+                assertThat(state.initialDirectories).isEqualTo(listOf(searchDirectory))
+                assertThat(state.filter).isEqualTo(MinSizeFilter(0))
+            }
+        }
+
+        @Test
+        fun checkFirstState() {
+            assertThat(scanStates[0].visitedDirectories).isEmpty()
+            assertThat(scanStates[0].filesToProcess).isEmpty()
+        }
+
+        @Test
+        fun checkSecondState() {
+            assertThat(scanStates[1].visitedDirectories).isEmpty()
+            assertThat(scanStates[1].filesToProcess).hasSize(1)
+            assertThat(scanStates[1].filesToProcess.first().path).isEqualTo(paths.first())
+        }
+
+        @Test
+        fun checkThirdState() {
+            assertThat(scanStates[2].visitedDirectories).isEmpty()
+            assertThat(scanStates[2].filesToProcess).hasSize(2)
+            assertThat(scanStates[2].filesToProcess.first().path).isEqualTo(paths.first())
+            assertThat(scanStates[2].filesToProcess.elementAt(1).path).isEqualTo(paths.elementAt(1))
+        }
+
+        @Test
+        fun checkLastState() {
+            assertThat(scanStates.last().visitedDirectories).containsExactly(searchDirectory)
+            assertThat(scanStates.last().filesToProcess).hasSize(2)
+            assertThat(scanStates.last().filesToProcess.first().path).isEqualTo(paths.first())
+            assertThat(scanStates.last().filesToProcess.elementAt(1).path).isEqualTo(paths.elementAt(1))
+        }
+    }
+
     @DisplayName("be able to resume")
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    inner class Resume {
+    inner class ResumeTest {
         @ExperimentalCoroutinesApi
         @Test
         @DisplayName("from scan state")
