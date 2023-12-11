@@ -8,8 +8,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -48,7 +46,8 @@ class CoroutinesFindDuplicatesExecution(
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
                 check(state is ScanExecutionState)
-                val allFiles = collectFiles(stateHolder)
+                collectFiles(stateHolder)
+                val allFiles = stateHolder.stateAs<ScanExecutionState>().filesToProcess
 
                 stateHolder.update(SizeFilterExecutionStateImpl())
                 delay(1L)
@@ -75,77 +74,18 @@ class CoroutinesFindDuplicatesExecution(
 
     override val state get() = stateHolder.state
 
-    private fun collectFiles(stateHolder: FindProgressStateHolder): Collection<PathWithAttributes> =
-        buildSet {
-            val (initialDirectories, filter) =
-                stateHolder.state.value.run {
-                    check(this is ScanExecutionState)
-                    initialDirectories to filter
-                }
-            initialDirectories.uniqueAndReal.forEach { directory ->
-                scanDirectoryRecursively(directory, filter, stateHolder)
+    private fun collectFiles(stateHolder: FindProgressStateHolder) {
+        val (initialDirectories, filter) =
+            stateHolder.state.value.run {
+                check(this is ScanExecutionState)
+                initialDirectories to filter
             }
-        }
-
-    private fun MutableSet<PathWithAttributes>.scanDirectoryRecursively(
-        directory: Path,
-        filter: PathFilter,
-        stateHolder: FindProgressStateHolder,
-    ) {
-        directory.visitFileTree(followLinks = true) {
-            onPreVisitDirectory { directory, attributes ->
-                if (shouldVisitDirectory(
-                        directory,
-                        filter,
-                        attributes,
-                        stateHolder.stateAs<ScanExecutionState>().visitedDirectories,
-                    )
-                ) {
-                    FileVisitResult.CONTINUE
-                } else {
-                    FileVisitResult.SKIP_SUBTREE
-                }
-            }
-            onVisitFile { file, attributes ->
-                if (shouldAddFile(
-                        file,
-                        filter,
-                        attributes,
-                    )
-                ) {
-                    add(PathWithAttributes(file.toRealPath(), attributes))
-                }
-                FileVisitResult.CONTINUE
-            }
-            onVisitFileFailed { _, _ -> FileVisitResult.CONTINUE }
-            onPostVisitDirectory { directory, _ ->
-                stateHolder.update { currentState ->
-                    check(currentState is ScanExecutionStateImpl)
-                    currentState.copy(
-                        visitedDirectories = currentState.visitedDirectories + directory,
-                    )
-                }
-                FileVisitResult.CONTINUE
-            }
+        initialDirectories.uniqueAndReal.forEach { directory ->
+            directory.visitFileTree(visitor = ScanFileVisitor(filter, stateHolder), followLinks = true)
         }
     }
 
     companion object {
-        private fun shouldVisitDirectory(
-            directory: Path,
-            filter: PathFilter,
-            attributes: BasicFileAttributes,
-            visitedDirectories: Collection<Path>,
-        ): Boolean =
-            directory !in visitedDirectories &&
-                (filter !is DirectoryFilter || filter.accept(directory, attributes))
-
-        private fun shouldAddFile(
-            file: Path,
-            filter: PathFilter,
-            attributes: BasicFileAttributes,
-        ) = (filter is DirectoryFilter || filter.accept(file, attributes)) && Files.isReadable(file)
-
         private val Collection<Path>.uniqueAndReal: Collection<Path>
             get() =
                 mapNotNull {
