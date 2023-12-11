@@ -45,11 +45,12 @@ class CoroutinesFindDuplicatesExecution(
     init {
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
-                check(state is ScanExecutionState)
-                collectFiles(stateHolder)
-                val allFiles = stateHolder.stateAs<ScanExecutionState>().filesToProcess
+                if (state is ScanExecutionState) {
+                    collectFiles(stateHolder)
+                    updateStateToSizeFilter()
+                }
+                val allFiles = stateHolder.stateAs<SizeFilterExecutionState>().filesToProcess
 
-                stateHolder.update(SizeFilterExecutionStateImpl())
                 delay(1L)
 
                 val withSameSize = allFiles.withSameSize()
@@ -83,6 +84,15 @@ class CoroutinesFindDuplicatesExecution(
         val visitor = ScanFileVisitor(filter, stateHolder)
         initialDirectories.uniqueAndReal.forEach { directory ->
             directory.visitFileTree(visitor = visitor, followLinks = true)
+        }
+    }
+
+    private fun updateStateToSizeFilter() {
+        stateHolder.update { currentState ->
+            check(currentState is ScanExecutionState)
+            SizeFilterExecutionStateImpl(
+                filesToProcess = currentState.filesToProcess,
+            )
         }
     }
 
