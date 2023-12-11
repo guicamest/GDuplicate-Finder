@@ -68,7 +68,7 @@ internal class ScanFileVisitor(
         stateHolder.update { currentState ->
             check(currentState is ScanExecutionStateImpl)
             currentState.copy(
-                visitedDirectories = currentState.visitedDirectories + directory,
+                visitedDirectories = currentState.visitedDirectories.plusElement(directory),
             )
         }
     }
