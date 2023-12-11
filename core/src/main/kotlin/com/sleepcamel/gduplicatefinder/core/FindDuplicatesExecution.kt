@@ -135,7 +135,7 @@ class CoroutinesFindDuplicatesExecution(
             directory: Path,
             filter: PathFilter,
             attributes: BasicFileAttributes,
-            visitedDirectories: List<Path>,
+            visitedDirectories: Collection<Path>,
         ): Boolean =
             directory !in visitedDirectories &&
                 (filter !is DirectoryFilter || filter.accept(directory, attributes))
