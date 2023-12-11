@@ -3,6 +3,8 @@ package com.sleepcamel.gduplicatefinder.core
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes
+import org.assertj.core.api.AbstractAssert
+import org.assertj.core.api.AbstractCollectionAssert
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import java.nio.file.Path
@@ -20,8 +22,8 @@ fun Collection<DuplicateGroup>.assertOneDuplicateGroupWith(
     val group = first()
     assertThat(group.hash).isEqualTo(content.contentHash())
     assertThat(
-        group.paths.map { it.path }.realPaths(),
-    ).containsExactlyInAnyOrderElementsOf(paths.realPaths())
+        group.paths.map { it.path },
+    ).withPathComparator().containsExactlyInAnyOrderElementsOf(paths)
 
     if (checkAttributes) {
         val startOfAssertions = Instant.now()
@@ -48,4 +50,20 @@ private fun BasicFileAttributes.assertAttributes(
 fun findCoroutine(name: String) =
     DebugProbes.dumpCoroutinesInfo().find { it.context[CoroutineName]?.name.equals(name) }
 
-private fun Collection<Path>.realPaths() = map { it.toRealPath() }
+fun <
+    S : AbstractCollectionAssert<S, A, E, EA>,
+    A : Collection<E>,
+    E,
+    EA : AbstractAssert<EA, E>,
+    > AbstractCollectionAssert<S, A, E, EA>.withPathComparator() =
+    usingComparatorForType(
+        PathComparator(),
+        java.nio.file.Path::class.java,
+    )
+
+private class PathComparator : Comparator<Path> {
+    override fun compare(
+        o1: Path,
+        o2: Path,
+    ): Int = o1.toRealPath().compareTo(o2.toRealPath())
+}
