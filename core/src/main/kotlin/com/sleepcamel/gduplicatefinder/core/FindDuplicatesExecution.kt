@@ -80,8 +80,9 @@ class CoroutinesFindDuplicatesExecution(
                 check(this is ScanExecutionState)
                 initialDirectories to filter
             }
+        val visitor = ScanFileVisitor(filter, stateHolder)
         initialDirectories.uniqueAndReal.forEach { directory ->
-            directory.visitFileTree(visitor = ScanFileVisitor(filter, stateHolder), followLinks = true)
+            directory.visitFileTree(visitor = visitor, followLinks = true)
         }
     }
 
