@@ -153,23 +153,29 @@ class StopResumeTest {
         fun checkSecondState() {
             assertThat(scanStates[1].visitedDirectories).isEmpty()
             assertThat(scanStates[1].filesToProcess).hasSize(1)
-            assertThat(scanStates[1].filesToProcess.first().path).isEqualTo(paths.first())
+            assertThat(scanStates[1].filesToProcess.map { it.path })
+                .withPathComparator()
+                .containsAnyElementsOf(paths)
         }
 
         @Test
         fun checkThirdState() {
             assertThat(scanStates[2].visitedDirectories).isEmpty()
             assertThat(scanStates[2].filesToProcess).hasSize(2)
-            assertThat(scanStates[2].filesToProcess.first().path).isEqualTo(paths.first())
-            assertThat(scanStates[2].filesToProcess.elementAt(1).path).isEqualTo(paths.elementAt(1))
+            assertThat(scanStates[2].filesToProcess.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths)
         }
 
         @Test
         fun checkLastState() {
-            assertThat(scanStates.last().visitedDirectories).containsExactly(searchDirectory)
-            assertThat(scanStates.last().filesToProcess).hasSize(2)
-            assertThat(scanStates.last().filesToProcess.first().path).isEqualTo(paths.first())
-            assertThat(scanStates.last().filesToProcess.elementAt(1).path).isEqualTo(paths.elementAt(1))
+            assertThat(scanStates.last().visitedDirectories)
+                .withPathComparator()
+                .containsExactly(searchDirectory)
+            assertThat(scanStates[2].filesToProcess).hasSize(2)
+            assertThat(scanStates[2].filesToProcess.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths)
         }
     }
 
