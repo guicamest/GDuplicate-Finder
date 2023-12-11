@@ -21,7 +21,7 @@ data class ScanExecutionStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
 ) : ScanExecutionState {
     companion object {
-        fun empty(
+        internal fun empty(
             initialDirectories: Collection<Path>,
             filter: PathFilter,
         ): ScanExecutionState =
