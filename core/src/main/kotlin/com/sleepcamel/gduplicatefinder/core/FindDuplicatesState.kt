@@ -10,14 +10,14 @@ sealed interface FindDuplicatesExecutionState
 interface ScanExecutionState : FindDuplicatesExecutionState {
     val initialDirectories: Collection<Path>
     val filter: PathFilter
-    val visitedDirectories: List<Path>
+    val visitedDirectories: Set<Path>
     val filesToProcess: Set<PathWithAttributes>
 }
 
 data class ScanExecutionStateImpl(
     override val initialDirectories: Collection<Path>,
     override val filter: PathFilter,
-    override val visitedDirectories: List<Path>,
+    override val visitedDirectories: Set<Path>,
     override val filesToProcess: Set<PathWithAttributes>,
 ) : ScanExecutionState {
     companion object {
@@ -28,7 +28,7 @@ data class ScanExecutionStateImpl(
             ScanExecutionStateImpl(
                 initialDirectories = initialDirectories,
                 filter = filter,
-                visitedDirectories = emptyList(),
+                visitedDirectories = emptySet(),
                 filesToProcess = emptySet(),
             )
     }
