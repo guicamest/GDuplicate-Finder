@@ -67,6 +67,10 @@ tasks.withType(Test) {
     jacoco.includes = ['com.sleepcamel.gduplicatefinder.*']
 }
 
+testlogger {
+    slowThreshold 1000
+}
+
 jacocoTestReport {
     dependsOn test
 }
