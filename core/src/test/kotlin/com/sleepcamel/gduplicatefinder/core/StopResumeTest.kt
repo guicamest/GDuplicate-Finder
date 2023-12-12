@@ -207,6 +207,39 @@ class StopResumeTest {
         fun thereShouldBeThreeSizeStates() {
             assertThat(sizeFilterStates).hasSize(3)
         }
+
+        @Test
+        fun checkFirstState() {
+            assertThat(sizeFilterStates[0].filesToProcess.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths)
+            assertThat(sizeFilterStates[0].processedFiles).isEmpty()
+        }
+
+        @Test
+        fun checkSecondState() {
+            assertThat(sizeFilterStates[1].filesToProcess).hasSize(1)
+            assertThat(sizeFilterStates[1].filesToProcess.map { it.path })
+                .withPathComparator()
+                .containsAnyElementsOf(paths)
+            assertThat(sizeFilterStates[1].processedFiles).allSatisfy { key, list ->
+                assertThat(key).isEqualTo(2)
+                assertThat(list.map { it.path })
+                    .withPathComparator()
+                    .containsAnyElementsOf(paths)
+            }
+        }
+
+        @Test
+        fun checkThirdState() {
+            assertThat(sizeFilterStates[2].filesToProcess).isEmpty()
+            assertThat(sizeFilterStates[2].processedFiles).allSatisfy { key, list ->
+                assertThat(key).isEqualTo(2)
+                assertThat(list.map { it.path })
+                    .withPathComparator()
+                    .containsExactlyInAnyOrderElementsOf(paths)
+            }
+        }
     }
 
     @DisplayName("be able to resume")
