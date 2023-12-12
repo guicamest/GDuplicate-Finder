@@ -7,6 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -49,11 +51,10 @@ class CoroutinesFindDuplicatesExecution(
                     collectFiles(stateHolder)
                     updateStateToSizeFilter()
                 }
-                val allFiles = stateHolder.stateAs<SizeFilterExecutionState>().filesToProcess
 
                 delay(1L)
 
-                val withSameSize = allFiles.withSameSize()
+                val withSameSize = groupFilesBySize(stateHolder)
 
                 stateHolder.update(ContentFilterExecutionStateImpl())
                 delay(1)
@@ -63,6 +64,51 @@ class CoroutinesFindDuplicatesExecution(
                     }
                 result.complete(withSameContent.flatten())
             }
+    }
+
+    private suspend fun groupFilesBySize(
+        stateHolder: FindProgressStateHolder,
+    ): Map<Long, List<PathWithAttributes>> {
+        return groupBySize(stateHolder)
+            .filter { (_, paths) -> paths.size > 1 }.also {
+                stateHolder.update { currentState ->
+                    check(currentState is SizeFilterExecutionStateImpl)
+                    currentState.copy(processedFiles = it)
+                }
+            }
+    }
+
+    private suspend inline fun groupBySize(
+        stateHolder: FindProgressStateHolder,
+    ): Map<Long, List<PathWithAttributes>> {
+        val filesToProcess = stateHolder.stateAs<SizeFilterExecutionState>().filesToProcess
+
+        filesToProcess.asFlow()
+            .runningFold<PathWithAttributes, Pair<Map<Long, List<PathWithAttributes>>, PathWithAttributes?>>(
+                emptyMap<Long, List<PathWithAttributes>>() to null,
+            ) { (map, _), file ->
+                val key = file.size()
+                val entriesWithSameSize = map.getOrDefault(key, listOf())
+
+                (map + (key to (entriesWithSameSize + file))) to file
+            }.collect { (map, element) ->
+                stateHolder.update { currentState ->
+                    check(currentState is SizeFilterExecutionStateImpl)
+
+                    val leftToProcess =
+                        if (element != null) {
+                            (currentState.filesToProcess - element)
+                        } else {
+                            currentState.filesToProcess
+                        }
+
+                    currentState.copy(
+                        filesToProcess = leftToProcess,
+                        processedFiles = map,
+                    )
+                }
+            }
+        return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
     }
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
@@ -92,6 +138,7 @@ class CoroutinesFindDuplicatesExecution(
             check(currentState is ScanExecutionState)
             SizeFilterExecutionStateImpl(
                 filesToProcess = currentState.filesToProcess,
+                processedFiles = emptyMap(),
             )
         }
     }
