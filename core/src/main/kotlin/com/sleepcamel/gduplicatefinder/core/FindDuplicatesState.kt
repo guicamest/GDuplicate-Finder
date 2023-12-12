@@ -36,10 +36,12 @@ data class ScanExecutionStateImpl(
 
 interface SizeFilterExecutionState : FindDuplicatesExecutionState {
     val filesToProcess: Set<PathWithAttributes>
+    val processedFiles: Map<Long, List<PathWithAttributes>>
 }
 
 data class SizeFilterExecutionStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
+    override val processedFiles: Map<Long, List<PathWithAttributes>>,
 ) : SizeFilterExecutionState
 
 interface ContentFilterExecutionState : FindDuplicatesExecutionState
