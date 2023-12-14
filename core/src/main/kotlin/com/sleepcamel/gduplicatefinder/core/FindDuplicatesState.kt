@@ -59,10 +59,6 @@ internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
     private val _state = MutableStateFlow(initial)
     val state = _state.asStateFlow() // read-only public view
 
-    internal fun update(newValue: FindDuplicatesExecutionState) {
-        _state.value = newValue // NOT suspending
-    }
-
     internal fun update(function: (FindDuplicatesExecutionState) -> FindDuplicatesExecutionState) {
         _state.update(function)
     }
