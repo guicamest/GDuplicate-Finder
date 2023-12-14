@@ -109,7 +109,7 @@ class CoroutinesFindDuplicatesExecution(
 
     private fun groupFilesByContent(): List<Collection<DuplicateGroup>> {
         val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
-        return groupsToProcess.mapNotNull { (_, groupWithSameSize) ->
+        return groupsToProcess.map { groupWithSameSize ->
             groupWithSameSize.withSameContent().duplicateGroups()
         }
     }
@@ -150,7 +150,7 @@ class CoroutinesFindDuplicatesExecution(
         stateHolder.update { currentState ->
             check(currentState is SizeFilterExecutionState)
             ContentFilterExecutionStateImpl(
-                groupsToProcess = currentState.processedFiles,
+                groupsToProcess = currentState.processedFiles.values,
                 processedFiles = emptyMap(),
             )
         }

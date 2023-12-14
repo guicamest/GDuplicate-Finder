@@ -1,6 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core
 
-fun List<PathWithAttributes>.withSameContent() =
+fun Collection<PathWithAttributes>.withSameContent() =
     groupBy {
         it.contentHash()
     }.filter { (_, paths) -> paths.size > 1 }
