@@ -59,16 +59,13 @@ class CoroutinesFindDuplicatesExecution(
                 }
 
                 delay(1)
-                val withSameContent =
-                    groupFilesByContent()
+                val withSameContent = groupFilesByContent()
                 result.complete(withSameContent.flatten())
             }
     }
 
-    private suspend fun groupFilesBySize(
-        stateHolder: FindProgressStateHolder,
-    ): Map<Long, List<PathWithAttributes>> {
-        return groupBySize(stateHolder)
+    private suspend fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
+        groupBySize(stateHolder)
             .filter { (_, paths) -> paths.size > 1 }.also {
                 stateHolder.update { currentState ->
                     check(currentState is SizeFilterExecutionStateImpl)
