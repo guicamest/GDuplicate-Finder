@@ -29,9 +29,9 @@ interface FindDuplicatesExecution {
 @OptIn(ExperimentalPathApi::class)
 class CoroutinesFindDuplicatesExecution(
     scope: CoroutineScope,
-    state: FindDuplicatesExecutionState,
+    initialState: FindDuplicatesExecutionState,
 ) : FindDuplicatesExecution {
-    private val stateHolder: FindProgressStateHolder = FindProgressStateHolder(state)
+    private val stateHolder: FindProgressStateHolder = FindProgressStateHolder(initialState)
     private val result = CompletableDeferred<Collection<DuplicateGroup>>()
     private val job: Job
 
@@ -41,27 +41,26 @@ class CoroutinesFindDuplicatesExecution(
         filter: PathFilter,
     ) : this(
         scope = scope,
-        state = ScanExecutionStateImpl.empty(initialDirectories = directories, filter = filter),
+        initialState = ScanExecutionStateImpl.empty(initialDirectories = directories, filter = filter),
     )
 
     init {
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
-                if (state is ScanExecutionState) {
+                if (stateHolder stateIs ScanExecutionState::class) {
                     collectFiles(stateHolder)
                     updateStateToSizeFilter()
                 }
 
                 delay(1L)
+                if (stateHolder stateIs SizeFilterExecutionState::class) {
+                    groupFilesBySize(stateHolder)
+                    updateStateToContentFilter()
+                }
 
-                val withSameSize = groupFilesBySize(stateHolder)
-
-                stateHolder.update(ContentFilterExecutionStateImpl())
                 delay(1)
                 val withSameContent =
-                    withSameSize.mapNotNull { (_, groupWithSameSize) ->
-                        groupWithSameSize.withSameContent().duplicateGroups()
-                    }
+                    groupFilesByContent()
                 result.complete(withSameContent.flatten())
             }
     }
@@ -111,6 +110,13 @@ class CoroutinesFindDuplicatesExecution(
         return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
     }
 
+    private fun groupFilesByContent(): List<Collection<DuplicateGroup>> {
+        val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
+        return groupsToProcess.mapNotNull { (_, groupWithSameSize) ->
+            groupWithSameSize.withSameContent().duplicateGroups()
+        }
+    }
+
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
 
     override suspend fun stop(): FindDuplicatesExecutionState {
@@ -138,6 +144,16 @@ class CoroutinesFindDuplicatesExecution(
             check(currentState is ScanExecutionState)
             SizeFilterExecutionStateImpl(
                 filesToProcess = currentState.filesToProcess,
+                processedFiles = emptyMap(),
+            )
+        }
+    }
+
+    private fun updateStateToContentFilter() {
+        stateHolder.update { currentState ->
+            check(currentState is SizeFilterExecutionState)
+            ContentFilterExecutionStateImpl(
+                groupsToProcess = currentState.processedFiles,
                 processedFiles = emptyMap(),
             )
         }
