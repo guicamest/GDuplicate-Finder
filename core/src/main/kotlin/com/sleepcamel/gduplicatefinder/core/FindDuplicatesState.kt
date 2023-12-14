@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.nio.file.Path
+import kotlin.reflect.KClass
 
 sealed interface FindDuplicatesExecutionState
 
@@ -44,9 +45,15 @@ data class SizeFilterExecutionStateImpl(
     override val processedFiles: Map<Long, List<PathWithAttributes>>,
 ) : SizeFilterExecutionState
 
-interface ContentFilterExecutionState : FindDuplicatesExecutionState
+interface ContentFilterExecutionState : FindDuplicatesExecutionState {
+    val groupsToProcess: Map<Long, List<PathWithAttributes>>
+    val processedFiles: Map<Long, List<PathWithAttributes>>
+}
 
-class ContentFilterExecutionStateImpl : ContentFilterExecutionState
+data class ContentFilterExecutionStateImpl(
+    override val groupsToProcess: Map<Long, List<PathWithAttributes>>,
+    override val processedFiles: Map<Long, List<PathWithAttributes>>,
+) : ContentFilterExecutionState
 
 internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
     private val _state = MutableStateFlow(initial)
@@ -62,7 +69,9 @@ internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
 
     inline fun <reified T : FindDuplicatesExecutionState> stateAs(): T =
         with(state.value) {
-            check(this is T)
+            check(this is T) { "Expected ${T::class.java} but got ${this::class.java}" }
             this
         }
+
+    infix fun <T : FindDuplicatesExecutionState> stateIs(c: KClass<T>): Boolean = c.isInstance(state.value)
 }
