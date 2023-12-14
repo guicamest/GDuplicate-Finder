@@ -285,5 +285,28 @@ class StopResumeTest {
                 )
             }
         }
+
+        @ExperimentalCoroutinesApi
+        @Test
+        @DisplayName("from content compare state")
+        fun canResumeFromContentCompareState() {
+            runTest {
+                val state = findDuplicates(this, directory = searchDirectory).state
+                val allStates = mutableListOf<FindDuplicatesExecutionState>()
+                backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                    state.toList(allStates)
+                }
+                advanceUntilIdle()
+                val contentStates = allStates.dropWhile { it !is ContentFilterExecutionState }
+
+                val execution = resumeFindDuplicates(this, fromState = contentStates.first())
+                val duplicateEntries = execution.duplicateEntries()
+                duplicateEntries.assertOneDuplicateGroupWith(
+                    paths = paths,
+                    content = "hi",
+                    checkAttributes = false,
+                )
+            }
+        }
     }
 }
