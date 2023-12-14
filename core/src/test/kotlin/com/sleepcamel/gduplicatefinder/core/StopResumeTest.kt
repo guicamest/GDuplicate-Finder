@@ -242,6 +242,38 @@ class StopResumeTest {
         }
     }
 
+    @DisplayName("update content state as it visits files")
+    @Nested
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class ContentStateTest {
+        private lateinit var contentStates: List<ContentFilterExecutionState>
+
+        @BeforeAll
+        @ExperimentalCoroutinesApi
+        fun findDuplicates() {
+            runTest {
+                val state = findDuplicates(this, directory = searchDirectory).state
+                val allStates = mutableListOf<FindDuplicatesExecutionState>()
+
+                backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                    state.toList(allStates)
+                }
+                advanceUntilIdle()
+                contentStates =
+                    allStates.dropWhile {
+                        it !is ContentFilterExecutionState
+                    }.takeWhile {
+                        it is ContentFilterExecutionState
+                    }.map { it as ContentFilterExecutionState }
+            }
+        }
+
+        @Test
+        fun thereShouldBeThreeContentStates() {
+            assertThat(contentStates).hasSize(3)
+        }
+    }
+
     @DisplayName("be able to resume")
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
