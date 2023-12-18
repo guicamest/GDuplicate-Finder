@@ -60,7 +60,7 @@ class CoroutinesFindDuplicatesExecution(
 
                 delay(1)
                 val withSameContent = groupFilesByContent()
-                result.complete(withSameContent.flatten())
+                result.complete(withSameContent)
             }
     }
 
@@ -107,11 +107,45 @@ class CoroutinesFindDuplicatesExecution(
         return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
     }
 
-    private fun groupFilesByContent(): List<Collection<DuplicateGroup>> {
+    private fun groupFilesByContent(): Collection<DuplicateGroup> {
         val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
-        return groupsToProcess.map { groupWithSameSize ->
-            groupWithSameSize.withSameContent().duplicateGroups()
+
+        groupsToProcess.forEach { (key, filesWithSameSize) ->
+            filesWithSameSize.forEach { path ->
+                val contentHash = path.contentHash()
+                stateHolder.update { currentState ->
+                    check(currentState is ContentFilterExecutionStateImpl)
+
+                    val updatedGroups =
+                        currentState.groupsToProcess.run {
+                            val pathWithAttributes = this.getValue(key) - path
+                            if (pathWithAttributes.isEmpty()) {
+                                this - key
+                            } else {
+                                this + (key to pathWithAttributes)
+                            }
+                        }
+
+                    val updatedProcessed =
+                        currentState.processedFiles.run {
+                            val pathWithAttributes = this.getOrDefault(contentHash, emptyList()) + path
+                            this + (contentHash to pathWithAttributes)
+                        }
+
+                    currentState.copy(
+                        groupsToProcess = updatedGroups,
+                        processedFiles = updatedProcessed,
+                    )
+                }
+            }
         }
+        stateHolder.update { currentState ->
+            check(currentState is ContentFilterExecutionStateImpl)
+            currentState.copy(
+                processedFiles = currentState.processedFiles.filterValues { it.size > 1 },
+            )
+        }
+        return stateHolder.stateAs<ContentFilterExecutionState>().processedFiles.duplicateGroups()
     }
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
@@ -150,7 +184,7 @@ class CoroutinesFindDuplicatesExecution(
         stateHolder.update { currentState ->
             check(currentState is SizeFilterExecutionState)
             ContentFilterExecutionStateImpl(
-                groupsToProcess = currentState.processedFiles.values,
+                groupsToProcess = currentState.processedFiles,
                 processedFiles = emptyMap(),
             )
         }

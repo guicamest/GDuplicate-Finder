@@ -46,13 +46,13 @@ data class SizeFilterExecutionStateImpl(
 ) : SizeFilterExecutionState
 
 interface ContentFilterExecutionState : FindDuplicatesExecutionState {
-    val groupsToProcess: Collection<Collection<PathWithAttributes>>
-    val processedFiles: Map<Long, List<PathWithAttributes>>
+    val groupsToProcess: Map<Long, List<PathWithAttributes>>
+    val processedFiles: Map<String, List<PathWithAttributes>>
 }
 
 data class ContentFilterExecutionStateImpl(
-    override val groupsToProcess: Collection<Collection<PathWithAttributes>>,
-    override val processedFiles: Map<Long, List<PathWithAttributes>>,
+    override val groupsToProcess: Map<Long, List<PathWithAttributes>>,
+    override val processedFiles: Map<String, List<PathWithAttributes>>,
 ) : ContentFilterExecutionState
 
 internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
