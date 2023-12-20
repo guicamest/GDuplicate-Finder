@@ -8,7 +8,7 @@ kotlin {
 }
 
 dependencies {
-    implementation "com.pinterest.ktlint:ktlint-cli-ruleset-core:1.0.1"
+    implementation "com.pinterest.ktlint:ktlint-cli-ruleset-core:1.1.0"
     implementation "com.pinterest.ktlint:ktlint-rule-engine-core:1.0.1"
 }
 
