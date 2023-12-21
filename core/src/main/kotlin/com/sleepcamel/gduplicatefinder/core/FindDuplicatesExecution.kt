@@ -12,12 +12,9 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.visitFileTree
 import kotlin.reflect.KClass
-
-data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttributes>)
 
 interface FindDuplicatesExecution {
     suspend fun duplicateEntries(): Collection<DuplicateGroup>
@@ -182,24 +179,6 @@ class CoroutinesFindDuplicatesExecution(
                     }
                 }.distinct()
     }
-}
-
-data class PathWithAttributes(
-    val path: Path,
-    val attributes: BasicFileAttributes,
-) : BasicFileAttributes by attributes {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PathWithAttributes
-
-        return path == other.path
-    }
-
-    override fun hashCode(): Int = path.hashCode()
-
-    fun contentHash(type: String = "MD5"): String = path.contentHash(type)
 }
 
 internal class FindExecutionStopRequested : CancellationException()
