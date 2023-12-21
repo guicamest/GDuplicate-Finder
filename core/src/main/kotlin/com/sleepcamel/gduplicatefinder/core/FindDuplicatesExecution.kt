@@ -77,8 +77,7 @@ class CoroutinesFindDuplicatesExecution(
 
     private fun collectFiles(stateHolder: FindProgressStateHolder) {
         val (initialDirectories, filter) =
-            stateHolder.state.value.run {
-                check(this is ScanExecutionState)
+            stateHolder.stateAs<ScanExecutionState>().run {
                 initialDirectories to filter
             }
         val visitor = ScanFileVisitor(filter, stateHolder)
