@@ -15,6 +15,7 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.visitFileTree
+import kotlin.reflect.KClass
 
 data class DuplicateGroup(val hash: String, val paths: Collection<PathWithAttributes>)
 
@@ -47,19 +48,19 @@ class CoroutinesFindDuplicatesExecution(
     init {
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
-                if (stateHolder stateIs ScanExecutionState::class) {
+                if (ScanExecutionState::class in stateHolder) {
                     collectFiles(stateHolder)
-                    updateStateToSizeFilter()
+                    stateHolder.updateStateToSizeFilter()
                 }
 
                 delay(1L)
-                if (stateHolder stateIs SizeFilterExecutionState::class) {
+                if (SizeFilterExecutionState::class in stateHolder) {
                     groupFilesBySize(stateHolder)
-                    updateStateToContentFilter()
+                    stateHolder.updateStateToContentFilter()
                 }
 
                 delay(1)
-                val withSameContent = groupFilesByContent()
+                val withSameContent = groupFilesByContent(stateHolder)
                 result.complete(withSameContent)
             }
     }
@@ -67,8 +68,7 @@ class CoroutinesFindDuplicatesExecution(
     private suspend fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
         groupBySize(stateHolder)
             .filter { (_, paths) -> paths.size > 1 }.also {
-                stateHolder.update { currentState ->
-                    check(currentState is SizeFilterExecutionStateImpl)
+                stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
                     currentState.copy(processedFiles = it)
                 }
             }
@@ -88,9 +88,7 @@ class CoroutinesFindDuplicatesExecution(
 
                 (map + (key to (entriesWithSameSize + file))) to file
             }.collect { (map, element) ->
-                stateHolder.update { currentState ->
-                    check(currentState is SizeFilterExecutionStateImpl)
-
+                stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
                     val leftToProcess =
                         if (element != null) {
                             (currentState.filesToProcess - element)
@@ -107,15 +105,13 @@ class CoroutinesFindDuplicatesExecution(
         return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
     }
 
-    private fun groupFilesByContent(): Collection<DuplicateGroup> {
+    private fun groupFilesByContent(stateHolder: FindProgressStateHolder): Collection<DuplicateGroup> {
         val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
 
         groupsToProcess.forEach { (key, filesWithSameSize) ->
             filesWithSameSize.forEach { path ->
                 val contentHash = path.contentHash()
-                stateHolder.update { currentState ->
-                    check(currentState is ContentFilterExecutionStateImpl)
-
+                stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
                     val updatedGroups =
                         currentState.groupsToProcess.run {
                             val pathWithAttributes = this.getValue(key) - path
@@ -139,8 +135,7 @@ class CoroutinesFindDuplicatesExecution(
                 }
             }
         }
-        stateHolder.update { currentState ->
-            check(currentState is ContentFilterExecutionStateImpl)
+        stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
             currentState.copy(
                 processedFiles = currentState.processedFiles.filterValues { it.size > 1 },
             )
@@ -170,25 +165,12 @@ class CoroutinesFindDuplicatesExecution(
         }
     }
 
-    private fun updateStateToSizeFilter() {
-        stateHolder.update { currentState ->
-            check(currentState is ScanExecutionState)
-            SizeFilterExecutionStateImpl(
-                filesToProcess = currentState.filesToProcess,
-                processedFiles = emptyMap(),
-            )
-        }
-    }
-
-    private fun updateStateToContentFilter() {
-        stateHolder.update { currentState ->
-            check(currentState is SizeFilterExecutionState)
-            ContentFilterExecutionStateImpl(
-                groupsToProcess = currentState.processedFiles,
-                processedFiles = emptyMap(),
-            )
-        }
-    }
+    private operator fun <T : FindDuplicatesExecutionState> FindProgressStateHolder.contains(
+        c: KClass<T>,
+    ): Boolean =
+        c.isInstance(
+            state.value,
+        )
 
     companion object {
         private val Collection<Path>.uniqueAndReal: Collection<Path>

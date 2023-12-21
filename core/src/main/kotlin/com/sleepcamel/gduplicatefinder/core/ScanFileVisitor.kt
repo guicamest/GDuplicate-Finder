@@ -56,8 +56,7 @@ internal class ScanFileVisitor(
         }
 
     private fun addFileToState(pathWithAttributes: PathWithAttributes) {
-        stateHolder.update { currentState ->
-            check(currentState is ScanExecutionStateImpl)
+        stateHolder.update { currentState: ScanExecutionStateImpl ->
             currentState.copy(
                 filesToProcess = currentState.filesToProcess + pathWithAttributes,
             )
@@ -65,8 +64,7 @@ internal class ScanFileVisitor(
     }
 
     private fun addVisitedDirectoryToState(directory: Path) {
-        stateHolder.update { currentState ->
-            check(currentState is ScanExecutionStateImpl)
+        stateHolder.update { currentState: ScanExecutionStateImpl ->
             currentState.copy(
                 visitedDirectories = currentState.visitedDirectories.plusElement(directory),
             )
