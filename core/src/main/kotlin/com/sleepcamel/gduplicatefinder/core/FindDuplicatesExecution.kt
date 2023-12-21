@@ -45,6 +45,16 @@ class CoroutinesFindDuplicatesExecution(
         initialState = ScanExecutionStateImpl.empty(initialDirectories = directories, filter = filter),
     )
 
+    override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
+
+    override suspend fun stop(): FindDuplicatesExecutionState {
+        job.cancel(FindExecutionStopRequested())
+        job.join()
+        return stateHolder.state.value
+    }
+
+    override val state get() = stateHolder.state
+
     init {
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
@@ -63,6 +73,18 @@ class CoroutinesFindDuplicatesExecution(
                 val withSameContent = groupFilesByContent(stateHolder)
                 result.complete(withSameContent)
             }
+    }
+
+    private fun collectFiles(stateHolder: FindProgressStateHolder) {
+        val (initialDirectories, filter) =
+            stateHolder.state.value.run {
+                check(this is ScanExecutionState)
+                initialDirectories to filter
+            }
+        val visitor = ScanFileVisitor(filter, stateHolder)
+        initialDirectories.uniqueAndReal.forEach { directory ->
+            directory.visitFileTree(visitor = visitor, followLinks = true)
+        }
     }
 
     private suspend fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
@@ -141,28 +163,6 @@ class CoroutinesFindDuplicatesExecution(
             )
         }
         return stateHolder.stateAs<ContentFilterExecutionState>().processedFiles.duplicateGroups()
-    }
-
-    override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
-
-    override suspend fun stop(): FindDuplicatesExecutionState {
-        job.cancel(FindExecutionStopRequested())
-        job.join()
-        return stateHolder.state.value
-    }
-
-    override val state get() = stateHolder.state
-
-    private fun collectFiles(stateHolder: FindProgressStateHolder) {
-        val (initialDirectories, filter) =
-            stateHolder.state.value.run {
-                check(this is ScanExecutionState)
-                initialDirectories to filter
-            }
-        val visitor = ScanFileVisitor(filter, stateHolder)
-        initialDirectories.uniqueAndReal.forEach { directory ->
-            directory.visitFileTree(visitor = visitor, followLinks = true)
-        }
     }
 
     private operator fun <T : FindDuplicatesExecutionState> FindProgressStateHolder.contains(
