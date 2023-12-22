@@ -5,6 +5,7 @@ on:
       - '*'
     paths-ignore:
       - '**/*.md'
+      - '**/renovate.json'
   workflow_dispatch:
 
 jobs:
