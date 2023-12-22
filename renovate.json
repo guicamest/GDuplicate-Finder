@@ -39,6 +39,12 @@
       ],
       "semanticCommitType": "deps",
       "commitMessageTopic": "dependency"
+    },
+    {
+      "groupName": "ktlint",
+      "matchPackagePrefixes": [
+        "com.pinterest.ktlint:"
+      ]
     }
   ]
 }
