@@ -67,8 +67,10 @@ class CoroutinesFindDuplicatesExecution(
                 }
 
                 delay(1)
-                val withSameContent = groupFilesByContent(stateHolder)
-                result.complete(withSameContent)
+                groupFilesByContent(stateHolder)
+                result.complete(
+                    stateHolder.stateAs<ContentFilterExecutionState>().processedFiles.duplicateGroups(),
+                )
             }
     }
 
@@ -123,7 +125,7 @@ class CoroutinesFindDuplicatesExecution(
         return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
     }
 
-    private fun groupFilesByContent(stateHolder: FindProgressStateHolder): Collection<DuplicateGroup> {
+    private fun groupFilesByContent(stateHolder: FindProgressStateHolder) {
         val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
 
         groupsToProcess.forEach { (key, filesWithSameSize) ->
@@ -158,7 +160,6 @@ class CoroutinesFindDuplicatesExecution(
                 processedFiles = currentState.processedFiles.filterValues { it.size > 1 },
             )
         }
-        return stateHolder.stateAs<ContentFilterExecutionState>().processedFiles.duplicateGroups()
     }
 
     private operator fun <T : FindDuplicatesExecutionState> FindProgressStateHolder.contains(
