@@ -7,8 +7,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
@@ -85,82 +83,67 @@ class CoroutinesFindDuplicatesExecution(
         }
     }
 
-    private suspend fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
-        groupBySize(stateHolder)
-            .filter { (_, paths) -> paths.size > 1 }.also {
-                stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
-                    currentState.copy(processedFiles = it)
-                }
-            }
-    }
-
-    private suspend inline fun groupBySize(
-        stateHolder: FindProgressStateHolder,
-    ): Map<Long, List<PathWithAttributes>> {
+    private fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
         val filesToProcess = stateHolder.stateAs<SizeFilterExecutionState>().filesToProcess
+        val destination = HashMap<Long, MutableList<PathWithAttributes>>(initialSize(filesToProcess))
+        val filteredFiles =
+            filesToProcess
+                .groupByTo(destination) { it.size() }
+                .entries
+                .asSequence()
+                .filter { it.value.size > 1 }
+                .flatMap { it.value }
+                .toSet()
 
-        filesToProcess.asFlow()
-            .runningFold<PathWithAttributes, Pair<Map<Long, List<PathWithAttributes>>, PathWithAttributes?>>(
-                emptyMap<Long, List<PathWithAttributes>>() to null,
-            ) { (map, _), file ->
-                val key = file.size()
-                val entriesWithSameSize = map.getOrDefault(key, listOf())
-
-                (map + (key to (entriesWithSameSize + file))) to file
-            }.collect { (map, element) ->
-                stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
-                    val leftToProcess =
-                        if (element != null) {
-                            (currentState.filesToProcess - element)
-                        } else {
-                            currentState.filesToProcess
-                        }
-
-                    currentState.copy(
-                        filesToProcess = leftToProcess,
-                        processedFiles = map,
-                    )
-                }
-            }
-        return stateHolder.stateAs<SizeFilterExecutionStateImpl>().processedFiles
+        stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
+            currentState.copy(processedFiles = filteredFiles, filesToProcess = emptySet())
+        }
     }
+
+    private fun initialSize(filesToProcess: Set<Any>) = filesToProcess.size / 2
 
     private fun groupFilesByContent(stateHolder: FindProgressStateHolder) {
-        val groupsToProcess = stateHolder.stateAs<ContentFilterExecutionState>().groupsToProcess
-
-        groupsToProcess.forEach { (key, filesWithSameSize) ->
-            filesWithSameSize.forEach { path ->
-                val contentHash = path.contentHash()
-                stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
-                    val updatedGroups =
-                        currentState.groupsToProcess.run {
-                            val pathWithAttributes = this.getValue(key) - path
-                            if (pathWithAttributes.isEmpty()) {
-                                this - key
-                            } else {
-                                this + (key to pathWithAttributes)
-                            }
-                        }
-
-                    val updatedProcessed =
-                        currentState.processedFiles.run {
-                            val pathWithAttributes = this.getOrDefault(contentHash, emptyList()) + path
-                            this + (contentHash to pathWithAttributes)
-                        }
-
-                    currentState.copy(
-                        groupsToProcess = updatedGroups,
-                        processedFiles = updatedProcessed,
-                    )
-                }
+        val filesWithHashes =
+            with(stateHolder.stateAs<ContentFilterExecutionState>()) {
+                processedFiles + collectHashes(stateHolder, groupsToProcess)
             }
-        }
+
+        val destination =
+            HashMap<String, MutableList<PathWithAttributesAndContent>>(initialSize(filesWithHashes))
+
+        val filteredFiles =
+            filesWithHashes
+                .groupByTo(destination) { it.contentHash }
+                .entries
+                .asSequence()
+                .filter { it.value.size > 1 }
+                .flatMap { it.value }
+                .toSet()
+
         stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
-            currentState.copy(
-                processedFiles = currentState.processedFiles.filterValues { it.size > 1 },
-            )
+            currentState.copy(processedFiles = filteredFiles)
         }
     }
+
+    private fun collectHashes(
+        stateHolder: FindProgressStateHolder,
+        filesToProcess: Set<PathWithAttributes>,
+    ) = filesToProcess
+        .map { pwa ->
+            val pathWithAttributesAndContent =
+                PathWithAttributesAndContent(
+                    path = pwa.path,
+                    attributes = pwa.attributes,
+                    contentHash = pwa.contentHash(),
+                )
+            stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
+                currentState.copy(
+                    groupsToProcess = currentState.groupsToProcess - pwa,
+                    processedFiles = currentState.processedFiles + pathWithAttributesAndContent,
+                )
+            }
+            pathWithAttributesAndContent
+        }
 
     private operator fun <T : FindDuplicatesExecutionState> FindProgressStateHolder.contains(
         c: KClass<T>,

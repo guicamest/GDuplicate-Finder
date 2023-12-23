@@ -1,6 +1,6 @@
 package com.sleepcamel.gduplicatefinder.core
 
-fun Map<String, Collection<PathWithAttributes>>.duplicateGroups(): Collection<DuplicateGroup> =
-    map { (hash, paths) ->
+fun Set<PathWithAttributesAndContent>.duplicateGroups(): Collection<DuplicateGroup> =
+    groupBy { it.contentHash }.map { (hash, paths) ->
         DuplicateGroup(hash = hash, paths = paths)
     }
