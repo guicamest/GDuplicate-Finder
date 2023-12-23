@@ -204,8 +204,8 @@ class StopResumeTest {
         }
 
         @Test
-        fun thereShouldBeThreeSizeStates() {
-            assertThat(sizeFilterStates).hasSize(3)
+        fun thereShouldBeTwoSizeStates() {
+            assertThat(sizeFilterStates).hasSize(2)
         }
 
         @Test
@@ -218,27 +218,10 @@ class StopResumeTest {
 
         @Test
         fun checkSecondState() {
-            assertThat(sizeFilterStates[1].filesToProcess).hasSize(1)
-            assertThat(sizeFilterStates[1].filesToProcess.map { it.path })
+            assertThat(sizeFilterStates[1].filesToProcess).isEmpty()
+            assertThat(sizeFilterStates[1].processedFiles.map { it.path })
                 .withPathComparator()
-                .containsAnyElementsOf(paths)
-            assertThat(sizeFilterStates[1].processedFiles).allSatisfy { key, list ->
-                assertThat(key).isEqualTo(2)
-                assertThat(list.map { it.path })
-                    .withPathComparator()
-                    .containsAnyElementsOf(paths)
-            }
-        }
-
-        @Test
-        fun checkThirdState() {
-            assertThat(sizeFilterStates[2].filesToProcess).isEmpty()
-            assertThat(sizeFilterStates[2].processedFiles).allSatisfy { key, list ->
-                assertThat(key).isEqualTo(2)
-                assertThat(list.map { it.path })
-                    .withPathComparator()
-                    .containsExactlyInAnyOrderElementsOf(paths)
-            }
+                .containsExactlyInAnyOrderElementsOf(paths)
         }
     }
 

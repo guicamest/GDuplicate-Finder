@@ -36,22 +36,22 @@ data class ScanExecutionStateImpl(
 
 interface SizeFilterExecutionState : FindDuplicatesExecutionState {
     val filesToProcess: Set<PathWithAttributes>
-    val processedFiles: Map<Long, List<PathWithAttributes>>
+    val processedFiles: Set<PathWithAttributes>
 }
 
 data class SizeFilterExecutionStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
-    override val processedFiles: Map<Long, List<PathWithAttributes>>,
+    override val processedFiles: Set<PathWithAttributes>,
 ) : SizeFilterExecutionState
 
 interface ContentFilterExecutionState : FindDuplicatesExecutionState {
-    val groupsToProcess: Map<Long, List<PathWithAttributes>>
-    val processedFiles: Map<String, List<PathWithAttributes>>
+    val groupsToProcess: Set<PathWithAttributes>
+    val processedFiles: Set<PathWithAttributesAndContent>
 }
 
 data class ContentFilterExecutionStateImpl(
-    override val groupsToProcess: Map<Long, List<PathWithAttributes>>,
-    override val processedFiles: Map<String, List<PathWithAttributes>>,
+    override val groupsToProcess: Set<PathWithAttributes>,
+    override val processedFiles: Set<PathWithAttributesAndContent>,
 ) : ContentFilterExecutionState
 
 internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
@@ -78,7 +78,7 @@ internal fun FindProgressStateHolder.updateStateToSizeFilter() =
     update { currentState: ScanExecutionState ->
         SizeFilterExecutionStateImpl(
             filesToProcess = currentState.filesToProcess,
-            processedFiles = emptyMap(),
+            processedFiles = emptySet(),
         )
     }
 
@@ -86,6 +86,6 @@ internal fun FindProgressStateHolder.updateStateToContentFilter() =
     update { currentState: SizeFilterExecutionState ->
         ContentFilterExecutionStateImpl(
             groupsToProcess = currentState.processedFiles,
-            processedFiles = emptyMap(),
+            processedFiles = emptySet(),
         )
     }
