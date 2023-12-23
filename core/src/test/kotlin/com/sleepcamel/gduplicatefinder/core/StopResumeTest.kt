@@ -57,12 +57,12 @@ class StopResumeTest {
     fun stopReturnsStateWhileScanning() =
         runTest {
             val state = findDuplicates(this, directory = searchDirectory).stop()
-            assertThat(state).isInstanceOf(ScanExecutionState::class.java)
+            assertThat(state).isInstanceOf(ScanDirectoriesState::class.java)
         }
 
     @ExperimentalCoroutinesApi
     @Test
-    @DisplayName("return size filter state when `stop` is called")
+    @DisplayName("return size compare state when `stop` is called")
     fun stopReturnsStateAfterScan() =
         runTest {
             val state =
@@ -70,13 +70,13 @@ class StopResumeTest {
                     advanceTimeBy(1)
                     stop()
                 }
-            assertThat(state).isInstanceOf(SizeFilterExecutionState::class.java)
+            assertThat(state).isInstanceOf(SizeCompareState::class.java)
         }
 
     @ExperimentalCoroutinesApi
     @Test
-    @DisplayName("return content filter state when `stop` is called")
-    fun stopReturnsStateAfterSizeFilter() =
+    @DisplayName("return content compare state when `stop` is called")
+    fun stopReturnsStateAfterSizeCompare() =
         runTest {
             val state =
                 findDuplicates(this, directory = searchDirectory).run {
@@ -84,7 +84,7 @@ class StopResumeTest {
                     advanceTimeBy(1)
                     stop()
                 }
-            assertThat(state).isInstanceOf(ContentFilterExecutionState::class.java)
+            assertThat(state).isInstanceOf(ContentCompareState::class.java)
         }
 
     @ExperimentalCoroutinesApi
@@ -100,20 +100,20 @@ class StopResumeTest {
             }
             advanceUntilIdle()
 
-            assertThat(allStates.first()).isInstanceOf(ScanExecutionState::class.java)
+            assertThat(allStates.first()).isInstanceOf(ScanDirectoriesState::class.java)
 
-            val withoutScans = allStates.dropWhile { it is ScanExecutionState }
-            assertThat(withoutScans.first()).isInstanceOf(SizeFilterExecutionState::class.java)
+            val withoutScans = allStates.dropWhile { it is ScanDirectoriesState }
+            assertThat(withoutScans.first()).isInstanceOf(SizeCompareState::class.java)
 
-            val withoutSizeFilter = withoutScans.dropWhile { it is SizeFilterExecutionState }
-            assertThat(withoutSizeFilter).isNotEmpty.allMatch { it is ContentFilterExecutionState }
+            val withoutSizeStates = withoutScans.dropWhile { it is SizeCompareState }
+            assertThat(withoutSizeStates).isNotEmpty.allMatch { it is ContentCompareState }
         }
 
     @DisplayName("update scan state as it visits files/directories")
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ScanStateTest {
-        private lateinit var scanStates: List<ScanExecutionState>
+        private lateinit var scanStates: List<ScanDirectoriesState>
 
         @BeforeAll
         @ExperimentalCoroutinesApi
@@ -126,7 +126,7 @@ class StopResumeTest {
                     state.toList(allStates)
                 }
                 advanceUntilIdle()
-                scanStates = allStates.takeWhile { it is ScanExecutionState }.map { it as ScanExecutionState }
+                scanStates = allStates.filterIsInstance<ScanDirectoriesState>()
             }
         }
 
@@ -183,7 +183,7 @@ class StopResumeTest {
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class SizeStateTest {
-        private lateinit var sizeFilterStates: List<SizeFilterExecutionState>
+        private lateinit var sizeCompareStates: List<SizeCompareState>
 
         @BeforeAll
         @ExperimentalCoroutinesApi
@@ -196,30 +196,30 @@ class StopResumeTest {
                     state.toList(allStates)
                 }
                 advanceUntilIdle()
-                sizeFilterStates =
+                sizeCompareStates =
                     allStates.dropWhile {
-                        it is ScanExecutionState
-                    }.takeWhile { it is SizeFilterExecutionState }.map { it as SizeFilterExecutionState }
+                        it is ScanDirectoriesState
+                    }.takeWhile { it is SizeCompareState }.map { it as SizeCompareState }
             }
         }
 
         @Test
         fun thereShouldBeTwoSizeStates() {
-            assertThat(sizeFilterStates).hasSize(2)
+            assertThat(sizeCompareStates).hasSize(2)
         }
 
         @Test
         fun checkFirstState() {
-            assertThat(sizeFilterStates[0].filesToProcess.map { it.path })
+            assertThat(sizeCompareStates[0].filesToProcess.map { it.path })
                 .withPathComparator()
                 .containsExactlyInAnyOrderElementsOf(paths)
-            assertThat(sizeFilterStates[0].processedFiles).isEmpty()
+            assertThat(sizeCompareStates[0].processedFiles).isEmpty()
         }
 
         @Test
         fun checkSecondState() {
-            assertThat(sizeFilterStates[1].filesToProcess).isEmpty()
-            assertThat(sizeFilterStates[1].processedFiles.map { it.path })
+            assertThat(sizeCompareStates[1].filesToProcess).isEmpty()
+            assertThat(sizeCompareStates[1].processedFiles.map { it.path })
                 .withPathComparator()
                 .containsExactlyInAnyOrderElementsOf(paths)
         }
@@ -229,7 +229,7 @@ class StopResumeTest {
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ContentStateTest {
-        private lateinit var contentStates: List<ContentFilterExecutionState>
+        private lateinit var contentStates: List<ContentCompareState>
 
         @BeforeAll
         @ExperimentalCoroutinesApi
@@ -244,10 +244,10 @@ class StopResumeTest {
                 advanceUntilIdle()
                 contentStates =
                     allStates.dropWhile {
-                        it !is ContentFilterExecutionState
+                        it !is ContentCompareState
                     }.takeWhile {
-                        it is ContentFilterExecutionState
-                    }.map { it as ContentFilterExecutionState }
+                        it is ContentCompareState
+                    }.map { it as ContentCompareState }
             }
         }
 
@@ -318,7 +318,7 @@ class StopResumeTest {
                     state.toList(allStates)
                 }
                 advanceUntilIdle()
-                val withoutScans = allStates.dropWhile { it is ScanExecutionState }
+                val withoutScans = allStates.dropWhile { it is ScanDirectoriesState }
 
                 val execution = resumeFindDuplicates(this, fromState = withoutScans.first())
                 val duplicateEntries = execution.duplicateEntries()
@@ -341,7 +341,7 @@ class StopResumeTest {
                     state.toList(allStates)
                 }
                 advanceUntilIdle()
-                val contentStates = allStates.dropWhile { it !is ContentFilterExecutionState }
+                val contentStates = allStates.dropWhile { it !is ContentCompareState }
 
                 val execution = resumeFindDuplicates(this, fromState = contentStates.first())
                 val duplicateEntries = execution.duplicateEntries()
