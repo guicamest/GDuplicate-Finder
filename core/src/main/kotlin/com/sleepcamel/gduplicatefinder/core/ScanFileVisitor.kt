@@ -19,7 +19,7 @@ internal class ScanFileVisitor(
                 directory,
                 filter,
                 attributes,
-                stateHolder.stateAs<ScanExecutionState>().visitedDirectories,
+                stateHolder.stateAs<ScanDirectoriesState>().visitedDirectories,
             )
         ) {
             FileVisitResult.CONTINUE
@@ -56,7 +56,7 @@ internal class ScanFileVisitor(
         }
 
     private fun addFileToState(pathWithAttributes: PathWithAttributes) {
-        stateHolder.update { currentState: ScanExecutionStateImpl ->
+        stateHolder.update { currentState: ScanDirectoriesStateImpl ->
             currentState.copy(
                 filesToProcess = currentState.filesToProcess + pathWithAttributes,
             )
@@ -64,7 +64,7 @@ internal class ScanFileVisitor(
     }
 
     private fun addVisitedDirectoryToState(directory: Path) {
-        stateHolder.update { currentState: ScanExecutionStateImpl ->
+        stateHolder.update { currentState: ScanDirectoriesStateImpl ->
             currentState.copy(
                 visitedDirectories = currentState.visitedDirectories.plusElement(directory),
             )

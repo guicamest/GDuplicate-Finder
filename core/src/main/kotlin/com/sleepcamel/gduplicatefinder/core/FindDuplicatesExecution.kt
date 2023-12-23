@@ -37,7 +37,7 @@ class CoroutinesFindDuplicatesExecution(
         filter: PathFilter,
     ) : this(
         scope = scope,
-        initialState = ScanExecutionStateImpl.empty(initialDirectories = directories, filter = filter),
+        initialState = ScanDirectoriesStateImpl.empty(initialDirectories = directories, filter = filter),
     )
 
     override suspend fun duplicateEntries(): Collection<DuplicateGroup> = result.await()
@@ -53,28 +53,28 @@ class CoroutinesFindDuplicatesExecution(
     init {
         job =
             scope.launch(CoroutineName("findDuplicatesExecution")) {
-                if (ScanExecutionState::class in stateHolder) {
+                if (ScanDirectoriesState::class in stateHolder) {
                     collectFiles(stateHolder)
-                    stateHolder.updateStateToSizeFilter()
+                    stateHolder.updateStateToSizeCompare()
                 }
 
                 delay(1L)
-                if (SizeFilterExecutionState::class in stateHolder) {
+                if (SizeCompareState::class in stateHolder) {
                     groupFilesBySize(stateHolder)
-                    stateHolder.updateStateToContentFilter()
+                    stateHolder.updateStateToContentCompare()
                 }
 
                 delay(1)
                 groupFilesByContent(stateHolder)
                 result.complete(
-                    stateHolder.stateAs<ContentFilterExecutionState>().processedFiles.duplicateGroups(),
+                    stateHolder.stateAs<ContentCompareState>().processedFiles.duplicateGroups(),
                 )
             }
     }
 
     private fun collectFiles(stateHolder: FindProgressStateHolder) {
         val (initialDirectories, filter) =
-            stateHolder.stateAs<ScanExecutionState>().run {
+            stateHolder.stateAs<ScanDirectoriesState>().run {
                 initialDirectories to filter
             }
         val visitor = ScanFileVisitor(filter, stateHolder)
@@ -84,7 +84,7 @@ class CoroutinesFindDuplicatesExecution(
     }
 
     private fun groupFilesBySize(stateHolder: FindProgressStateHolder) {
-        val filesToProcess = stateHolder.stateAs<SizeFilterExecutionState>().filesToProcess
+        val filesToProcess = stateHolder.stateAs<SizeCompareState>().filesToProcess
         val destination = HashMap<Long, MutableList<PathWithAttributes>>(initialSize(filesToProcess))
         val filteredFiles =
             filesToProcess
@@ -95,7 +95,7 @@ class CoroutinesFindDuplicatesExecution(
                 .flatMap { it.value }
                 .toSet()
 
-        stateHolder.update { currentState: SizeFilterExecutionStateImpl ->
+        stateHolder.update { currentState: SizeCompareStateImpl ->
             currentState.copy(processedFiles = filteredFiles, filesToProcess = emptySet())
         }
     }
@@ -104,7 +104,7 @@ class CoroutinesFindDuplicatesExecution(
 
     private fun groupFilesByContent(stateHolder: FindProgressStateHolder) {
         val filesWithHashes =
-            with(stateHolder.stateAs<ContentFilterExecutionState>()) {
+            with(stateHolder.stateAs<ContentCompareState>()) {
                 processedFiles + collectHashes(stateHolder, filesToProcess)
             }
 
@@ -120,7 +120,7 @@ class CoroutinesFindDuplicatesExecution(
                 .flatMap { it.value }
                 .toSet()
 
-        stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
+        stateHolder.update { currentState: ContentCompareStateImpl ->
             currentState.copy(processedFiles = filteredFiles)
         }
     }
@@ -136,7 +136,7 @@ class CoroutinesFindDuplicatesExecution(
                     attributes = pwa.attributes,
                     contentHash = pwa.contentHash(),
                 )
-            stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
+            stateHolder.update { currentState: ContentCompareStateImpl ->
                 currentState.copy(
                     filesToProcess = currentState.filesToProcess - pwa,
                     processedFiles = currentState.processedFiles + pathWithAttributesAndContent,

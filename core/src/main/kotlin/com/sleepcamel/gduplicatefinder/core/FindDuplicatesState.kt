@@ -7,25 +7,25 @@ import java.nio.file.Path
 
 sealed interface FindDuplicatesExecutionState
 
-interface ScanExecutionState : FindDuplicatesExecutionState {
+interface ScanDirectoriesState : FindDuplicatesExecutionState {
     val initialDirectories: Collection<Path>
     val filter: PathFilter
     val visitedDirectories: Set<Path>
     val filesToProcess: Set<PathWithAttributes>
 }
 
-data class ScanExecutionStateImpl(
+data class ScanDirectoriesStateImpl(
     override val initialDirectories: Collection<Path>,
     override val filter: PathFilter,
     override val visitedDirectories: Set<Path>,
     override val filesToProcess: Set<PathWithAttributes>,
-) : ScanExecutionState {
+) : ScanDirectoriesState {
     companion object {
         internal fun empty(
             initialDirectories: Collection<Path>,
             filter: PathFilter,
-        ): ScanExecutionState =
-            ScanExecutionStateImpl(
+        ): ScanDirectoriesState =
+            ScanDirectoriesStateImpl(
                 initialDirectories = initialDirectories,
                 filter = filter,
                 visitedDirectories = emptySet(),
@@ -34,25 +34,25 @@ data class ScanExecutionStateImpl(
     }
 }
 
-interface SizeFilterExecutionState : FindDuplicatesExecutionState {
+interface SizeCompareState : FindDuplicatesExecutionState {
     val filesToProcess: Set<PathWithAttributes>
     val processedFiles: Set<PathWithAttributes>
 }
 
-data class SizeFilterExecutionStateImpl(
+data class SizeCompareStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
     override val processedFiles: Set<PathWithAttributes>,
-) : SizeFilterExecutionState
+) : SizeCompareState
 
-interface ContentFilterExecutionState : FindDuplicatesExecutionState {
+interface ContentCompareState : FindDuplicatesExecutionState {
     val filesToProcess: Set<PathWithAttributes>
     val processedFiles: Set<PathWithAttributesAndContent>
 }
 
-data class ContentFilterExecutionStateImpl(
+data class ContentCompareStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
     override val processedFiles: Set<PathWithAttributesAndContent>,
-) : ContentFilterExecutionState
+) : ContentCompareState
 
 internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
     private val _state = MutableStateFlow(initial)
@@ -74,17 +74,17 @@ internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
         }
 }
 
-internal fun FindProgressStateHolder.updateStateToSizeFilter() =
-    update { currentState: ScanExecutionState ->
-        SizeFilterExecutionStateImpl(
+internal fun FindProgressStateHolder.updateStateToSizeCompare() =
+    update { currentState: ScanDirectoriesState ->
+        SizeCompareStateImpl(
             filesToProcess = currentState.filesToProcess,
             processedFiles = emptySet(),
         )
     }
 
-internal fun FindProgressStateHolder.updateStateToContentFilter() =
-    update { currentState: SizeFilterExecutionState ->
-        ContentFilterExecutionStateImpl(
+internal fun FindProgressStateHolder.updateStateToContentCompare() =
+    update { currentState: SizeCompareState ->
+        ContentCompareStateImpl(
             filesToProcess = currentState.processedFiles,
             processedFiles = emptySet(),
         )
