@@ -255,6 +255,35 @@ class StopResumeTest {
         fun thereShouldBeThreeContentStates() {
             assertThat(contentStates).hasSize(3)
         }
+
+        @Test
+        fun checkFirstState() {
+            assertThat(contentStates[0].groupsToProcess.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths)
+            assertThat(contentStates[0].processedFiles).isEmpty()
+        }
+
+        @Test
+        fun checkSecondState() {
+            val leftToProcess = contentStates[1].groupsToProcess.map { it.path }
+            assertThat(leftToProcess)
+                .withPathComparator()
+                .containsAnyElementsOf(paths)
+                .hasSize(1)
+            assertThat(contentStates[1].processedFiles.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths - leftToProcess.toSet())
+                .hasSize(1)
+        }
+
+        @Test
+        fun checkThirdSecondState() {
+            assertThat(contentStates[2].groupsToProcess).isEmpty()
+            assertThat(contentStates[2].processedFiles.map { it.path })
+                .withPathComparator()
+                .containsExactlyInAnyOrderElementsOf(paths)
+        }
     }
 
     @DisplayName("be able to resume")
