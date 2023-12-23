@@ -258,7 +258,7 @@ class StopResumeTest {
 
         @Test
         fun checkFirstState() {
-            assertThat(contentStates[0].groupsToProcess.map { it.path })
+            assertThat(contentStates[0].filesToProcess.map { it.path })
                 .withPathComparator()
                 .containsExactlyInAnyOrderElementsOf(paths)
             assertThat(contentStates[0].processedFiles).isEmpty()
@@ -266,7 +266,7 @@ class StopResumeTest {
 
         @Test
         fun checkSecondState() {
-            val leftToProcess = contentStates[1].groupsToProcess.map { it.path }
+            val leftToProcess = contentStates[1].filesToProcess.map { it.path }
             assertThat(leftToProcess)
                 .withPathComparator()
                 .containsAnyElementsOf(paths)
@@ -279,7 +279,7 @@ class StopResumeTest {
 
         @Test
         fun checkThirdSecondState() {
-            assertThat(contentStates[2].groupsToProcess).isEmpty()
+            assertThat(contentStates[2].filesToProcess).isEmpty()
             assertThat(contentStates[2].processedFiles.map { it.path })
                 .withPathComparator()
                 .containsExactlyInAnyOrderElementsOf(paths)

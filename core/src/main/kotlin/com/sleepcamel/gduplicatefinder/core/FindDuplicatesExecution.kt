@@ -105,7 +105,7 @@ class CoroutinesFindDuplicatesExecution(
     private fun groupFilesByContent(stateHolder: FindProgressStateHolder) {
         val filesWithHashes =
             with(stateHolder.stateAs<ContentFilterExecutionState>()) {
-                processedFiles + collectHashes(stateHolder, groupsToProcess)
+                processedFiles + collectHashes(stateHolder, filesToProcess)
             }
 
         val destination =
@@ -138,7 +138,7 @@ class CoroutinesFindDuplicatesExecution(
                 )
             stateHolder.update { currentState: ContentFilterExecutionStateImpl ->
                 currentState.copy(
-                    groupsToProcess = currentState.groupsToProcess - pwa,
+                    filesToProcess = currentState.filesToProcess - pwa,
                     processedFiles = currentState.processedFiles + pathWithAttributesAndContent,
                 )
             }
