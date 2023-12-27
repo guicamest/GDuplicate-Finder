@@ -12,6 +12,7 @@
   "assigneesFromCodeOwners": true,
   "semanticCommitType": "deps",
   "semanticCommitScope": "{{depName}}",
+  "labels": ["dependency"],
   "packageRules": [
     {
       "matchManagers": [
