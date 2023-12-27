@@ -67,3 +67,6 @@ private class PathComparator : Comparator<Path> {
         o2: Path,
     ): Int = o1.toRealPath().compareTo(o2.toRealPath())
 }
+
+fun Collection<Path>.without(leftToProcess: List<Path>): Collection<Path> =
+    map { it.toRealPath() } - leftToProcess.toSet()

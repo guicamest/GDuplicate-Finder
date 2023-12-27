@@ -273,7 +273,7 @@ class StopResumeTest {
                 .hasSize(1)
             assertThat(contentStates[1].processedFiles.map { it.path })
                 .withPathComparator()
-                .containsExactlyInAnyOrderElementsOf(paths - leftToProcess.toSet())
+                .containsExactlyInAnyOrderElementsOf(paths.without(leftToProcess))
                 .hasSize(1)
         }
 
