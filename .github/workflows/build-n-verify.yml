@@ -1,5 +1,7 @@
 name: Build and verify
 on:
+  pull_request:
+    branches: [ v3 ]
   push:
     branches:
       - '*'
