@@ -10,6 +10,7 @@
     "**/FileDuplicateFinderUI/**"
   ],
   "assigneesFromCodeOwners": true,
+  "rebaseWhen": "behind-base-branch",
   "semanticCommitType": "deps",
   "semanticCommitScope": "{{depName}}",
   "labels": ["dependency"],
