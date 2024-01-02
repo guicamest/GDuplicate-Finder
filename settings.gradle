@@ -20,7 +20,8 @@ gitHooks { extension ->
         preCommit { context ->
             context.with {
                 from(settingsDir.toPath().resolve(".hooks").resolve("pre-commit-ktlint-format").toFile())
-                tasks("clean", ["build"] as String[], false)
+                tasks("licenseFormat", [] as String[], true)
+                tasks("clean", ["build"] as String[], true)
                 appendScript {
                     'docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:1.6.26 -color'
                 }
