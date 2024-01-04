@@ -39,6 +39,11 @@ fun directory(
     configure: TestDirectory.() -> Unit,
 ): TestDirectory = TestDirectory(fs.tempDirectory, null, false).apply(configure)
 
+fun directory(
+    path: Path,
+    configure: TestDirectory.() -> Unit,
+): TestDirectory = TestDirectory(path).apply(configure)
+
 class TestDirectory(
     val path: Path,
     private val files: MutableList<Path> = mutableListOf(),

@@ -351,15 +351,15 @@ class DuplicateFinderTest {
         @Test
         fun `two files in directories of symbolic link have same content hash`(): Unit =
             inLinux { fs ->
-                val root = fs.rootDirectories.first()
-                val volumes = (root / fs.getPath("Volumes")).createDirectory()
-
-                (volumes / fs.getPath("Macintosh HD")).createSymbolicLinkPointingTo(root)
-                val files =
-                    listOf(
-                        root / fs.getPath("abc.txt"),
-                        volumes / fs.getPath("def.txt"),
-                    ).map { it.apply { writeText("hi") } }
+                val (volumes, files) =
+                    directory(path = fs.rootDirectories.first()) {
+                        val root = path
+                        file("abc.txt", content = "hi")
+                        directory("Volumes", nameAsPrefix = false) {
+                            file("def.txt", content = "hi")
+                            symlink("Macintosh HD", to = root)
+                        }
+                    }.let { it.dirs.first() to it.allFiles }
 
                 runTest {
                     val execution =
@@ -369,7 +369,6 @@ class DuplicateFinderTest {
                         )
 
                     val duplicateEntries = execution.duplicateEntries()
-
                     duplicateEntries.assertOneDuplicateGroupWith(paths = files, content = "hi")
                 }
             }
