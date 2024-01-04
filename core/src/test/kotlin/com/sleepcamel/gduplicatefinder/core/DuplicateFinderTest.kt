@@ -208,13 +208,10 @@ class DuplicateFinderTest {
     inner class Duplicates {
         @Test
         fun `directory has two files with same content hash`() {
-            val directoryWith2FilesSameHash = createTempDirectory("directoryWith2FilesSameHash")
-            val fileNames =
-                (0..1).map {
-                    createTempFile(directory = directoryWith2FilesSameHash).apply {
-                        writeText("hi")
-                    }
-                }
+            val (directoryWith2FilesSameHash, fileNames) =
+                directory("directoryWith2FilesSameHash") {
+                    repeat(2) { file(content = "hi") }
+                }.let { it.path to it.allFiles }
 
             runTest {
                 val execution = findDuplicates(this, directory = directoryWith2FilesSameHash)
