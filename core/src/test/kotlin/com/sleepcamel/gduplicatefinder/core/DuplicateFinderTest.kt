@@ -32,7 +32,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.stream.Stream
-import kotlin.io.path.absolute
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.div
@@ -322,19 +321,19 @@ class DuplicateFinderTest {
         fun `two files in different filesystems have same content hash`() =
             inLinux { lfs ->
                 inWindows { wfs ->
-                    val oneFile = lfs.getPath("somefile").apply { writeText("hi") }.absolute()
-                    val otherFile = wfs.getPath("otherfile").apply { writeText("hi") }.absolute()
+                    val ld = directory(fs = lfs) { file("somefile", content = "hi") }
+                    val wd = directory(fs = wfs) { file("otherfile", content = "hi") }
 
                     runTest {
                         val execution =
                             findDuplicates(
                                 this,
-                                directories = listOf(lfs, wfs).map { it.getPath(".").toRealPath() },
+                                directories = listOf(ld, wd).map { it.path },
                             )
 
                         val duplicateEntries = execution.duplicateEntries()
                         duplicateEntries.assertOneDuplicateGroupWith(
-                            paths = listOf(oneFile, otherFile),
+                            paths = listOf(ld, wd).flatMap { it.allFiles },
                             content = "hi",
                         )
                     }
