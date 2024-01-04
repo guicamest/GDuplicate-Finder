@@ -71,9 +71,6 @@ class TestDirectory(
         configure: TestDirectory.() -> Unit,
     ): TestDirectory = TestDirectory(path, name, nameAsPrefix).apply(configure).also { directories.add(it) }
 
-    fun directory(configure: TestDirectory.() -> Unit): TestDirectory =
-        TestDirectory(path, null, false).apply(configure)
-
     fun file(
         name: String? = null,
         size: Int,
