@@ -21,8 +21,10 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.div
 import kotlin.io.path.writeText
 
 fun directory(
@@ -74,9 +76,9 @@ class TestDirectory(
         content: String,
     ): Path =
         if (name == null) {
-            kotlin.io.path.createTempFile(directory = path)
+            createTempFile(directory = path)
         } else {
-            path.resolve(name)
+            path / name
         }.apply {
             files.add(this)
             writeText(content)
@@ -87,9 +89,9 @@ class TestDirectory(
         to: Path,
     ): Path =
         if (name == null) {
-            kotlin.io.path.createTempFile(directory = path).also { it.deleteExisting() }
+            createTempFile(directory = path).also { it.deleteExisting() }
         } else {
-            path.resolve(name)
+            path / name
         }.createSymbolicLinkPointingTo(to)
 
     val allFiles: List<Path> get() = files + directories.flatMap { it.allFiles }
