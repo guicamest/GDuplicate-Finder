@@ -35,12 +35,9 @@ import java.util.stream.Stream
 import kotlin.io.path.absolute
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createSymbolicLinkPointingTo
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.createTempFile
 import kotlin.io.path.div
 import kotlin.io.path.fileSize
 import kotlin.io.path.isReadable
-import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 import kotlin.test.Test
 
@@ -124,15 +121,15 @@ class DuplicateFinderTest {
             }
         }
 
+        private val noPermissions = PosixFilePermissions.fromString("-".repeat(9))
+
         @Test
         fun `directory exists and is not readable`() {
             inLinux { fs ->
-                val notReadableDirectory = createTempDirectory(fs.rootDirectories.first())
-                repeat(2) {
-                    createTempFile(directory = notReadableDirectory).writeText("hi")
-                }
-                val notReadablePermissions = PosixFilePermissions.fromString("-".repeat(9))
-                notReadableDirectory.setPosixFilePermissions(notReadablePermissions)
+                val notReadableDirectory =
+                    directory(fs = fs, posixPermissions = noPermissions) {
+                        repeat(2) { file(content = "hi") }
+                    }.path
                 assertThat(notReadableDirectory).isNot(
                     Condition({ file -> file.isReadable() }, "not readable"),
                 )
@@ -147,14 +144,10 @@ class DuplicateFinderTest {
         @Test
         fun `files are not readable`() {
             inLinux { fs ->
-                val notReadablePermissions = PosixFilePermissions.fromString("-".repeat(9))
-                val directory = createTempDirectory(fs.rootDirectories.first())
-                repeat(2) {
-                    createTempFile(directory = directory).apply {
-                        writeText("hi")
-                        setPosixFilePermissions(notReadablePermissions)
-                    }
-                }
+                val directory =
+                    directory(fs = fs) {
+                        repeat(2) { file(content = "hi", posixPermissions = noPermissions) }
+                    }.path
                 val execution = findDuplicates(duplicateFinder, directory = directory)
                 runTest {
                     assertThat(execution.duplicateEntries()).isEmpty()

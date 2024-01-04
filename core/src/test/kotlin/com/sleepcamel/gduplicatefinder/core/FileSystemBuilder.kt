@@ -18,6 +18,7 @@ package com.sleepcamel.gduplicatefinder.core
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createSymbolicLinkPointingTo
 import kotlin.io.path.createTempDirectory
@@ -25,6 +26,7 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
+import kotlin.io.path.setPosixFilePermissions
 import kotlin.io.path.writeText
 
 fun directory(
@@ -36,8 +38,13 @@ fun directory(
 
 fun directory(
     fs: FileSystem = FileSystems.getDefault(),
+    posixPermissions: Set<PosixFilePermission>? = null,
     configure: TestDirectory.() -> Unit,
-): TestDirectory = TestDirectory(fs.tempDirectory, null, false).apply(configure)
+): TestDirectory =
+    TestDirectory(fs.tempDirectory, null, false).apply {
+        configure(this)
+        if (posixPermissions != null) path.setPosixFilePermissions(posixPermissions)
+    }
 
 fun directory(
     path: Path,
@@ -79,6 +86,7 @@ class TestDirectory(
     fun file(
         name: String? = null,
         content: String,
+        posixPermissions: Set<PosixFilePermission>? = null,
     ): Path =
         if (name == null) {
             createTempFile(directory = path)
@@ -87,6 +95,7 @@ class TestDirectory(
         }.apply {
             files.add(this)
             writeText(content)
+            if (posixPermissions != null) setPosixFilePermissions(posixPermissions)
         }
 
     fun symlink(
