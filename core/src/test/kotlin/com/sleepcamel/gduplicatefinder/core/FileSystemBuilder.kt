@@ -32,14 +32,20 @@ fun directory(
     configure: TestDirectory.() -> Unit,
 ): TestDirectory = TestDirectory(fs.tempDirectory, name, nameAsPrefix).apply(configure)
 
+fun directory(
+    fs: FileSystem = FileSystems.getDefault(),
+    configure: TestDirectory.() -> Unit,
+): TestDirectory = TestDirectory(fs.tempDirectory, null, false).apply(configure)
+
 class TestDirectory(
     val path: Path,
     private val files: MutableList<Path> = mutableListOf(),
+    private val directories: MutableList<TestDirectory> = mutableListOf(),
 ) {
     init {
         path.createDirectories()
     }
-    constructor(
+    internal constructor(
         parentPath: Path,
         name: String?,
         nameAsPrefix: Boolean,
@@ -49,7 +55,7 @@ class TestDirectory(
         name: String,
         nameAsPrefix: Boolean = true,
         configure: TestDirectory.() -> Unit,
-    ): TestDirectory = TestDirectory(path, name, nameAsPrefix).apply(configure)
+    ): TestDirectory = TestDirectory(path, name, nameAsPrefix).apply(configure).also { directories.add(it) }
 
     fun directory(configure: TestDirectory.() -> Unit): TestDirectory =
         TestDirectory(path, null, false).apply(configure)
@@ -86,7 +92,8 @@ class TestDirectory(
             path.resolve(name)
         }.createSymbolicLinkPointingTo(to)
 
-    val allFiles: List<Path> = files
+    val allFiles: List<Path> get() = files + directories.flatMap { it.allFiles }
+    val dirs: List<Path> get() = directories.map { it.path }
 }
 
 private fun generateContentOfSize(size: Int): String {

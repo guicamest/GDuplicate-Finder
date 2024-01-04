@@ -73,7 +73,7 @@ class DuplicateFinderTest {
 
         @Test
         fun `directory exists and has no files`() {
-            val emptyDirectory = createTempDirectory("emptyDirectory")
+            val emptyDirectory = directory("emptyDirectory") {}.path
             assertThat(emptyDirectory).isEmptyDirectory()
 
             val execution = findDuplicates(duplicateFinder, directory = emptyDirectory)
@@ -84,8 +84,10 @@ class DuplicateFinderTest {
 
         @Test
         fun `directory exists and has only one file`() {
-            val directoryWithOneFile = createTempDirectory("directoryWithOneFile")
-            assertThat(createTempFile(directory = directoryWithOneFile)).exists().isRegularFile()
+            val directoryWithOneFile =
+                directory("directoryWithOneFile") {
+                    assertThat(file(size = 2)).exists().isRegularFile()
+                }.path
 
             val execution = findDuplicates(duplicateFinder, directory = directoryWithOneFile)
             runTest {
@@ -95,9 +97,11 @@ class DuplicateFinderTest {
 
         @Test
         fun `directory exists and has two different files`() {
-            val directoryWith2DifferentFiles = createTempDirectory("directoryWith2DifferentFiles")
-            createTempFile(directory = directoryWith2DifferentFiles).writeText("hi")
-            createTempFile(directory = directoryWith2DifferentFiles).writeText("bye")
+            val directoryWith2DifferentFiles =
+                directory("directoryWith2DifferentFiles") {
+                    file(content = "hi")
+                    file(content = "bye")
+                }.path
 
             val execution = findDuplicates(duplicateFinder, directory = directoryWith2DifferentFiles)
             runTest {
@@ -107,10 +111,12 @@ class DuplicateFinderTest {
 
         @Test
         fun `directory exists and has two files with same size and different content`() {
-            val directoryWith2DifferentFiles = createTempDirectory("directoryWith2FilesSameSizeDifContent")
-            val hiFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("hi") }
-            val byFile = createTempFile(directory = directoryWith2DifferentFiles).apply { writeText("by") }
-            assertThat(hiFile).hasSize(byFile.fileSize())
+            val directoryWith2DifferentFiles =
+                directory("directoryWith2FilesSameSizeDifContent") {
+                    val hiFile = file(content = "hi")
+                    val byFile = file(content = "by")
+                    assertThat(hiFile).hasSize(byFile.fileSize())
+                }.path
 
             val execution = findDuplicates(duplicateFinder, directory = directoryWith2DifferentFiles)
             runTest {
@@ -190,9 +196,10 @@ class DuplicateFinderTest {
 
         @Test
         fun `there is a symbolic link to a file`() {
-            val testDirectory = createTempDirectory("withSymlinks")
-            val target = createTempFile(directory = testDirectory).apply { writeText("hi") }
-            testDirectory.resolve("pointToTarget").createSymbolicLinkPointingTo(target)
+            val testDirectory =
+                directory("withSymlinks") {
+                    symlink(to = file(content = "hi"))
+                }.path
 
             val execution = findDuplicates(duplicateFinder, directory = testDirectory)
             runTest {
@@ -232,22 +239,22 @@ class DuplicateFinderTest {
         """,
         )
         fun `two files in different subdirectories have same content hash`() {
-            val root = createTempDirectory()
-            val oneFile =
-                ((root / Paths.get("somedir")).createDirectory() / Paths.get("somefile")).apply {
-                    writeText("hi")
-                }
-            val otherFile =
-                ((root / Paths.get("otherdir")).createDirectory() / Paths.get("otherfile")).apply {
-                    writeText("hi")
-                }
+            val (root, files) =
+                directory {
+                    directory("somedir", nameAsPrefix = false) {
+                        file("somefile", content = "hi")
+                    }
+                    directory("otherdir", nameAsPrefix = false) {
+                        file("otherfile", content = "hi")
+                    }
+                }.let { it.path to it.allFiles }
 
             runTest {
                 val execution = findDuplicates(this, directory = root)
 
                 val duplicateEntries = execution.duplicateEntries()
                 duplicateEntries.assertOneDuplicateGroupWith(
-                    paths = listOf(oneFile, otherFile),
+                    paths = files,
                     content = "hi",
                 )
             }
@@ -261,21 +268,22 @@ class DuplicateFinderTest {
         """,
         )
         fun `two files in different directories have same content hash`() {
-            val subdirectories =
-                createTempDirectory().let { root ->
-                    listOf("somedir", "otherdir").map { dirname ->
-                        (root / Paths.get(dirname)).createDirectory()
+            val (subdirectories, files) =
+                directory {
+                    directory("somedir", nameAsPrefix = false) {
+                        file("somefile", content = "hi")
                     }
-                }
-            val oneFile = (subdirectories[0] / Paths.get("somefile")).apply { writeText("hi") }
-            val otherFile = (subdirectories[1] / Paths.get("otherfile")).apply { writeText("hi") }
+                    directory("otherdir", nameAsPrefix = false) {
+                        file("otherfile", content = "hi")
+                    }
+                }.let { it.dirs to it.allFiles }
 
             runTest {
                 val execution = findDuplicates(this, directories = subdirectories)
 
                 val duplicateEntries = execution.duplicateEntries()
                 duplicateEntries.assertOneDuplicateGroupWith(
-                    paths = listOf(oneFile, otherFile),
+                    paths = files,
                     content = "hi",
                 )
             }
@@ -289,22 +297,21 @@ class DuplicateFinderTest {
         """,
         )
         fun `two files with same name in different directories have same content hash`() {
-            val subdirectories =
-                createTempDirectory().let { root ->
-                    listOf("somedir", "otherdir").map { dirname ->
-                        (root / Paths.get(dirname)).createDirectory()
+            val (root, files) =
+                directory {
+                    directory("somedir", nameAsPrefix = false) {
+                        file("somefile", content = "hi")
                     }
-                }
-            val files =
-                subdirectories.map {
-                    (it / Paths.get("somefile")).apply { writeText("hi") }
-                }
+                    directory("otherdir", nameAsPrefix = false) {
+                        file("somefile", content = "hi")
+                    }
+                }.let { it.path to it.allFiles }
 
             runTest {
                 val execution =
                     findDuplicates(
                         parentScope = this,
-                        directory = subdirectories.first().parent,
+                        directory = root,
                     )
 
                 val duplicateEntries = execution.duplicateEntries()
