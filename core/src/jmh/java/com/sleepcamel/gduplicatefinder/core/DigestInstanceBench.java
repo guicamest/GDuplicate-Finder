@@ -16,11 +16,13 @@
 package com.sleepcamel.gduplicatefinder.core;
 
 import org.apache.commons.codec.digest.Blake3;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -33,6 +35,21 @@ public class DigestInstanceBench {
     @Benchmark
     public void getInstanceMD5(Blackhole bh) throws NoSuchAlgorithmException {
         bh.consume(MessageDigest.getInstance("MD5"));
+    }
+
+    @Benchmark
+    public void getInstanceMD5BC(Blackhole bh) throws NoSuchAlgorithmException, NoSuchProviderException {
+        bh.consume(MessageDigest.getInstance("MD5", BouncyCastleProvider.PROVIDER_NAME));
+    }
+
+    @Benchmark
+    public void getInstanceB2BC(Blackhole bh) throws NoSuchAlgorithmException, NoSuchProviderException {
+        bh.consume(MessageDigest.getInstance("BLAKE2B-256", BouncyCastleProvider.PROVIDER_NAME));
+    }
+
+    @Benchmark
+    public void getInstanceB3BC(Blackhole bh) throws NoSuchAlgorithmException, NoSuchProviderException {
+        bh.consume(MessageDigest.getInstance("BLAKE3-256", BouncyCastleProvider.PROVIDER_NAME));
     }
 
     @Benchmark

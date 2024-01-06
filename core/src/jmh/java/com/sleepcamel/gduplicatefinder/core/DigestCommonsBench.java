@@ -15,17 +15,13 @@
  */
 package com.sleepcamel.gduplicatefinder.core;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.apache.commons.codec.digest.Blake3;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
@@ -35,36 +31,37 @@ import java.util.function.BiConsumer;
 @State(Scope.Benchmark)
 @Warmup(iterations = 3)
 @Measurement(iterations = 5)
-public class DigestBench {
+public class DigestCommonsBench {
 
-    private MessageDigest messageDigestInstance;
+    private Blake3 blake3;
 
     @Param({"1024", "1048576", "536870912"})
     public int size;
 
-    @Param({"SUN:MD5", "BC:MD5", "BC:BLAKE2B-256", "BC:BLAKE3-256"})
-    public String providerAndAlgo;
-
-    static {Security.addProvider(new BouncyCastleProvider());}
-
     private byte[] testBytes;
+    private final byte[] outBytes = new byte[32];
 
     @Setup
-    public void prepare() throws NoSuchAlgorithmException, NoSuchProviderException {
-        var parts = providerAndAlgo.split(":");
-        messageDigestInstance = MessageDigest.getInstance(parts[1], parts[0]);
+    public void prepare() {
+        blake3 = Blake3.initHash();
         testBytes = new byte[size];
     }
 
-    @Benchmark
-    public void digest(Blackhole bh) {
-        bh.consume(messageDigestInstance.digest(testBytes));
+    @Setup(Level.Iteration)
+    public void reset() {
+        blake3.reset();
     }
 
     @Benchmark
-    public void digestMD5_inc(Blackhole bh) throws IOException {
-        forEachBufferIn(testBytes, (buffer, len) -> messageDigestInstance.update(buffer, 0, len));
-        bh.consume(messageDigestInstance.digest());
+    public void digestCommonsBlake(Blackhole bh) {
+        blake3.update(testBytes);
+        bh.consume(blake3.doFinalize(outBytes));
+    }
+
+    @Benchmark
+    public void digestBlake_inc(Blackhole bh) throws IOException {
+        forEachBufferIn(testBytes, (buffer, len) -> blake3.update(buffer, 0, len));
+        bh.consume(blake3.doFinalize(outBytes));
     }
 
     final int TRANSFER_BUFFER_SIZE = 16 * 1024;
