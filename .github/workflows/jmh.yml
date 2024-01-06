@@ -1,4 +1,4 @@
-name: Build and verify
+name: JMH
 on:
   pull_request:
     branches: [ v3 ]
