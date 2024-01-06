@@ -11,17 +11,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  jmh:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job
-        os: [ ubuntu-22.04, windows-2022, macos-12 ]
+        os: [ ubuntu-22.04 ]
         jvm: [ 11, 17, 21 ]
 
-    # https://github.com/actions
-    # https://github.com/marketplace?type=actions
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.1.1
@@ -46,4 +43,4 @@ jobs:
           gradle-version: wrapper
 
       - name: Build
-        run: ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }}
+        run: ./gradlew jmh -P kotlin.jvmToolchain=${{ matrix.jvm }}
