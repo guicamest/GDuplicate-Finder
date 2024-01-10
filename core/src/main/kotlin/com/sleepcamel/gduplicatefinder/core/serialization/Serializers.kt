@@ -1,0 +1,126 @@
+package com.sleepcamel.gduplicatefinder.core.serialization
+
+import com.sleepcamel.gduplicatefinder.core.FindDuplicatesExecutionState
+import com.sleepcamel.gduplicatefinder.core.ScanDirectoriesStateImpl
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
+import java.net.URI
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
+import java.time.Instant
+
+interface StateSerializer<T> {
+    suspend fun serialize(
+        state: T,
+        to: Path,
+    )
+}
+
+object PathSerializer : KSerializer<Path> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Pathv0", PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: Path,
+    ) = encoder.encodeString(value.toUri().toString())
+
+    override fun deserialize(decoder: Decoder): Path = Paths.get(URI.create(decoder.decodeString()))
+}
+
+object BasicAttributesSerializer : KSerializer<BasicFileAttributes> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("BasicFileAttributesv0", PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: BasicFileAttributes,
+    ) = encoder.encodeSerializableValue(
+        DeserializedFileAttributes.serializer(),
+        DeserializedFileAttributes(
+            lastModifiedTime = value.lastModifiedTime(),
+            lastAccessTime = value.lastAccessTime(),
+            creationTime = value.creationTime(),
+            isRegularFile = value.isRegularFile,
+            isDirectory = value.isDirectory,
+            isSymbolicLink = value.isSymbolicLink,
+            isOther = value.isOther,
+            size = value.size(),
+        ),
+    )
+
+    override fun deserialize(decoder: Decoder): BasicFileAttributes =
+        decoder.decodeSerializableValue(
+            DeserializedFileAttributes.serializer(),
+        )
+
+    @Serializable
+    data class DeserializedFileAttributes(
+        private val lastModifiedTime: @Contextual FileTime,
+        private val lastAccessTime: @Contextual FileTime,
+        private val creationTime: @Contextual FileTime,
+        private val isRegularFile: Boolean,
+        private val isDirectory: Boolean,
+        private val isSymbolicLink: Boolean,
+        private val isOther: Boolean,
+        private val size: Long,
+    ) : BasicFileAttributes {
+        override fun lastModifiedTime(): FileTime = lastModifiedTime
+
+        override fun lastAccessTime(): FileTime = lastAccessTime
+
+        override fun creationTime(): FileTime = creationTime
+
+        override fun isRegularFile(): Boolean = isRegularFile
+
+        override fun isDirectory(): Boolean = isDirectory
+
+        override fun isSymbolicLink(): Boolean = isSymbolicLink
+
+        override fun isOther(): Boolean = isOther
+
+        override fun size(): Long = size
+
+        override fun fileKey(): Any? = null
+    }
+}
+
+object FileTimeSerializer : KSerializer<FileTime> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("FileTime", PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: FileTime,
+    ) = encoder.encodeString(
+        value.toInstant().toString(),
+    )
+
+    override fun deserialize(decoder: Decoder): FileTime =
+        FileTime.from(
+            Instant.parse(decoder.decodeString()),
+        )
+}
+
+val nioSerializersModule =
+    SerializersModule {
+        contextual(PathSerializer)
+        contextual(BasicAttributesSerializer)
+        contextual(FileTimeSerializer)
+        polymorphic(
+            FindDuplicatesExecutionState::class,
+        ) {
+            subclass(ScanDirectoriesStateImpl.serializer())
+        }
+    }

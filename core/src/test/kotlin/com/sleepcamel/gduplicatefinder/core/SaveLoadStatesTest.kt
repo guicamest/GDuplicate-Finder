@@ -18,42 +18,29 @@
 package com.sleepcamel.gduplicatefinder.core
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
+import com.sleepcamel.gduplicatefinder.core.serialization.PathSerializer
+import com.sleepcamel.gduplicatefinder.core.serialization.StateSerializer
+import com.sleepcamel.gduplicatefinder.core.serialization.nioSerializersModule
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.net.URI
 import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.attribute.FileTime
-import java.time.Instant
 import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
@@ -130,98 +117,6 @@ class SaveLoadStatesTest {
         }
     }
 
-    interface StateSerializer<T> {
-        suspend fun serialize(
-            state: T,
-            to: Path,
-        )
-    }
-
-    object PathSerializer : KSerializer<Path> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Pathv0", PrimitiveKind.STRING)
-
-        override fun serialize(
-            encoder: Encoder,
-            value: Path,
-        ) = encoder.encodeString(value.toUri().toString())
-
-        override fun deserialize(decoder: Decoder): Path = Paths.get(URI.create(decoder.decodeString()))
-    }
-
-    object BasicAttributesSerializer : KSerializer<BasicFileAttributes> {
-        override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("BasicFileAttributesv0", PrimitiveKind.STRING)
-
-        override fun serialize(
-            encoder: Encoder,
-            value: BasicFileAttributes,
-        ) = encoder.encodeSerializableValue(
-            DeserializedFileAttributes.serializer(),
-            DeserializedFileAttributes(
-                lastModifiedTime = value.lastModifiedTime(),
-                lastAccessTime = value.lastAccessTime(),
-                creationTime = value.creationTime(),
-                isRegularFile = value.isRegularFile,
-                isDirectory = value.isDirectory,
-                isSymbolicLink = value.isSymbolicLink,
-                isOther = value.isOther,
-                size = value.size(),
-            ),
-        )
-
-        override fun deserialize(decoder: Decoder): BasicFileAttributes =
-            decoder.decodeSerializableValue(
-                DeserializedFileAttributes.serializer(),
-            )
-
-        object FileTimeSerializer : KSerializer<FileTime> {
-            override val descriptor: SerialDescriptor =
-                PrimitiveSerialDescriptor("FileTime", PrimitiveKind.STRING)
-
-            override fun serialize(
-                encoder: Encoder,
-                value: FileTime,
-            ) = encoder.encodeString(
-                value.toInstant().toString(),
-            )
-
-            override fun deserialize(decoder: Decoder): FileTime =
-                FileTime.from(
-                    Instant.parse(decoder.decodeString()),
-                )
-        }
-
-        @Serializable
-        data class DeserializedFileAttributes(
-            private val lastModifiedTime: @Contextual FileTime,
-            private val lastAccessTime: @Contextual FileTime,
-            private val creationTime: @Contextual FileTime,
-            private val isRegularFile: Boolean,
-            private val isDirectory: Boolean,
-            private val isSymbolicLink: Boolean,
-            private val isOther: Boolean,
-            private val size: Long,
-        ) : BasicFileAttributes {
-            override fun lastModifiedTime(): FileTime = lastModifiedTime
-
-            override fun lastAccessTime(): FileTime = lastAccessTime
-
-            override fun creationTime(): FileTime = creationTime
-
-            override fun isRegularFile(): Boolean = isRegularFile
-
-            override fun isDirectory(): Boolean = isDirectory
-
-            override fun isSymbolicLink(): Boolean = isSymbolicLink
-
-            override fun isOther(): Boolean = isOther
-
-            override fun size(): Long = size
-
-            override fun fileKey(): Any? = null
-        }
-    }
-
     class JsonKSStateSerializer(
         private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     ) : StateSerializer<FindDuplicatesExecutionState> {
@@ -237,20 +132,7 @@ class SaveLoadStatesTest {
         }
 
         companion object {
-            private val json =
-                Json {
-                    serializersModule =
-                        SerializersModule {
-                            contextual(PathSerializer)
-                            contextual(BasicAttributesSerializer)
-                            contextual(BasicAttributesSerializer.FileTimeSerializer)
-                            polymorphic(
-                                FindDuplicatesExecutionState::class,
-                            ) {
-                                subclass(ScanDirectoriesStateImpl.serializer())
-                            }
-                        }
-                }
+            private val json = Json { serializersModule = nioSerializersModule }
         }
     }
 }
