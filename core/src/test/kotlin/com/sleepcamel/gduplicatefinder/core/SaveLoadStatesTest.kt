@@ -17,7 +17,6 @@
 
 package com.sleepcamel.gduplicatefinder.core
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
 import com.sleepcamel.gduplicatefinder.core.serialization.PathSerializer
 import com.sleepcamel.gduplicatefinder.core.serialization.StateToPathSerializer
 import com.sleepcamel.gduplicatefinder.core.serialization.nioSerializersModule
@@ -31,13 +30,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.OutputStream
-import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -47,65 +43,33 @@ import kotlin.io.path.outputStream
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SaveLoadStatesTest {
-    private lateinit var searchDirectory: Path
-    private lateinit var paths: List<Path>
-    private lateinit var dirsOnRoot: List<Path>
-    private lateinit var fs: FileSystem
-
-    @BeforeAll
-    fun setupFiles() {
-        fs = MemoryFileSystemBuilder.newLinux().build("saveload")
-        val testDirectory =
-            directory(fs = fs, name = "saveload") {
-                repeat(1000) {
-                    directory {
-                        repeat(20) {
-                            directory {
-                                file(size = 3)
-                            }
-                            file(size = 4)
-                            file(size = 5)
-                        }
-                    }
-                    repeat(20) {
-                        file(size = 1)
-                    }
-                    repeat(10) {
-                        file(size = 2)
-                    }
-                }
-            }
-        searchDirectory = testDirectory.path
-        paths = testDirectory.allFiles
-        dirsOnRoot = testDirectory.dirs
-    }
-
-    @AfterAll
-    fun closeFs() {
-        fs.close()
-    }
-
     @ExperimentalCoroutinesApi
     @Test
     @DisplayName("ScanDirectoriesStateImpl should be serializable")
     fun canSerializeScanState() {
+        val (directory, files) =
+            directory {
+                file("somefile", size = 10)
+            }.let { it.path to it.allFiles }
+
         val scanDirectoriesState =
             ScanDirectoriesStateImpl(
-                initialDirectories = emptySet(),
+                initialDirectories = setOf(directory),
                 filter = MinSizeFilter(0),
-                filesToProcess = paths.addAttributes(),
-                visitedDirectories = dirsOnRoot.toSet(),
+                filesToProcess = files.addAttributes(),
+                visitedDirectories = setOf(directory),
             )
-        val file = createTempFile()
         runTest {
             val dispatcher = StandardTestDispatcher(testScheduler)
+            val file = createTempFile()
+
             JsonKSStateSerializer(dispatcher).serialize(scanDirectoriesState, file)
             assertThat(file).isNotEmptyFile()
         }
     }
 
     @Test
-    @DisplayName("serialize Path")
+    @DisplayName("Path should be de/serializable")
     fun canSerializePath() {
         val file = createTempFile()
         file.outputStream().use {
