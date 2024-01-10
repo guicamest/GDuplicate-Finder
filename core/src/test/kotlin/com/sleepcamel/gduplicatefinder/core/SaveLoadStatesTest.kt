@@ -19,14 +19,13 @@ package com.sleepcamel.gduplicatefinder.core
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder
 import com.sleepcamel.gduplicatefinder.core.serialization.PathSerializer
-import com.sleepcamel.gduplicatefinder.core.serialization.StateSerializer
+import com.sleepcamel.gduplicatefinder.core.serialization.StateToPathSerializer
 import com.sleepcamel.gduplicatefinder.core.serialization.nioSerializersModule
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.OutputStream
 import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
@@ -118,18 +118,12 @@ class SaveLoadStatesTest {
     }
 
     class JsonKSStateSerializer(
-        private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    ) : StateSerializer<FindDuplicatesExecutionState> {
-        override suspend fun serialize(
-            state: FindDuplicatesExecutionState,
-            to: Path,
-        ) {
-            withContext(dispatcher) {
-                to.outputStream().use {
-                    json.encodeToStream(state, it)
-                }
-            }
-        }
+        override val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ) : StateToPathSerializer<FindDuplicatesExecutionState> {
+        override val encodeToStream: (
+            FindDuplicatesExecutionState,
+            OutputStream,
+        ) -> Unit = json::encodeToStream
 
         companion object {
             private val json = Json { serializersModule = nioSerializersModule }
