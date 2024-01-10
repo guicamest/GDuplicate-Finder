@@ -33,10 +33,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.MethodSource
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.stream.Stream
 import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
@@ -80,6 +84,32 @@ class SaveLoadStatesTest {
             assertThat(value).isEqualTo(file)
         }
     }
+
+    @DisplayName("Should de/serialize PathFilter subclass")
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("pathFilters")
+    fun canSerializeFilter(instance: PathFilter) {
+        val file = createTempFile()
+        file.outputStream().use {
+            Json.encodeToStream(instance, it)
+        }
+        file.inputStream().use {
+            val value: PathFilter = Json.decodeFromStream(it)
+            assertThat(value).isEqualTo(instance)
+        }
+    }
+
+    private fun pathFilters() =
+        Stream.of(
+            arguments(MinSizeFilter(100), 0),
+            arguments(MaxSizeFilter(100), 1),
+            arguments(FilenameFilter(name = "somefile", exact = true), 0),
+            arguments(ExtensionFilter(extension = "txt", exact = false), 1),
+            arguments(FullFilenameFilter(name = "somefile", exact = false), 1),
+            arguments(DirectoryFilter(name = "ramDi", exact = false), 1),
+            arguments(PathMatcherFilter("glob:**/*.{txt}"), 0),
+            arguments(PathMatcherFilter("regex:.*a\\w+file\\..*"), 1),
+        )
 
     class JsonKSStateSerializer(
         override val dispatcher: CoroutineDispatcher = Dispatchers.IO,

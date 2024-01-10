@@ -41,6 +41,7 @@ data class MinSizeFilter(private val size: Long) : PathFilter {
     ) = attributes.size() > size
 }
 
+@Serializable
 data class MaxSizeFilter(private val size: Long) : PathFilter {
     @Throws(IOException::class)
     override fun accept(
@@ -55,6 +56,7 @@ data class MaxSizeFilter(private val size: Long) : PathFilter {
  * If file is /some/path/somefile.txt.doc => applies only to "somefile.txt"
  * If file is /some/path/somefile => applies only to "somefile"
  */
+@Serializable
 data class FilenameFilter(
     private val name: String,
     private val exact: Boolean,
@@ -64,6 +66,7 @@ data class FilenameFilter(
  * Full filename filter
  * If file is /some/path/somefile.txt => applies to "somefile.txt"
  */
+@Serializable
 data class FullFilenameFilter(
     private val name: String,
     private val exact: Boolean,
@@ -75,6 +78,7 @@ data class FullFilenameFilter(
  * If file is /some/path/somefile.txt.doc => applies only to "doc"
  * If file doesn't have extension => applies to "" (empty string)
  */
+@Serializable
 data class ExtensionFilter(
     private val extension: String,
     private val exact: Boolean,
@@ -93,11 +97,13 @@ private class StringFilter(
     ): Boolean = stringProperty(entry).matches(regex)
 }
 
+@Serializable
 data class DirectoryFilter(
     private val name: String,
     private val exact: Boolean,
 ) : PathFilter by StringFilter(name, exact, { p -> p.name })
 
+@Serializable
 data class PathMatcherFilter(val pattern: String) : PathFilter {
     override fun accept(
         entry: Path,
