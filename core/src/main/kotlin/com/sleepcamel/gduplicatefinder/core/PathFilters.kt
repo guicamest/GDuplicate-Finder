@@ -15,6 +15,7 @@
  */
 package com.sleepcamel.gduplicatefinder.core
 
+import kotlinx.serialization.Serializable
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -22,7 +23,8 @@ import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
-interface PathFilter {
+@Serializable
+sealed interface PathFilter {
     @Throws(IOException::class)
     fun accept(
         entry: Path,
@@ -30,6 +32,7 @@ interface PathFilter {
     ): Boolean
 }
 
+@Serializable
 data class MinSizeFilter(private val size: Long) : PathFilter {
     @Throws(IOException::class)
     override fun accept(

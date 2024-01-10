@@ -18,8 +18,11 @@ package com.sleepcamel.gduplicatefinder.core
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 
+@Serializable
 sealed interface FindDuplicatesExecutionState
 
 interface ScanDirectoriesState : FindDuplicatesExecutionState {
@@ -29,11 +32,12 @@ interface ScanDirectoriesState : FindDuplicatesExecutionState {
     val filesToProcess: Set<PathWithAttributes>
 }
 
+@Serializable
 data class ScanDirectoriesStateImpl(
-    override val initialDirectories: Collection<Path>,
+    override val initialDirectories: Collection<@Contextual Path>,
     override val filter: PathFilter,
-    override val visitedDirectories: Set<Path>,
-    override val filesToProcess: Set<PathWithAttributes>,
+    override val visitedDirectories: Set<@Contextual Path>,
+    override val filesToProcess: Set<@Contextual PathWithAttributes>,
 ) : ScanDirectoriesState {
     companion object {
         internal fun empty(

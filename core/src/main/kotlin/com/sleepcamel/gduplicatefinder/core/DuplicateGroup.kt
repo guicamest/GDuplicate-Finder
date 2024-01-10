@@ -15,14 +15,17 @@
  */
 package com.sleepcamel.gduplicatefinder.core
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 
 data class DuplicateGroup(val hash: String, val paths: List<PathWithAttributesAndContent>)
 
+@Serializable
 data class PathWithAttributes(
-    val path: Path,
-    val attributes: BasicFileAttributes,
+    @Contextual val path: Path,
+    @Contextual val attributes: BasicFileAttributes,
 ) : BasicFileAttributes by attributes {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -38,9 +41,10 @@ data class PathWithAttributes(
     fun contentHash(type: String = "MD5"): String = path.contentHash(type)
 }
 
+@Serializable
 data class PathWithAttributesAndContent(
-    val path: Path,
-    val attributes: BasicFileAttributes,
+    @Contextual val path: Path,
+    @Contextual val attributes: BasicFileAttributes,
     val contentHash: String,
 ) : BasicFileAttributes by attributes {
     override fun equals(other: Any?): Boolean {
