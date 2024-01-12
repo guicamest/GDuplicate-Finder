@@ -51,7 +51,7 @@ data class PathWithAttributesAndContent(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PathWithAttributes
+        other as PathWithAttributesAndContent
 
         return path == other.path
     }
