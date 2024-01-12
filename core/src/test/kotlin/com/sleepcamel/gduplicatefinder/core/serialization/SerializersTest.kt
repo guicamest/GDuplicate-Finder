@@ -1,0 +1,69 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
+package com.sleepcamel.gduplicatefinder.core.serialization
+
+import com.sleepcamel.gduplicatefinder.core.DirectoryFilter
+import com.sleepcamel.gduplicatefinder.core.ExtensionFilter
+import com.sleepcamel.gduplicatefinder.core.FilenameFilter
+import com.sleepcamel.gduplicatefinder.core.FullFilenameFilter
+import com.sleepcamel.gduplicatefinder.core.MaxSizeFilter
+import com.sleepcamel.gduplicatefinder.core.MinSizeFilter
+import com.sleepcamel.gduplicatefinder.core.PathFilter
+import com.sleepcamel.gduplicatefinder.core.PathMatcherFilter
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
+
+@DisplayName("State subclasses de/serialization")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class SerializersTest {
+    @Test
+    @DisplayName("Should de/serialize Path")
+    fun canSerializePath() {
+        val file = kotlin.io.path.createTempFile()
+        file.outputStream().use {
+            Json.encodeToStream(PathSerializer, file, it)
+        }
+        file.inputStream().use {
+            val value = Json.decodeFromStream(PathSerializer, it)
+            Assertions.assertThat(value).isEqualTo(file)
+        }
+    }
+
+    @DisplayName("Should de/serialize PathFilter subclass")
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("pathFilters")
+    fun canSerializeFilter(instance: PathFilter) {
+        val file = kotlin.io.path.createTempFile()
+        file.outputStream().use {
+            Json.encodeToStream(instance, it)
+        }
+        file.inputStream().use {
+            val value: PathFilter = Json.decodeFromStream(it)
+            Assertions.assertThat(value).isEqualTo(instance)
+        }
+    }
+
+    private fun pathFilters() =
+        Stream.of(
+            Arguments.arguments(MinSizeFilter(100), 0),
+            Arguments.arguments(MaxSizeFilter(100), 1),
+            Arguments.arguments(FilenameFilter(name = "somefile", exact = true), 0),
+            Arguments.arguments(ExtensionFilter(extension = "txt", exact = false), 1),
+            Arguments.arguments(FullFilenameFilter(name = "somefile", exact = false), 1),
+            Arguments.arguments(DirectoryFilter(name = "ramDi", exact = false), 1),
+            Arguments.arguments(PathMatcherFilter("glob:**/*.{txt}"), 0),
+            Arguments.arguments(PathMatcherFilter("regex:.*a\\w+file\\..*"), 1),
+        )
+}
