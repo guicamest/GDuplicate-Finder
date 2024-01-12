@@ -77,53 +77,56 @@ object BasicAttributesSerializer : KSerializer<BasicFileAttributes> {
         value: BasicFileAttributes,
     ) = encoder.encodeSerializableValue(
         DeserializedFileAttributes.serializer(),
-        DeserializedFileAttributes(
-            lastModifiedTime = value.lastModifiedTime(),
-            lastAccessTime = value.lastAccessTime(),
-            creationTime = value.creationTime(),
-            isRegularFile = value.isRegularFile,
-            isDirectory = value.isDirectory,
-            isSymbolicLink = value.isSymbolicLink,
-            isOther = value.isOther,
-            size = value.size(),
-        ),
+        value.toDeserializedAttributes(),
     )
 
     override fun deserialize(decoder: Decoder): BasicFileAttributes =
         decoder.decodeSerializableValue(
             DeserializedFileAttributes.serializer(),
         )
-
-    @Serializable
-    data class DeserializedFileAttributes(
-        private val lastModifiedTime: @Contextual FileTime,
-        private val lastAccessTime: @Contextual FileTime,
-        private val creationTime: @Contextual FileTime,
-        private val isRegularFile: Boolean,
-        private val isDirectory: Boolean,
-        private val isSymbolicLink: Boolean,
-        private val isOther: Boolean,
-        private val size: Long,
-    ) : BasicFileAttributes {
-        override fun lastModifiedTime(): FileTime = lastModifiedTime
-
-        override fun lastAccessTime(): FileTime = lastAccessTime
-
-        override fun creationTime(): FileTime = creationTime
-
-        override fun isRegularFile(): Boolean = isRegularFile
-
-        override fun isDirectory(): Boolean = isDirectory
-
-        override fun isSymbolicLink(): Boolean = isSymbolicLink
-
-        override fun isOther(): Boolean = isOther
-
-        override fun size(): Long = size
-
-        override fun fileKey(): Any? = null
-    }
 }
+
+@Serializable
+internal data class DeserializedFileAttributes(
+    private val lastModifiedTime: @Contextual FileTime,
+    private val lastAccessTime: @Contextual FileTime,
+    private val creationTime: @Contextual FileTime,
+    private val isRegularFile: Boolean,
+    private val isDirectory: Boolean,
+    private val isSymbolicLink: Boolean,
+    private val isOther: Boolean,
+    private val size: Long,
+) : BasicFileAttributes {
+    override fun lastModifiedTime(): FileTime = lastModifiedTime
+
+    override fun lastAccessTime(): FileTime = lastAccessTime
+
+    override fun creationTime(): FileTime = creationTime
+
+    override fun isRegularFile(): Boolean = isRegularFile
+
+    override fun isDirectory(): Boolean = isDirectory
+
+    override fun isSymbolicLink(): Boolean = isSymbolicLink
+
+    override fun isOther(): Boolean = isOther
+
+    override fun size(): Long = size
+
+    override fun fileKey(): Any? = null
+}
+
+internal fun BasicFileAttributes.toDeserializedAttributes(): DeserializedFileAttributes =
+    DeserializedFileAttributes(
+        lastModifiedTime = lastModifiedTime(),
+        lastAccessTime = lastAccessTime(),
+        creationTime = creationTime(),
+        isRegularFile = isRegularFile,
+        isDirectory = isDirectory,
+        isSymbolicLink = isSymbolicLink,
+        isOther = isOther,
+        size = size(),
+    )
 
 object FileTimeSerializer : KSerializer<FileTime> {
     override val descriptor: SerialDescriptor =

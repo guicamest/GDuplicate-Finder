@@ -20,16 +20,20 @@ package com.sleepcamel.gduplicatefinder.core
 import com.sleepcamel.gduplicatefinder.core.serialization.PathSerializer
 import com.sleepcamel.gduplicatefinder.core.serialization.StateToPathSerializer
 import com.sleepcamel.gduplicatefinder.core.serialization.nioSerializersModule
+import com.sleepcamel.gduplicatefinder.core.serialization.toDeserializedAttributes
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.recursive.comparison.RecursiveComparator
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -45,11 +49,12 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
+@DisplayName("State classes de/serialization")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SaveLoadStatesTest {
     @ExperimentalCoroutinesApi
     @Test
-    @DisplayName("ScanDirectoriesStateImpl should be serializable")
+    @DisplayName("ScanDirectoriesStateImpl should be de/serializable")
     fun canSerializeScanState() {
         val (directory, files) =
             directory {
@@ -69,11 +74,18 @@ class SaveLoadStatesTest {
 
             JsonKSStateSerializer(dispatcher).serialize(scanDirectoriesState, file)
             assertThat(file).isNotEmptyFile()
+
+            val state: FindDuplicatesExecutionState = JsonKSStateSerializer(dispatcher).deserialize(file)
+
+            assertThat(state)
+                .usingComparatorForType(AttributesComparator, BasicFileAttributes::class.java)
+                .usingRecursiveComparison()
+                .isEqualTo(scanDirectoriesState)
         }
     }
 
     @Test
-    @DisplayName("Path should be de/serializable")
+    @DisplayName("Should de/serialize Path")
     fun canSerializePath() {
         val file = createTempFile()
         file.outputStream().use {
@@ -119,10 +131,31 @@ class SaveLoadStatesTest {
             OutputStream,
         ) -> Unit = json::encodeToStream
 
+        suspend inline fun <reified T : FindDuplicatesExecutionState> deserialize(from: Path): T =
+            withContext(dispatcher) {
+                from.inputStream().use {
+                    json.decodeFromStream<T>(it)
+                }
+            }
+
         companion object {
-            private val json = Json { serializersModule = nioSerializersModule }
+            val json = Json { serializersModule = nioSerializersModule }
         }
     }
+}
+
+private object AttributesComparator : Comparator<BasicFileAttributes> {
+    private val recursiveComparator =
+        RecursiveComparator(
+            RecursiveComparisonConfiguration().apply {
+                ignoreFields("fileKey")
+            },
+        )
+
+    override fun compare(
+        o1: BasicFileAttributes,
+        o2: BasicFileAttributes,
+    ): Int = recursiveComparator.compare(o1.toDeserializedAttributes(), o2.toDeserializedAttributes())
 }
 
 private fun List<Path>.addAttributes(): Set<PathWithAttributes> =
