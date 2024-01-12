@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2024 guicamest
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 @file:OptIn(ExperimentalSerializationApi::class)
 
 package com.sleepcamel.gduplicatefinder.core.serialization
@@ -10,17 +25,23 @@ import com.sleepcamel.gduplicatefinder.core.MaxSizeFilter
 import com.sleepcamel.gduplicatefinder.core.MinSizeFilter
 import com.sleepcamel.gduplicatefinder.core.PathFilter
 import com.sleepcamel.gduplicatefinder.core.PathMatcherFilter
+import com.sleepcamel.gduplicatefinder.core.PathWithAttributes
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import org.assertj.core.api.Assertions
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.stream.Stream
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
@@ -37,7 +58,32 @@ class SerializersTest {
         }
         file.inputStream().use {
             val value = Json.decodeFromStream(PathSerializer, it)
-            Assertions.assertThat(value).isEqualTo(file)
+            assertThat(value).isEqualTo(file)
+        }
+    }
+
+    @Test
+    @DisplayName("Should de/serialize PathWithAttributes")
+    fun canSerializePathWithAttributes() {
+        val jsonWithModules =
+            Json {
+                serializersModule =
+                    SerializersModule {
+                        contextual(PathSerializer)
+                        contextual(BasicAttributesSerializer)
+                        contextual(FileTimeSerializer)
+                    }
+            }
+
+        val file = kotlin.io.path.createTempFile()
+        val withAttributes = file.withAttributes()
+
+        file.outputStream().use {
+            jsonWithModules.encodeToStream(withAttributes, it)
+        }
+        file.inputStream().use {
+            val value = jsonWithModules.decodeFromStream<PathWithAttributes>(it)
+            assertThat(value).isEqualTo(withAttributes)
         }
     }
 
@@ -51,7 +97,7 @@ class SerializersTest {
         }
         file.inputStream().use {
             val value: PathFilter = Json.decodeFromStream(it)
-            Assertions.assertThat(value).isEqualTo(instance)
+            assertThat(value).isEqualTo(instance)
         }
     }
 
@@ -67,3 +113,6 @@ class SerializersTest {
             Arguments.arguments(PathMatcherFilter("regex:.*a\\w+file\\..*"), 1),
         )
 }
+
+private fun Path.withAttributes(): PathWithAttributes =
+    PathWithAttributes(this, Files.readAttributes(this, BasicFileAttributes::class.java))
