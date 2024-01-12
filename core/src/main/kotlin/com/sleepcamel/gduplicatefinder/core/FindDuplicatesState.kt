@@ -69,6 +69,7 @@ interface ContentCompareState : FindDuplicatesExecutionState {
     val processedFiles: Set<PathWithAttributesAndContent>
 }
 
+@Serializable
 data class ContentCompareStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
     override val processedFiles: Set<PathWithAttributesAndContent>,

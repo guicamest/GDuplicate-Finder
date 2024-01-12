@@ -15,6 +15,7 @@
  */
 package com.sleepcamel.gduplicatefinder.core.serialization
 
+import com.sleepcamel.gduplicatefinder.core.ContentCompareStateImpl
 import com.sleepcamel.gduplicatefinder.core.FindDuplicatesExecutionState
 import com.sleepcamel.gduplicatefinder.core.ScanDirectoriesStateImpl
 import com.sleepcamel.gduplicatefinder.core.SizeCompareStateImpl
@@ -156,5 +157,6 @@ val nioSerializersModule =
         ) {
             subclass(ScanDirectoriesStateImpl.serializer())
             subclass(SizeCompareStateImpl.serializer())
+            subclass(ContentCompareStateImpl.serializer())
         }
     }

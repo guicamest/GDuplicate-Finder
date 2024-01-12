@@ -42,7 +42,6 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
-import kotlin.io.path.readText
 
 @DisplayName("State classes de/serialization")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -99,7 +98,6 @@ class SaveLoadStatesTest {
 
             JsonKSStateSerializer(dispatcher).serialize(sizeCompareState, file)
             assertThat(file).isNotEmptyFile()
-            println(file.readText())
 
             val state: FindDuplicatesExecutionState = JsonKSStateSerializer(dispatcher).deserialize(file)
 
@@ -107,6 +105,36 @@ class SaveLoadStatesTest {
                 .usingComparatorForType(AttributesComparator, BasicFileAttributes::class.java)
                 .usingRecursiveComparison()
                 .isEqualTo(sizeCompareState)
+        }
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    @DisplayName("ContentCompareStateImpl should be de/serializable")
+    fun canSerializeContentCompareState() {
+        val files =
+            directory {
+                file("somefile", size = 20)
+            }.allFiles
+
+        val contentCompareState =
+            ContentCompareStateImpl(
+                filesToProcess = files.addAttributes(),
+                processedFiles = files.addAttributes().addContent(),
+            )
+        runTest {
+            val dispatcher = StandardTestDispatcher(testScheduler)
+            val file = createTempFile()
+
+            JsonKSStateSerializer(dispatcher).serialize(contentCompareState, file)
+            assertThat(file).isNotEmptyFile()
+
+            val state: FindDuplicatesExecutionState = JsonKSStateSerializer(dispatcher).deserialize(file)
+
+            assertThat(state)
+                .usingComparatorForType(AttributesComparator, BasicFileAttributes::class.java)
+                .usingRecursiveComparison()
+                .isEqualTo(contentCompareState)
         }
     }
 
@@ -148,4 +176,9 @@ private object AttributesComparator : Comparator<BasicFileAttributes> {
 private fun List<Path>.addAttributes(): Set<PathWithAttributes> =
     mapTo(hashSetOf()) {
         PathWithAttributes(it, Files.readAttributes(it, BasicFileAttributes::class.java))
+    }
+
+private fun Set<PathWithAttributes>.addContent(): Set<PathWithAttributesAndContent> =
+    mapTo(hashSetOf()) {
+        PathWithAttributesAndContent(it.path, it.attributes, it.contentHash())
     }
