@@ -58,6 +58,7 @@ interface SizeCompareState : FindDuplicatesExecutionState {
     val processedFiles: Set<PathWithAttributes>
 }
 
+@Serializable
 data class SizeCompareStateImpl(
     override val filesToProcess: Set<PathWithAttributes>,
     override val processedFiles: Set<PathWithAttributes>,

@@ -17,6 +17,7 @@ package com.sleepcamel.gduplicatefinder.core.serialization
 
 import com.sleepcamel.gduplicatefinder.core.FindDuplicatesExecutionState
 import com.sleepcamel.gduplicatefinder.core.ScanDirectoriesStateImpl
+import com.sleepcamel.gduplicatefinder.core.SizeCompareStateImpl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Contextual
@@ -154,5 +155,6 @@ val nioSerializersModule =
             FindDuplicatesExecutionState::class,
         ) {
             subclass(ScanDirectoriesStateImpl.serializer())
+            subclass(SizeCompareStateImpl.serializer())
         }
     }

@@ -48,6 +48,7 @@ import java.util.stream.Stream
 import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
+import kotlin.io.path.readText
 
 @DisplayName("State classes de/serialization")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -81,6 +82,37 @@ class SaveLoadStatesTest {
                 .usingComparatorForType(AttributesComparator, BasicFileAttributes::class.java)
                 .usingRecursiveComparison()
                 .isEqualTo(scanDirectoriesState)
+        }
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    @DisplayName("SizeCompareStateImpl should be de/serializable")
+    fun canSerializeSizeCompareState() {
+        val files =
+            directory {
+                file("somefile", size = 0)
+            }.allFiles
+
+        val sizeCompareState =
+            SizeCompareStateImpl(
+                filesToProcess = files.addAttributes(),
+                processedFiles = files.addAttributes(),
+            )
+        runTest {
+            val dispatcher = StandardTestDispatcher(testScheduler)
+            val file = createTempFile()
+
+            JsonKSStateSerializer(dispatcher).serialize(sizeCompareState, file)
+            assertThat(file).isNotEmptyFile()
+            println(file.readText())
+
+            val state: FindDuplicatesExecutionState = JsonKSStateSerializer(dispatcher).deserialize(file)
+
+            assertThat(state)
+                .usingComparatorForType(AttributesComparator, BasicFileAttributes::class.java)
+                .usingRecursiveComparison()
+                .isEqualTo(sizeCompareState)
         }
     }
 
