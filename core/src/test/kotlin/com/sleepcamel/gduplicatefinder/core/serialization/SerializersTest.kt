@@ -26,6 +26,7 @@ import com.sleepcamel.gduplicatefinder.core.MinSizeFilter
 import com.sleepcamel.gduplicatefinder.core.PathFilter
 import com.sleepcamel.gduplicatefinder.core.PathMatcherFilter
 import com.sleepcamel.gduplicatefinder.core.PathWithAttributes
+import com.sleepcamel.gduplicatefinder.core.PathWithAttributesAndContent
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -43,6 +44,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.stream.Stream
+import kotlin.io.path.createTempFile
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -52,7 +54,7 @@ class SerializersTest {
     @Test
     @DisplayName("Should de/serialize Path")
     fun canSerializePath() {
-        val file = kotlin.io.path.createTempFile()
+        val file = createTempFile()
         file.outputStream().use {
             Json.encodeToStream(PathSerializer, file, it)
         }
@@ -75,7 +77,7 @@ class SerializersTest {
                     }
             }
 
-        val file = kotlin.io.path.createTempFile()
+        val file = createTempFile()
         val withAttributes = file.withAttributes()
 
         file.outputStream().use {
@@ -87,11 +89,40 @@ class SerializersTest {
         }
     }
 
+    @Test
+    @DisplayName("Should de/serialize PathWithAttributesAndContent")
+    fun canSerializePathWithAttributesAndContent() {
+        val jsonWithModules =
+            Json {
+                serializersModule =
+                    SerializersModule {
+                        contextual(PathSerializer)
+                        contextual(BasicAttributesSerializer)
+                        contextual(FileTimeSerializer)
+                    }
+            }
+
+        val file = createTempFile()
+        val withContent =
+            file.withAttributes().run {
+                PathWithAttributesAndContent(file, this, contentHash())
+            }
+
+        file.outputStream().use {
+            jsonWithModules.encodeToStream(withContent, it)
+        }
+
+        file.inputStream().use {
+            val value = jsonWithModules.decodeFromStream<PathWithAttributesAndContent>(it)
+            assertThat(value).isEqualTo(withContent)
+        }
+    }
+
     @DisplayName("Should de/serialize PathFilter subclass")
     @ParameterizedTest(name = "{0}")
     @MethodSource("pathFilters")
     fun canSerializeFilter(instance: PathFilter) {
-        val file = kotlin.io.path.createTempFile()
+        val file = createTempFile()
         file.outputStream().use {
             Json.encodeToStream(instance, it)
         }
