@@ -10,8 +10,8 @@
 build
 bin
 
-FileDuplicateFinderUI/settings.dat
-FileDuplicateFinderUI/gduplicatefinder.properties
+app/settings.dat
+app/gduplicatefinder.properties
 
 forWiki
 prodData
