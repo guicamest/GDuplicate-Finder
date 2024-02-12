@@ -13,6 +13,8 @@ bin
 app/settings.dat
 app/gduplicatefinder.properties
 
+hs_err*log
+
 forWiki
 prodData
 readme.html
