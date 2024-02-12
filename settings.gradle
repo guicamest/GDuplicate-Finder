@@ -1,8 +1,18 @@
+pluginManagement {
+    plugins {
+        id 'org.jetbrains.compose' version '1.5.11'
+        id 'org.jetbrains.kotlin.multiplatform' version '1.9.22'
+    }
+}
+
 plugins {
     id("org.danilopianini.gradle-pre-commit-git-hooks") version "2.0.1"
 }
 
-include 'core', 'custom-ktlint-rules'
+// From compose template
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+include 'core', 'custom-ktlint-rules', 'app'
 
 // See https://github.com/DanySK/gradle-pre-commit-git-hooks
 gitHooks { extension ->

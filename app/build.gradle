@@ -1,139 +1,46 @@
-loadConfiguration()
-apply plugin: 'groovy'
-apply plugin: 'application'
-mainClassName = 'com.sleepcamel.fileduplicatefinder.ui.MainView'
+plugins {
+	id 'org.jetbrains.compose'
+	id 'org.jetbrains.kotlin.multiplatform'
+}
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
-version = "${GDuplicateFinderVersion}"
+compose {
+	// Compose Multiplatform 1.5.11 doesn't support Kotlin 1.9.22, remove when upgrading
+	kotlinCompilerPlugin.set("1.5.7")
 
-import org.apache.tools.ant.filters.ReplaceTokens
-import groovy.text.GStringTemplateEngine
+	desktop {
+		application {
+			mainClass = "MainKt"
 
-buildscript {
-	repositories {
-		add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-				name = 'GitHub'
-				addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
+			nativeDistributions {
+				targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+				packageName = "com.sleepcamel.gduplicatefinder.app"
+				packageVersion = GDuplicateFinderVersion
 			}
-
-		mavenCentral name: 'jboss', artifactUrls: ['http://repository.jboss.org/maven2/']
-	}
-	
-}
- 
-dependencies {
-	compile project(':core')
-	
-	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
-	
-	compile("commons-beanutils:commons-beanutils:$commonsBeanutilsVersion"){
-		exclude group: 'commons-logging', module: 'commons-logging'
-	}
-	
-	compile "commons-io:commons-io:$commonsIoVersion"
-	
-	compile fileTree(dir: "${project.ext.config.allLibs}", include: '*.jar')
-	compile fileTree(dir: "${project.ext.config.swtLibs}", include: '*.jar')
-	compile fileTree(dir: "${project.ext.config.swtOsJars}", include: '*.jar')
-}
-
-task "create-dirs" << {
-   sourceSets.all*.groovy.srcDirs*.each { it.mkdirs() }
-   sourceSets.all*.resources.srcDirs*.each { it.mkdirs() }
-}
-
-
-// We can pass a value for the env property to the build with the -P or --project-prop argument when we run Gradle
-// for i.e -Pos=linux or -Pos=mac if the os property is not available we assume the default is windows os
-def loadConfiguration() {
-	def environment  = hasProperty('os') ? os : autodetectOS()
-	project.ext.environment = environment
-	println "os is set to ${environment}"
-	
-	def configFile = file('config.groovy')
-	def config = new ConfigSlurper(environment).parse(configFile.toURL())
-	
-	project.ext.config = config
-	updateVersionFile()
-}
-
-def autodetectOS(){
-	def defaultOS = 'maccocoa'
-	def osName = System.getProperty('os.name').toLowerCase()
-	def os = defaultOS
-
-	if ( osName.contains('windows') ){
-		os = 'windows'
-	}
-	if ( osName.contains('linux') ){
-		os = 'linux'
-	}
-	
-	def arch = System.getProperty('os.arch').contains('64') ? '64' : '32'
-	defaultOS = "${os}${arch}"
-}
-
-distZip {
-	baseName = gDuplicateFinderZipName
-	destinationDir = new File(destinationDir, project.ext.environment)
-}
-
-startScripts { 
-	def jvmOpts = '-Xmx768m'
-	if ( project.ext.environment.contains('mac') ){
-		jvmOpts = "$jvmOpts -XstartOnFirstThread"
-	}
-	inputs.property('jvmOpts', { jvmOpts }) // for incremental build to work properly
-	doLast { 
-		def optsEnvVar = 'DEFAULT_JVM_OPTS'
-		unixScript.text = unixScript.text.replace("$optsEnvVar=${'""'}", "$optsEnvVar=${'"'}$jvmOpts${'"'}") 
-		windowsScript.text = windowsScript.text.replace("set $optsEnvVar=", "set $optsEnvVar=$jvmOpts") 
+		}
 	}
 }
 
-processResources {
+kotlin {
+	jvmToolchain(project.getProperties().getOrDefault("kotlin.jvmToolchain", 11) as Integer)
 
-	String v = version
-	String env = project.ext.environment
-	from(sourceSets.main.resources.srcDirs) {
-		exclude '**/*.properties', '**/*.xml'
-    }
-	
-	from(sourceSets.main.resources.srcDirs) {
-		include '**/*.properties', '**/*.xml'
-		filter ReplaceTokens, tokens: [
-			gduplicatefinder_version : v,
-			gduplicatefinder_build : env
-		]
-    }
+	jvm("desktop")
 
-}
-
-task copyToBin(type:Copy){
-	from 'build/resources/main'
-    into 'bin'
-}
-copyToBin.dependsOn << "processResources"
-
-task generateVersionFile(){
-	updateVersionFile()
-}
-
-def updateVersionFile(){
-	def f = new File('version.gsp')
-	if ( !f.exists() ){
-		println "Could not find ${f.absolutePath}. Version json not updated"
-		return
-	}
-	def binding = [ version : GDuplicateFinderVersion ]
-	['windows32', 'windows64', 'linux32', 'linux64', 'maccocoa32', 'maccocoa64'].each{
-		binding["${it}downloadPath"] = "http://sourceforge.net/projects/gdupfinder/files/${it}/${gDuplicateFinderZipName}-${GDuplicateFinderVersion}.zip/download"
-	}
-	def template = new GStringTemplateEngine().createTemplate(f).make(binding)
-
-	new File('version.json').withWriter{
-		it << template.toString()
+	sourceSets {
+		commonMain.dependencies {
+			implementation project(':core')
+			implementation compose.components.resources
+			implementation compose.foundation
+			implementation compose.material
+			implementation compose.runtime
+			implementation compose.ui
+		}
+		desktopMain.dependencies {
+			implementation compose.desktop.currentOs
+		}
+		desktopTest.dependencies {
+			implementation compose.desktop.uiTestJUnit4
+		}
 	}
 }
