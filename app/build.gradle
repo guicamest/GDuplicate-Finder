@@ -6,9 +6,6 @@ plugins {
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 compose {
-	// Compose Multiplatform 1.5.11 doesn't support Kotlin 1.9.22, remove when upgrading
-	kotlinCompilerPlugin.set("1.5.7")
-
 	desktop {
 		application {
 			mainClass = "MainKt"
