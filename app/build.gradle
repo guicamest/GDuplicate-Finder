@@ -29,12 +29,14 @@ kotlin {
 			implementation project(':core')
 			implementation compose.components.resources
 			implementation compose.foundation
-			implementation compose.material
+			implementation compose.material3
 			implementation compose.runtime
 			implementation compose.ui
 		}
 		desktopMain.dependencies {
-			implementation compose.desktop.currentOs
+			implementation(compose.desktop.currentOs) {
+				exclude group: "org.jetbrains.compose.material"
+			}
 		}
 		desktopTest.dependencies {
 			implementation compose.desktop.uiTestJUnit4
