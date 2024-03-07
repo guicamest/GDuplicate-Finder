@@ -70,7 +70,7 @@ fun <
     A : Collection<E>,
     E,
     EA : AbstractAssert<EA, E>,
-    > AbstractCollectionAssert<S, A, E, EA>.withPathComparator() =
+> AbstractCollectionAssert<S, A, E, EA>.withPathComparator() =
     usingComparatorForType(
         PathComparator(),
         java.nio.file.Path::class.java,
