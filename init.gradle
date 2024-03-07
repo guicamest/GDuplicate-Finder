@@ -1,0 +1,7 @@
+settingsEvaluated { settings ->
+    settings.pluginManagement {
+        plugins {
+    	    alias(libs.plugins.kotlin.multiplatform)
+        }
+    }
+}

@@ -1,9 +1,9 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
     id 'java-library'
     id 'jvm-test-suite'
     id 'jacoco'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.22'
+    alias(libs.plugins.kotlin.serialization)
     id "org.jlleitschuh.gradle.ktlint" version "12.1.0"
     id "me.champeau.jmh" version "0.7.2"
     id "app.cash.licensee" version "1.9.1"
