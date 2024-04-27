@@ -20,7 +20,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3"
 
     jmhImplementation "org.bouncycastle:bcprov-jdk18on:1.78.1"
-    jmhImplementation 'commons-codec:commons-codec:1.16.1'
+    jmhImplementation 'commons-codec:commons-codec:1.17.0'
 
     ktlintRuleset project(":custom-ktlint-rules")
 }
