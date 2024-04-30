@@ -43,3 +43,9 @@ kotlin {
 		}
 	}
 }
+
+tasks.withType(Test) {
+	if (!environment.containsKey("CI")) {
+		environment("SKIKO_RENDER_API", "SOFTWARE_FAST")
+	}
+}
