@@ -51,4 +51,9 @@ jobs:
           gradle-version: wrapper
 
       - name: Build
+        if: startsWith(matrix.os, 'ubuntu')
+        run: xvfb-run ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }}
+
+      - name: Build
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         run: ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }}

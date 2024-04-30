@@ -51,4 +51,9 @@ jobs:
           gradle-version: wrapper
 
       - name: Build
+        if: startsWith(matrix.os, 'ubuntu')
+        run: xvfb-run ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }} -P kotlin.experimental.tryK2=true
+
+      - name: Build
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         run: ./gradlew build -P kotlin.jvmToolchain=${{ matrix.jvm }} -P kotlin.experimental.tryK2=true # windows needs a space between -P and the parameter :|
