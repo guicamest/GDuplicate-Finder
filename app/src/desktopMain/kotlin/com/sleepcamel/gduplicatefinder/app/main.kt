@@ -20,6 +20,7 @@ fun main() =
         ) {
             MaterialTheme {
                 val aboutDialogVisible = remember { mutableStateOf(false) }
+//            val aboutDialogState = rememberDialogState(width = 384.dp, height = 160.dp)
 
                 MenuBar {
                     Menu("Help", 'H', true) {
@@ -27,7 +28,8 @@ fun main() =
                     }
                 }
                 App()
-                About(aboutDialogVisible, "v3.0.0-snap")
+                // When there is an error -> user closes the dialog while visible, then opens it again, the error is shown, dialog cannot be closed :(
+                About(aboutDialogVisible, "v3.0.0-snap") // , state = aboutDialogState)
             }
         }
     }
