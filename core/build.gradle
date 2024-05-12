@@ -4,7 +4,7 @@ plugins {
     id 'jvm-test-suite'
     id 'jacoco'
     alias(libs.plugins.kotlin.serialization)
-    id "org.jlleitschuh.gradle.ktlint" version "12.1.0"
+    id "org.jlleitschuh.gradle.ktlint" version "12.1.1"
     id "me.champeau.jmh" version "0.7.2"
     id "app.cash.licensee" version "1.11.0"
 }
