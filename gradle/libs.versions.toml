@@ -1,6 +1,6 @@
 [versions]
 kotlin-plugins = "1.9.23"
-kotlinx-coroutines = "1.8.0"
+kotlinx-coroutines = "1.8.1"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-plugins" }
