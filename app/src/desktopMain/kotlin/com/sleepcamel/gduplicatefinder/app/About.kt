@@ -23,14 +23,20 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.Locale
 
+private const val DONATE_URL =
+    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y"
+
 @Composable
-fun About(showAbout: MutableState<Boolean>, version: String) {
+fun About(
+    showAbout: MutableState<Boolean>,
+    version: String,
+) {
     DialogWindow(
-            onCloseRequest = { showAbout.value = false },
-            visible = showAbout.value,
-            title = "About",
-            state = rememberDialogState(width = 384.dp, height = 160.dp)
-        ) {
+        onCloseRequest = { showAbout.value = false },
+        visible = showAbout.value,
+        title = "About",
+        state = rememberDialogState(width = 384.dp, height = 160.dp),
+    ) {
         Column(
             Modifier.fillMaxSize().then(Modifier.padding(14.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -49,7 +55,11 @@ fun About(showAbout: MutableState<Boolean>, version: String) {
                     Text("GitHub")
                 }
                 Button(onClick = {
-                    openInBrowser(URI.create("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=fezuqqg9t6j6y"))
+                    openInBrowser(
+                        URI.create(
+                            DONATE_URL,
+                        ),
+                    )
                 }, Modifier.padding(start = 20.dp)) {
                     Text("Donate")
                 }
@@ -58,11 +68,18 @@ fun About(showAbout: MutableState<Boolean>, version: String) {
     }
 }
 
-private val osName by lazy(LazyThreadSafetyMode.NONE) { System.getProperty("os.name").lowercase(Locale.getDefault()) }
+private val osName by lazy(LazyThreadSafetyMode.NONE) {
+    System.getProperty("os.name").lowercase(Locale.getDefault())
+}
+
 private fun openInBrowser(uri: URI) {
     // Try catch IOException in case `exec` fails
     when {
-        Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE) -> Desktop.getDesktop().browse(uri)
+        Desktop.isDesktopSupported() &&
+            Desktop.getDesktop().isSupported(
+                Desktop.Action.BROWSE,
+            )
+        -> Desktop.getDesktop().browse(uri)
         "mac" in osName -> Runtime.getRuntime().exec("open $uri")
         "nix" in osName || "nux" in osName -> Runtime.getRuntime().exec("xdg-open $uri")
         else -> { } // Show toast

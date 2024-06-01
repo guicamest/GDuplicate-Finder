@@ -2,7 +2,6 @@
 package com.sleepcamel.gduplicatefinder.app
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,7 +13,6 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppKtTest {
-
     @get:Rule
     val compose = createComposeRule()
 
