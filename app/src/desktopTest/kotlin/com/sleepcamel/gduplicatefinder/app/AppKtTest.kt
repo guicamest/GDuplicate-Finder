@@ -29,9 +29,11 @@ class AppKtTest {
             }
             compose.awaitIdle()
             // Then
-            compose.onNodeWithText(text = "Click", substring = true)
+            compose
+                .onNodeWithText(text = "Click", substring = true)
                 .assertExists()
-            compose.onNodeWithText(text = "Some Content")
+            compose
+                .onNodeWithText(text = "Some Content")
                 .assertDoesNotExist()
         }
     }
@@ -50,9 +52,11 @@ class AppKtTest {
             compose.awaitIdle()
             // Then
 
-            compose.onNodeWithText(text = "Click", substring = true)
+            compose
+                .onNodeWithText(text = "Click", substring = true)
                 .performClick()
-            compose.onNodeWithText(text = "Some Content")
+            compose
+                .onNodeWithText(text = "Some Content")
                 .assertExists()
         }
     }

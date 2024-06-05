@@ -93,13 +93,14 @@ internal class ScanFileVisitor(
             attributes: BasicFileAttributes,
             visitedDirectories: Collection<Path>,
         ): Boolean =
-            directory !in visitedDirectories && (
-                filter !is DirectoryFilter ||
-                    filter.accept(
-                        directory,
-                        attributes,
-                    )
-            )
+            directory !in visitedDirectories &&
+                (
+                    filter !is DirectoryFilter ||
+                        filter.accept(
+                            directory,
+                            attributes,
+                        )
+                )
 
         internal fun shouldAddFile(
             file: Path,

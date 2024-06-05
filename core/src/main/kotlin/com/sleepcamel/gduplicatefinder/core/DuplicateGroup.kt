@@ -20,7 +20,10 @@ import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 
-data class DuplicateGroup(val hash: String, val paths: List<PathWithAttributesAndContent>)
+data class DuplicateGroup(
+    val hash: String,
+    val paths: List<PathWithAttributesAndContent>,
+)
 
 @Serializable
 data class PathWithAttributes(

@@ -75,7 +75,9 @@ data class ContentCompareStateImpl(
     override val processedFiles: Set<PathWithAttributesAndContent>,
 ) : ContentCompareState
 
-internal class FindProgressStateHolder(initial: FindDuplicatesExecutionState) {
+internal class FindProgressStateHolder(
+    initial: FindDuplicatesExecutionState,
+) {
     private val _state = MutableStateFlow(initial)
     val state = _state.asStateFlow() // read-only public view
 
