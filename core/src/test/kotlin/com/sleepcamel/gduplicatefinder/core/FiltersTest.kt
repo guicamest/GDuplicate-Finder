@@ -83,8 +83,7 @@ class FiltersTest {
             assertThat(duplicateEntries)
                 .withRepresentation {
                     "$it\nFiles in directory: ${directory.listDirectoryEntries().joinToString()}"
-                }
-                .hasSize(expectedDuplicateGroups)
+                }.hasSize(expectedDuplicateGroups)
         }
     }
 
@@ -136,8 +135,7 @@ class FiltersTest {
             assertThat(duplicateEntries)
                 .withRepresentation {
                     "$it\nFiles in directory: ${directory.listDirectoryEntries().joinToString()}"
-                }
-                .hasSize(expectedDuplicateGroups)
+                }.hasSize(expectedDuplicateGroups)
         }
     }
 
@@ -159,9 +157,11 @@ class FiltersTest {
     ) {
         val directory = createTempDirectory().resolve("someDirectory").createDirectory()
         listOf("atextfile.txt", "aclassfile.class").map {
-            directory.resolve(it).apply {
-                writeText("content of the file")
-            }.absolute()
+            directory
+                .resolve(it)
+                .apply {
+                    writeText("content of the file")
+                }.absolute()
         }
 
         runTest {
@@ -176,8 +176,7 @@ class FiltersTest {
             assertThat(duplicateEntries)
                 .withRepresentation {
                     "$it\nFiles in directory: ${directory.listDirectoryEntries().joinToString()}"
-                }
-                .hasSize(expectedDuplicateGroups)
+                }.hasSize(expectedDuplicateGroups)
         }
     }
 

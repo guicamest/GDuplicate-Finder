@@ -21,10 +21,11 @@ import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 import org.jetbrains.kotlin.psi.KtImportDirective
 import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes
 
-class ForbiddenImportsRule : Rule(
-    ruleId = RuleId("$CUSTOM_RULE_SET_ID:forbidden"),
-    about = About(),
-) {
+class ForbiddenImportsRule :
+    Rule(
+        ruleId = RuleId("$CUSTOM_RULE_SET_ID:forbidden"),
+        about = About(),
+    ) {
     override fun beforeVisitChildNodes(
         node: ASTNode,
         autoCorrect: Boolean,

@@ -200,7 +200,11 @@ class DuplicateFinderTest {
         }
     }
 
-    data class SymbolicTestDirectories(val root: Path, val volumes: Path, val link: Path)
+    data class SymbolicTestDirectories(
+        val root: Path,
+        val volumes: Path,
+        val link: Path,
+    )
 
     @DisplayName("detect duplicates when")
     @Nested

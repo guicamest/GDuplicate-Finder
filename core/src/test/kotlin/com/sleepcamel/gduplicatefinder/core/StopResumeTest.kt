@@ -212,9 +212,11 @@ class StopResumeTest {
                 }
                 advanceUntilIdle()
                 sizeCompareStates =
-                    allStates.dropWhile {
-                        it is ScanDirectoriesState
-                    }.takeWhile { it is SizeCompareState }.map { it as SizeCompareState }
+                    allStates
+                        .dropWhile {
+                            it is ScanDirectoriesState
+                        }.takeWhile { it is SizeCompareState }
+                        .map { it as SizeCompareState }
             }
         }
 
@@ -258,11 +260,12 @@ class StopResumeTest {
                 }
                 advanceUntilIdle()
                 contentStates =
-                    allStates.dropWhile {
-                        it !is ContentCompareState
-                    }.takeWhile {
-                        it is ContentCompareState
-                    }.map { it as ContentCompareState }
+                    allStates
+                        .dropWhile {
+                            it !is ContentCompareState
+                        }.takeWhile {
+                            it is ContentCompareState
+                        }.map { it as ContentCompareState }
             }
         }
 

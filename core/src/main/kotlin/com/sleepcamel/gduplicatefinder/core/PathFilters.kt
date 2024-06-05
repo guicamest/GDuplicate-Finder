@@ -33,7 +33,9 @@ sealed interface PathFilter {
 }
 
 @Serializable
-data class MinSizeFilter(private val size: Long) : PathFilter {
+data class MinSizeFilter(
+    private val size: Long,
+) : PathFilter {
     @Throws(IOException::class)
     override fun accept(
         entry: Path,
@@ -42,7 +44,9 @@ data class MinSizeFilter(private val size: Long) : PathFilter {
 }
 
 @Serializable
-data class MaxSizeFilter(private val size: Long) : PathFilter {
+data class MaxSizeFilter(
+    private val size: Long,
+) : PathFilter {
     @Throws(IOException::class)
     override fun accept(
         entry: Path,
@@ -104,7 +108,9 @@ data class DirectoryFilter(
 ) : PathFilter by StringFilter(name, exact, { p -> p.name })
 
 @Serializable
-data class PathMatcherFilter(val pattern: String) : PathFilter {
+data class PathMatcherFilter(
+    val pattern: String,
+) : PathFilter {
     override fun accept(
         entry: Path,
         attributes: BasicFileAttributes,
