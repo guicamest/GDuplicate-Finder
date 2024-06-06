@@ -17,7 +17,7 @@ version = "$GDuplicateFinderVersion"
 
 dependencies {
     implementation libs.kotlinx.coroutines.core
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.0"
 
     jmhImplementation "org.bouncycastle:bcprov-jdk18on:1.78.1"
     jmhImplementation 'commons-codec:commons-codec:1.17.0'
