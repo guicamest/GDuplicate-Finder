@@ -36,7 +36,7 @@ jobs:
 
       # https://github.com/marketplace/actions/gradle-build-action
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3.3.2
+        uses: gradle/actions/setup-gradle@v3.4.0
         with:
           # The Gradle wrapper's version (already the default, putting it here to clarity)
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/v3' }}
