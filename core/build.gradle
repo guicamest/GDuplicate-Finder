@@ -53,7 +53,7 @@ testing {
         integrationTest(JvmTestSuite) {
             dependencies {
                 implementation project()
-                implementation "software.amazon.nio.s3:aws-java-nio-spi-for-s3:2.0.1"
+                implementation "software.amazon.nio.s3:aws-java-nio-spi-for-s3:2.0.2"
 
                 implementation "ch.pontius.nio:smb-nio:0.13.0"
 
