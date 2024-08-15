@@ -23,7 +23,7 @@ testing {
             dependencies {
                 // https://github.com/pinterest/ktlint/blob/master/ktlint-ruleset-template
                 implementation libs.ktlint.test
-                runtimeOnly "org.slf4j:slf4j-api:2.0.14"
+                runtimeOnly "org.slf4j:slf4j-api:2.0.16"
             }
         }
     }
