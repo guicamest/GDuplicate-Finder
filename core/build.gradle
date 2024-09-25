@@ -44,7 +44,7 @@ testing {
                 implementation libs.kotlinx.coroutines.test
                 implementation libs.kotlinx.coroutines.debug
 
-                implementation "com.github.marschall:memoryfilesystem:2.8.0"
+                implementation "com.github.marschall:memoryfilesystem:2.8.1"
                 implementation "com.google.jimfs:jimfs:1.3.0"
 
                 implementation libs.kotlinx.serialization.json
