@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Setup JVM ${{ matrix.jvm }}
         uses: actions/setup-java@v4.4.0
