@@ -1,5 +1,5 @@
 [versions]
-kotlin-plugins = "2.0.21"
+kotlin-plugins = "2.1.0"
 kotlinx-coroutines = "1.9.0"
 kotlinx-serialization = "1.7.3"
 ktlint = "1.4.0"
