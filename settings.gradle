@@ -35,7 +35,7 @@ gitHooks { extension ->
                 tasks("licenseFormat", [] as String[], true)
                 tasks("clean", ["build"] as String[], true)
                 appendScript {
-                    'docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:1.6.26 -color'
+                    'docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:1.7.6 -color'
                 }
             }
         }
