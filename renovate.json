@@ -6,9 +6,6 @@
   "baseBranches": [
     "v3"
   ],
-  "ignorePaths": [
-    "**/app/**"
-  ],
   "assigneesFromCodeOwners": true,
   "rebaseWhen": "behind-base-branch",
   "semanticCommitType": "deps",
