@@ -49,6 +49,7 @@ kotlin {
 		}
 		desktopTest.dependencies {
 			implementation compose.desktop.uiTestJUnit4
+			implementation 'org.awaitility:awaitility:4.2.2'
 		}
 	}
 }

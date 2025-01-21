@@ -3,16 +3,16 @@ package com.sleepcamel.gduplicatefinder.app
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
-import androidx.compose.ui.test.waitUntilAtLeastOneExists
-import kotlinx.coroutines.runBlocking
+import androidx.compose.ui.unit.dp
+import org.awaitility.Awaitility.await
 import org.junit.Rule
 import org.junit.Test
 import java.net.URI
+import java.util.concurrent.TimeUnit
 
 class AboutTest {
     @get:Rule
@@ -21,7 +21,7 @@ class AboutTest {
     @Test
     fun `name of the app is displayed`() {
         compose.setContent {
-            About(remember { mutableStateOf(true) }, "test") // , rememberDialogState(),)
+            About(remember { mutableStateOf(true) }, "test")
         }
 
         // Then
@@ -31,7 +31,7 @@ class AboutTest {
     @Test
     fun `link to Github is displayed`() {
         compose.setContent {
-            About(remember { mutableStateOf(true) }, "") // , rememberDialogState(),)
+            About(remember { mutableStateOf(true) }, "")
         }
 
         // Then
@@ -41,7 +41,7 @@ class AboutTest {
     @Test
     fun `link to Donate is displayed`() {
         compose.setContent {
-            About(remember { mutableStateOf(true) }, "") // , rememberDialogState(),)
+            About(remember { mutableStateOf(true) }, "")
         }
 
         // Then
@@ -52,21 +52,31 @@ class AboutTest {
     @Test
     fun `when there is an error opening a link, a snackbar is displayed`() =
         runComposeUiTest {
-            setContent { }
             setContent {
                 About(
                     showAbout = remember { mutableStateOf(true) },
                     version = "",
-//                state = rememberDialogState(),
                     openLink = { uri: URI -> throw RuntimeException("Failed") },
+                    height = 200.dp,
                 )
             }
-            runBlocking { awaitIdle() }
+
             // Then
-            onNodeWithText(text = "GitHub").performClick()
+            runOnIdle {
+                onNodeWithText(text = "GitHub").performClick()
+            }
+
+            /*
+            Too experimental, has a bug still in v1.7.3 even if it seems to be fixed before
+            https://github.com/JetBrains/compose-multiplatform-core/pull/1550/files#diff-5c3cb81e6b1158edec59ef47a6ee055863eb1d7e4a8a35952212ba2be1ceab68L299
+
             waitUntilAtLeastOneExists(
                 hasText("Failed"),
                 timeoutMillis = 1000L,
             )
+             */
+            await().atMost(1, TimeUnit.SECONDS).untilAsserted {
+                onNodeWithText(text = "Failed").assertExists()
+            }
         }
 }

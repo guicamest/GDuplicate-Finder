@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
@@ -38,15 +39,16 @@ fun About(
     showAbout: MutableState<Boolean>,
     version: String,
     openLink: (URI) -> Unit = ::openInBrowser,
+    height: Dp = 160.dp,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     DialogWindow(
         onCloseRequest = { showAbout.value = false },
         visible = showAbout.value,
         title = "About",
-        state = rememberDialogState(width = 384.dp, height = 160.dp),
+        state = rememberDialogState(width = 384.dp, height = height),
     ) {
-        val scope = rememberCoroutineScope()
-        val snackbarHostState = remember { SnackbarHostState() }
         Scaffold(
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState)
