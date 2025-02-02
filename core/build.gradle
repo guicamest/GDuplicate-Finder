@@ -5,7 +5,7 @@ plugins {
     id 'jacoco'
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktlint.gradle)
-    id "me.champeau.jmh" version "0.7.2"
+    id "me.champeau.jmh" version "0.7.3"
     id "app.cash.licensee" version "1.12.0"
 }
 
