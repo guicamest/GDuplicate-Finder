@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "v3"
   ],
   "ignorePaths": [
@@ -13,7 +13,9 @@
   "rebaseWhen": "behind-base-branch",
   "semanticCommitType": "deps",
   "semanticCommitScope": "{{depName}}",
-  "labels": ["dependency"],
+  "labels": [
+    "dependency"
+  ],
   "packageRules": [
     {
       "matchManagers": [
@@ -44,8 +46,8 @@
     },
     {
       "groupName": "ktlint",
-      "matchPackagePrefixes": [
-        "com.pinterest.ktlint:"
+      "matchPackageNames": [
+        "com.pinterest.ktlint:{/,}**"
       ]
     }
   ]
